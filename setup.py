@@ -21,13 +21,7 @@ extras_requires = {
     "develop": develop_requirements,
 }
 
-requirements: List[str] = [
-    "dacite",
-    "h5netcdf",
-    "numpy",
-    "pyyaml",
-    "mpi4py",
-]
+requirements: List[str] = ["dacite", "h5netcdf", "numpy", "pyyaml", "mpi4py", "xarray"]
 
 setup(
     author="NOAA/GFDL",
@@ -49,5 +43,4 @@ setup(
     url="https://github.com/fmalatino/pyFMS.git",
     version="2024.12.0",
     zip_safe=False,
-    entry_points={},
 )

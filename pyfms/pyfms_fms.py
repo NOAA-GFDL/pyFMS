@@ -8,15 +8,15 @@ from pyfms.pyfms_data_handling import set_Cchar, setscalar_Cint32
 
 
 class pyFMS:
-
     def __init__(
         self,
-        clibFMS_path: str = "./cFMS/libcFMS/.libs/libcFMS.so",
+        clibFMS_path: str = os.path.dirname(__file__)
+        + "/../cFMS/cgnuFMS/lib/libcFMS.so",
         clibFMS: ctypes.CDLL = None,
         alt_input_nml_path: str = None,
         localcomm: int = None,
-        ndomain: int = None,
-        nnest_domain: int = None,
+        ndomain: int = 1,
+        nnest_domain: int = 1,
     ):
         self.clibFMS_path = clibFMS_path
         self.clibFMS = clibFMS
@@ -27,7 +27,7 @@ class pyFMS:
 
         if self.clibFMS_path is None:
             raise ValueError(
-                "Please define the library file path, e.g., as  libFMS(clibFMS_path=./clibFMS.so)"
+                "Please define the library file path, e.g., as  libFMS(clibFMS_path=./libcFMS.so)"
             )
 
         if not os.path.isfile(self.clibFMS_path):

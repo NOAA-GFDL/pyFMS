@@ -13,7 +13,6 @@ from pyfms.pyfms_data_handling import (
 
 
 class pyFMS_mpp:
-
     def __init__(self, clibFMS: ctypes.CDLL = None):
         self.clibFMS = clibFMS
 
