@@ -4,6 +4,17 @@ from typing import Any
 import numpy as np
 import numpy.typing as npt
 
+from pyfms.pyfms_utils.data_handling import (
+    set_Cchar,
+    setscalar_Cint32,
+    setscalar_Cfloat,
+    setscalar_Cdouble,
+    setarray_Cfloat,
+    setarray_Cdouble,
+    setarray_Cint32,
+    setscalar_Cbool,
+)
+
 
 class HorizInterp:
     def __init__(self, cfms: ctypes.CDLL):
@@ -229,3 +240,115 @@ class HorizInterp:
             rat_x_t = np.ctypeslib.ndpointer(
                 dtype=np.float64, ndim=2, shape=rat_x_shape
             )
+
+    def horiz_interp_new(
+            self,
+            lon_in: npt.NDArray,
+            lon_in_shape: npt.NDArray,
+            lat_in: npt.NDArray,
+            lat_in_shape: npt.NDArray,
+            lon_out: npt.NDArray,
+            lon_out_shape: npt.NDArray,
+            lat_out: npt.NDArray,
+            lat_out_shape: npt.NDArray,
+            interp_method: str = None,
+            verbose: int = None,
+            num_nbrs: int = None,
+            max_dist: float = None,
+            src_modulo: bool = None,
+            mask_in: npt.NDArray = None,
+            mask_in_shape: npt.NDArray = None,
+            mask_out: npt.NDArray = None,
+            mask_out_shape: npt.NDArray = None,
+            is_latlon_in: bool = None,
+            is_latlon_out: bool = None,
+            interp_id: int = None,
+    ):
+        if interp_method is not None:
+            interp_method = interp_method[:128]
+
+        # if statement regarding dim is preemptive for introduction of 1d methods
+        if lon_in.dtype == np.float64:
+            if lon_in.ndim == 2:
+                _cfms_horiz_interp_new = self.cfms.cFMS_horiz_interp_new_2d_cdouble
+                lon_in_p, lon_in_t = setarray_Cdouble(lon_in)
+                lat_in_p, lat_in_t = setarray_Cdouble(lat_in)
+                lon_out_p, lon_out_t = setarray_Cdouble(lon_out)
+                lat_out_p, lat_out_t = setarray_Cdouble(lat_out)
+                mask_in_p, mask_in_t = setarray_Cdouble(mask_in)
+                mask_out_p, mask_out_t = setarray_Cdouble(mask_out)
+                max_dist_c, max_dist_t = setscalar_Cdouble(max_dist)   
+        if lon_in.dtype == np.float32:
+            if lon_in.ndim == 2:
+                _cfms_horiz_interp_new = self.cfms.cFMS_horiz_interp_new_2d_cfloat
+                lon_in_p, lon_in_t = setarray_Cfloat(lon_in)
+                lat_in_p, lat_in_t = setarray_Cfloat(lat_in)
+                lon_out_p, lon_out_t = setarray_Cfloat(lon_out)
+                lat_out_p, lat_out_t = setarray_Cfloat(lat_out)
+                mask_in_p, mask_in_t = setarray_Cfloat(mask_in)
+                mask_out_p, mask_out_t = setarray_Cfloat(mask_out)
+                max_dist_c, max_dist_t = setscalar_Cfloat(max_dist) 
+                
+        lon_in_shape_p, lon_in_shape_t = setarray_Cint32(lon_in_shape)
+        lat_in_shape_p, lat_in_shape_t = setarray_Cint32(lat_in_shape)
+        lon_out_shape_p, lon_out_shape_t = setarray_Cint32(lon_out_shape)
+        lat_out_shape_p, lat_out_shape_t = setarray_Cint32(lat_out_shape)
+        interp_method_c, interp_method_t = set_Cchar(interp_method)
+        verbose_c, verbose_t = setscalar_Cint32(verbose)
+        num_nbrs_c, num_nbrs_t = setscalar_Cint32(num_nbrs)
+        src_modulo_c, src_modulo_t = setscalar_Cbool(src_modulo)
+        mask_in_shape_p, mask_in_shape_t = setarray_Cint32(mask_in_shape)
+        mask_out_shape_p, mask_out_shape_t = setarray_Cint32(mask_out_shape)
+        is_latlon_in_c, is_latlon_in_t = setscalar_Cbool(is_latlon_in)
+        is_latlon_out_c, is_latlon_out_t = setscalar_Cbool(is_latlon_out)
+        interp_id_c, interp_id_t = setscalar_Cint32(interp_id)
+        
+        _cfms_horiz_interp_new.argtypes = [
+            lon_in_t,
+            lon_in_shape_t,
+            lat_in_t,
+            lat_in_shape_t,
+            lon_out_t,
+            lon_out_shape_t,
+            lat_out_t,
+            lat_out_shape_t,
+            interp_method_t,
+            verbose_t,
+            num_nbrs_t,
+            max_dist_t,
+            src_modulo_t,
+            mask_in_t,
+            mask_in_shape_t,
+            mask_out_t,
+            mask_out_shape_t,
+            is_latlon_in_t,
+            is_latlon_out_t,
+            interp_id_t,
+        ]
+
+        _cfms_horiz_interp_new.restype = ctypes.c_int32
+
+        return _cfms_horiz_interp_new(
+            lon_in_p,
+            lon_in_shape_p,
+            lat_in_p,
+            lat_in_shape_p,
+            lon_out_p,
+            lon_out_shape_p,
+            lat_out_p,
+            lat_out_shape_p,
+            interp_method_c,
+            verbose_c,
+            num_nbrs_c,
+            max_dist_c,
+            src_modulo_c,
+            mask_in_p,
+            mask_in_shape_p,
+            mask_out_p,
+            mask_out_shape_p,
+            is_latlon_in_c,
+            is_latlon_out_c,
+            interp_id_c,
+        )
+
+
