@@ -129,9 +129,22 @@ class HorizInterp:
             "xarea": xarea[:nxgrid],
         }
 
-    def horiz_interp_init(self):
+    def horiz_interp_init(self, ninterp: int = None):
         _cfms_horiz_interp_init = self.cfms.cFMS_horiz_interp_init
 
+        ninterp_c, ninterp_t = ctypes.c_int(ninterp), ctypes.POINTER(ctypes.c_int)
+
+        _cfms_horiz_interp_init.argtypes = [ninterp_t]
         _cfms_horiz_interp_init.restype = None
 
-        _cfms_horiz_interp_init()
+        _cfms_horiz_interp_init(ctypes.byref(ninterp_c))
+
+    def set_current_interp(self, interp_id: int = None):
+        _cfms_set_current_interp = self.cfms.cFMS_set_current_interp
+
+        interp_id_c, interp_id_t = ctypes.c_int(interp_id), ctypes.POINTER(ctypes.c_int)
+
+        _cfms_set_current_interp.argtypes = [interp_id_t]
+        _cfms_set_current_interp.restype = None
+
+        _cfms_set_current_interp(ctypes.byref(interp_id_c))

@@ -6,7 +6,7 @@ from numpy.typing import NDArray
 
 from ..pyfms_utils.data_handling import (
     set_Cchar,
-    set_multipointer,
+    setarray_Cbool,
     setarray_Cdouble,
     setarray_Cfloat,
     setarray_Cint32,
@@ -61,8 +61,8 @@ class pyFMS_mpp_domains:
 
     def define_domains(
         self,
-        global_indices: NDArray,
-        layout: NDArray,
+        global_indices: list[int],
+        layout: list[int],
         domain_id: Optional[int] = None,
         pelist: Optional[NDArray] = None,
         xflags: Optional[int] = None,
@@ -89,8 +89,11 @@ class pyFMS_mpp_domains:
 
         _cfms_define_domains = self.cFMS.cFMS_define_domains
 
-        global_indices_p, global_indices_t = setarray_Cint32(global_indices)
-        layout_p, layout_t = setarray_Cint32(layout)
+        global_indices_arr = np.array(global_indices, dtype=np.int32)
+        layout_arr = np.array(layout, dtype=np.int32)
+
+        global_indices_p, global_indices_t = setarray_Cint32(global_indices_arr)
+        layout_p, layout_t = setarray_Cint32(layout_arr)
         domain_id_c, domain_id_t = setscalar_Cint32(domain_id)
         pelist_p, pelist_t = setarray_Cint32(pelist)
         xflags_c, xflags_t = setscalar_Cint32(xflags)
@@ -99,7 +102,7 @@ class pyFMS_mpp_domains:
         yhalo_c, yhalo_t = setscalar_Cint32(yhalo)
         xextent_p, xextent_t = setarray_Cint32(xextent)
         yextent_p, yextent_t = setarray_Cint32(yextent)
-        maskmap_p, maskmap_t = set_multipointer(arg=maskmap, num_ptr=2)
+        maskmap_p, maskmap_t = setarray_Cbool(maskmap)
         name_c, name_t = set_Cchar(name)
         symmetry_c, symmetry_t = setscalar_Cbool(symmetry)
         memory_size_p, memory_size_t = setarray_Cint32(memory_size)
@@ -178,10 +181,12 @@ class pyFMS_mpp_domains:
     Returns: No return
     """
 
-    def define_io_domain(self, io_layout: NDArray, domain_id: Optional[int] = None):
+    def define_io_domain(self, io_layout: list[int], domain_id: Optional[int] = None):
         _cfms_define_io_domain = self.cFMS.cFMS_define_io_domain
 
-        io_layout_p, io_layout_t = setarray_Cint32(io_layout)
+        io_layout_arr = np.array(io_layout, dtype=np.int32)
+
+        io_layout_p, io_layout_t = setarray_Cint32(io_layout_arr)
         domain_id_c, domain_id_t = setscalar_Cint32(domain_id)
 
         _cfms_define_io_domain.argtypes = [io_layout_t, domain_id_t]
@@ -199,15 +204,17 @@ class pyFMS_mpp_domains:
 
     def define_layout(
         self,
-        global_indices: NDArray,
+        global_indices: list[int],
         ndivs: int,
-    ) -> NDArray:
+    ) -> list:
 
         layout = np.empty(shape=2, dtype=np.int32, order="C")
 
+        global_indices_arr = np.array(global_indices, dtype=np.int32)
+
         _cfms_define_layout = self.cFMS.cFMS_define_layout
 
-        global_indices_p, global_indices_t = setarray_Cint32(global_indices)
+        global_indices_p, global_indices_t = setarray_Cint32(global_indices_arr)
         ndivs_c, ndivs_t = setscalar_Cint32(ndivs)
         layout_p, layout_t = setarray_Cint32(layout)
 
@@ -216,7 +223,7 @@ class pyFMS_mpp_domains:
 
         _cfms_define_layout(global_indices_p, ndivs_c, layout_p)
 
-        return layout
+        return layout.tolist()
 
     """
     Subroutine: define_nest_domains
@@ -924,54 +931,64 @@ class pyFMS_mpp_domains:
 
         if field.ndim == 2:
             if field.dtype == np.float64:
-                _cfms_update_domains = self.clibFMS.cFMS_update_domains_double_2d
+                _cfms_update_domains = self.cFMS.cFMS_update_domains_double_2d
                 field_p, field_t = setarray_Cdouble(field)
             elif field.dtype == np.float32:
-                 _cfms_update_domains = self.clibFMS.cFMS_update_domains_float_2d
-                 field_p, field_t = setarray_Cfloat(field)
+                _cfms_update_domains = self.cFMS.cFMS_update_domains_float_2d
+                field_p, field_t = setarray_Cfloat(field)
             elif field.dtype == np.int32:
-                _cfms_update_domains = self.clibFMS.cFMS_update_domains_int_2d
+                _cfms_update_domains = self.cFMS.cFMS_update_domains_int_2d
                 field_p, field_t = setarray_Cfloat(field)
             else:
-                raise RuntimeError(f"udate_domains input field datatype {field.dtype} unsupported")
+                raise RuntimeError(
+                    f"udate_domains input field datatype {field.dtype} unsupported"
+                )
         elif field.ndim == 3:
             if field.dtype == np.float64:
-                _cfms_update_domains = self.clibFMS.cFMS_update_domains_double_3d
+                _cfms_update_domains = self.cFMS.cFMS_update_domains_double_3d
                 field_p, field_t = setarray_Cdouble(field)
             elif field.dtype == np.float32:
-                 _cfms_update_domains = self.clibFMS.cFMS_update_domains_float_3d
-                 field_p, field_t = setarray_Cfloat(field)
+                _cfms_update_domains = self.cFMS.cFMS_update_domains_float_3d
+                field_p, field_t = setarray_Cfloat(field)
             elif field.dtype == np.int32:
-                _cfms_update_domains = self.clibFMS.cFMS_update_domains_int_3d
+                _cfms_update_domains = self.cFMS.cFMS_update_domains_int_3d
                 field_p, field_t = setarray_Cfloat(field)
             else:
-                raise RuntimeError(f"udate_domains input field datatype {field.dtype} unsupported")
+                raise RuntimeError(
+                    f"udate_domains input field datatype {field.dtype} unsupported"
+                )
         elif field.ndim == 4:
             if field.dtype == np.float64:
-                _cfms_update_domains = self.clibFMS.cFMS_update_domains_double_4d
+                _cfms_update_domains = self.cFMS.cFMS_update_domains_double_4d
                 field_p, field_t = setarray_Cdouble(field)
             elif field.dtype == np.float32:
-                 _cfms_update_domains = self.clibFMS.cFMS_update_domains_float_4d
-                 field_p, field_t = setarray_Cfloat(field)
+                _cfms_update_domains = self.cFMS.cFMS_update_domains_float_4d
+                field_p, field_t = setarray_Cfloat(field)
             elif field.dtype == np.int32:
-                _cfms_update_domains = self.clibFMS.cFMS_update_domains_int_4d
+                _cfms_update_domains = self.cFMS.cFMS_update_domains_int_4d
                 field_p, field_t = setarray_Cfloat(field)
             else:
-                raise RuntimeError(f"udate_domains input field datatype {field.dtype} unsupported")
+                raise RuntimeError(
+                    f"udate_domains input field datatype {field.dtype} unsupported"
+                )
         elif field.ndim == 5:
             if field.dtype == np.float64:
-                _cfms_update_domains = self.clibFMS.cFMS_update_domains_double_5d
+                _cfms_update_domains = self.cFMS.cFMS_update_domains_double_5d
                 field_p, field_t = setarray_Cdouble(field)
             elif field.dtype == np.float32:
-                 _cfms_update_domains = self.clibFMS.cFMS_update_domains_float_5d
-                 field_p, field_t = setarray_Cfloat(field)
+                _cfms_update_domains = self.cFMS.cFMS_update_domains_float_5d
+                field_p, field_t = setarray_Cfloat(field)
             elif field.dtype == np.int32:
-                _cfms_update_domains = self.clibFMS.cFMS_update_domains_int_5d
+                _cfms_update_domains = self.cFMS.cFMS_update_domains_int_5d
                 field_p, field_t = setarray_Cfloat(field)
             else:
-                raise RuntimeError(f"udate_domains input field datatype {field.dtype} unsupported")
+                raise RuntimeError(
+                    f"udate_domains input field datatype {field.dtype} unsupported"
+                )
         else:
-            raise RuntimeError(f"update_domains field dimension {field.ndim}d unsupported")
+            raise RuntimeError(
+                f"update_domains field dimension {field.ndim}d unsupported"
+            )
 
         field_shape_p, field_shape_t = setarray_Cint32(field_shape)
         domain_id_c, domain_id_t = setscalar_Cint32(domain_id)
@@ -1021,8 +1038,8 @@ class pyDomain:
     def __init__(
         self,
         mpp_domains_obj: pyFMS_mpp_domains,
-        global_indices: NDArray,
-        layout: NDArray,
+        global_indices: list[int],
+        layout: list[int],
         domain_id: Optional[int] = None,
         pelist: Optional[NDArray] = None,
         xflags: Optional[int] = None,
