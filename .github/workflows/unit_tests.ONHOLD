@@ -1,6 +1,5 @@
 name: "pyfms unit tests"
-on:
-  pull_request:
+on: [push, pull_request]
 
 # cancel running jobs if theres a newer push
 concurrency:
@@ -28,8 +27,11 @@ jobs:
 
         - name: run field manager test
           run: |
-            python -m pytest -x tests/test_pyFMS_field_manager.py
+            python -m pytest -x tests/py_field_manager/test_field_manager.py
 
         - name: run pyFMS init test
           run: |
-            python -m pytest -x tests/test_pyFMS_fms.py
+            python -m pytest -x tests/test_pyfms.py
+
+        - name: run mpp tests
+          run : mpiexec -np 8 --oversubscribe python -m pytest tests/py_mpp

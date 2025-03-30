@@ -1,8 +1,19 @@
+import os
+
 import numpy as np
+import pytest
 
 from pyfms import pyDomain, pyFMS, pyFMS_mpp, pyFMS_mpp_domains, pyNestDomain
 
 
+@pytest.mark.create
+def test_create_input_nml():
+    inputnml = open("input.nml", "w")
+    inputnml.close()
+    os.path.isfile("input.nml")
+
+
+@pytest.mark.parallel
 def test_define_domains():
 
     NX = 96
@@ -44,12 +55,11 @@ def test_define_domains():
     fine_nhalo = 2
 
     pyfms = pyFMS(
-        clibFMS_path="./cFMS/libcFMS/.libs/libcFMS.so",
         ndomain=ndomain,
         nnest_domain=nnest_domain,
     )
-    mpp = pyFMS_mpp(clibFMS=pyfms.clibFMS)
-    mpp_domains = pyFMS_mpp_domains(clibFMS=pyfms.clibFMS)
+    mpp = pyFMS_mpp(cFMS=pyfms.cFMS)
+    mpp_domains = pyFMS_mpp_domains(cFMS=pyfms.cFMS)
 
     assert isinstance(pyfms, pyFMS)
 
@@ -190,6 +200,12 @@ def test_define_domains():
     pyfms.pyfms_end()
 
     # mpp.pyfms_error(errortype=1)
+
+
+@pytest.mark.remove
+def test_remove_input_nml():
+    os.remove("input.nml")
+    assert not os.path.isfile("input.nml")
 
 
 if __name__ == "__main__":

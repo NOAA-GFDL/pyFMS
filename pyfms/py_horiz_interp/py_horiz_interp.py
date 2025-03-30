@@ -128,3 +128,10 @@ class HorizInterp:
             "j_tgt": j_tgt[:nxgrid],
             "xarea": xarea[:nxgrid],
         }
+
+    def horiz_interp_init(self):
+        _cfms_horiz_interp_init = self.cfms.cFMS_horiz_interp_init
+
+        _cfms_horiz_interp_init.restype = None
+
+        _cfms_horiz_interp_init()

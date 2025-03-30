@@ -4,7 +4,7 @@ from typing import Optional
 import numpy as np
 from numpy.typing import NDArray
 
-from pyfms.pyfms_data_handling import (
+from ..pyfms_utils.data_handling import (
     set_Cchar,
     setarray_Cint32,
     setscalar_Cbool,
@@ -13,8 +13,9 @@ from pyfms.pyfms_data_handling import (
 
 
 class pyFMS_mpp:
-    def __init__(self, clibFMS: ctypes.CDLL = None):
-        self.clibFMS = clibFMS
+
+    def __init__(self, cFMS: ctypes.CDLL = None):
+        self.cFMS = cFMS
 
     """
     Subroutine: declare_pelist
@@ -42,7 +43,7 @@ class pyFMS_mpp:
         name: Optional[str] = None,
         commID: Optional[int] = None,
     ) -> int | None:
-        _cfms_declare_pelist = self.clibFMS.cFMS_declare_pelist
+        _cfms_declare_pelist = self.cFMS.cFMS_declare_pelist
 
         pelist_p, pelist_t = setarray_Cint32(pelist)
         name_c, name_t = set_Cchar(name)
@@ -70,7 +71,7 @@ class pyFMS_mpp:
         if errormsg is not None:
             errormsg = errormsg[:128]
 
-        _cfms_error = self.clibFMS.cFMS_error
+        _cfms_error = self.cFMS.cFMS_error
 
         errortype_c, errortype_t = setscalar_Cint32(errortype)
         errormsg_c, errormsg_t = set_Cchar(errormsg)
@@ -97,10 +98,10 @@ class pyFMS_mpp:
         commID: Optional[int] = None,
     ) -> NDArray:
 
-        npes = ctypes.c_int.in_dll(self.clibFMS, "cFMS_pelist_npes")
+        npes = ctypes.c_int.in_dll(self.cFMS, "cFMS_pelist_npes")
         pelist = np.empty(shape=npes.value, dtype=np.int32, order="C")
 
-        _cfms_get_current_pelist = self.clibFMS.cFMS_get_current_pelist
+        _cfms_get_current_pelist = self.cFMS.cFMS_get_current_pelist
 
         pelist_p, pelist_t = setarray_Cint32(pelist)
         name_c, name_t = set_Cchar(name)
@@ -127,7 +128,7 @@ class pyFMS_mpp:
     """
 
     def npes(self) -> int:
-        _cfms_npes = self.clibFMS.cFMS_npes
+        _cfms_npes = self.cFMS.cFMS_npes
 
         _cfms_npes.restype = ctypes.c_int32
 
@@ -140,7 +141,7 @@ class pyFMS_mpp:
     """
 
     def pe(self) -> int:
-        _cfms_pe = self.clibFMS.cFMS_pe
+        _cfms_pe = self.cFMS.cFMS_pe
 
         _cfms_pe.restype = ctypes.c_int32
 
@@ -160,7 +161,7 @@ class pyFMS_mpp:
     def set_current_pelist(
         self, pelist: Optional[NDArray] = None, no_sync: Optional[bool] = None
     ):
-        _cfms_set_current_pelist = self.clibFMS.cFMS_set_current_pelist
+        _cfms_set_current_pelist = self.cFMS.cFMS_set_current_pelist
 
         pelist_p, pelist_t = setarray_Cint32(pelist)
         no_sync_c, no_sync_t = setscalar_Cbool(no_sync)

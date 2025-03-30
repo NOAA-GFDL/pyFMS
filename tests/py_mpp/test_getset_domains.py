@@ -1,10 +1,19 @@
+import os
+
 import numpy as np
+import pytest
 
-from pyfms.mpp.pyfms_mpp import pyFMS_mpp
-from pyfms.mpp.pyfms_mpp_domains import pyDomain, pyFMS_mpp_domains
-from pyfms.pyfms_fms import pyFMS
+from pyfms import pyDomain, pyFMS, pyFMS_mpp, pyFMS_mpp_domains
 
 
+@pytest.mark.create
+def test_create_input_nml():
+    inputnml = open("input.nml", "w")
+    inputnml.close()
+    assert os.path.isfile("input.nml")
+
+
+@pytest.mark.parallel
 def test_getset_domains():
     """
     global domain
@@ -26,9 +35,9 @@ def test_getset_domains():
     nhalo = 2
     name = "test domain"
 
-    pyfms = pyFMS(clibFMS_path="./cFMS/libcFMS/.libs/libcFMS.so")
-    mpp = pyFMS_mpp(clibFMS=pyfms.clibFMS)
-    mpp_domains = pyFMS_mpp_domains(clibFMS=pyfms.clibFMS)
+    pyfms = pyFMS(cFMS_path="./cFMS/libcFMS/.libs/libcFMS.so")
+    mpp = pyFMS_mpp(cFMS=pyfms.cFMS)
+    mpp_domains = pyFMS_mpp_domains(cFMS=pyfms.cFMS)
 
     # set domain
 
@@ -142,6 +151,12 @@ def test_getset_domains():
     assert domain.compute_domain.y_is_global.value is False
 
     pyfms.pyfms_end()
+
+
+@pytest.mark.remove
+def test_remove_input_nml():
+    os.remove("input.nml")
+    assert not os.path.isfile("input.nml")
 
 
 if __name__ == "__main__":

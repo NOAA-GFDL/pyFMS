@@ -1,11 +1,22 @@
+import os
+
 import numpy as np
 
 import pyfms
 
 
+cfms_path = os.path.dirname(__file__) + "/../../cFMS/cLIBFMS/lib/libcFMS.so"
+
+
+def test_create_input_nml():
+    inputnml = open("input.nml", "w")
+    inputnml.close()
+    assert os.path.isfile("input.nml")
+
+
 def test_create_xgrid():
 
-    cfms = pyfms.pyFMS().clibFMS
+    cfms = pyfms.pyFMS(cFMS_path=cfms_path).cFMS
     create_xgrid = pyfms.HorizInterp(cfms=cfms).create_xgrid_2dx2d_order1
 
     refine = 1
@@ -67,3 +78,8 @@ def test_create_xgrid():
     assert np.array_equal(xgrid["i_src"], xgrid["i_tgt"])
     assert np.array_equal(xgrid["j_src"], xgrid["j_tgt"])
     assert np.array_equal(xgrid["xarea"], area)
+
+
+def test_remove_input_nml():
+    os.remove("input.nml")
+    assert not os.path.isfile("input.nml")
