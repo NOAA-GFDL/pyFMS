@@ -12,24 +12,20 @@ def test_send_data():
     domain_id = 0
     calendar_type = 4
 
-    var2_shape = np.array([NX, NY], dtype=np.int32)
-    var2 = np.empty(shape=NX * NY, dtype=np.float32)
+    var2_shape = [NX, NY]
+    var2 = np.empty(shape=(NX, NY), dtype=np.float32)
 
-    var3_shape = np.array([NX, NY, NZ], dtype=np.int32)
-    var3 = np.empty(shape=NX * NY * NZ, dtype=np.float32)
+    var3_shape = [NX, NY, NZ]
+    var3 = np.empty(shape=(NX, NY, NZ), dtype=np.float32)
 
-    ijk = 0
     for i in range(NX):
         for j in range(NY):
             for k in range(NZ):
-                var3[ijk] = i * 100 + j * 10 + k * 1
-                ijk += 1
+                var3[i][j][k] = i * 100 + j * 10 + k * 1
 
-    ij = 0
     for i in range(NX):
         for j in range(NY):
-            var2[ij] = i * 10.0 + j * 1.0
-            ij += 1
+            var2[i][j] = i * 10.0 + j * 1.0
 
     cfms_path = "./cFMS/libcFMS/.libs/libcFMS.so"
 
@@ -64,9 +60,6 @@ def test_send_data():
     """
     x = np.arange(NX, dtype=np.float64)
 
-    for i in range(NX):
-        x[i] = i
-
     id_x = diag_manager.axis_init(
         name="x",
         axis_data=x,
@@ -80,9 +73,6 @@ def test_send_data():
     diag axis init y
     """
     y = np.arange(NY, dtype=np.float64)
-
-    for j in range(NY):
-        y[j] = j
 
     id_y = diag_manager.axis_init(
         name="y",
@@ -99,9 +89,6 @@ def test_send_data():
 
     z = np.arange(NZ, dtype=np.float64)
 
-    for k in range(NZ):
-        z[k] = k
-
     id_z = diag_manager.axis_init(
         name="z",
         axis_data=z,
@@ -116,7 +103,7 @@ def test_send_data():
     register diag field var3
     """
 
-    axes_3d = np.array([id_x, id_y, id_z, 0, 0], dtype=np.int32)
+    axes_3d = [id_x, id_y, id_z]
     range_3d = np.array([-1000.0, 1000.0], dtype=np.float32)
 
     diag_manager.set_field_init_time(
@@ -131,11 +118,12 @@ def test_send_data():
     id_var3 = diag_manager.register_field_array(
         module_name="atm_mod",
         field_name="var_3d",
+        datatype=np.float32,
         axes=axes_3d,
         long_name="Var in a lon/lat domain",
         units="muntin",
         missing_value=-99.99,
-        range=range_3d,
+        range_data=range_3d,
     )
 
     diag_manager.set_field_timestep(
@@ -146,7 +134,7 @@ def test_send_data():
     register diag_field var 2
     """
 
-    axes_2d = np.array([id_x, id_y, 0, 0, 0], dtype=np.int32)
+    axes_2d = [id_x, id_y]
     range_2d = np.array([-1000.0, 1000.0], dtype=np.float32)
 
     diag_manager.set_field_init_time(
@@ -161,11 +149,12 @@ def test_send_data():
     id_var2 = diag_manager.register_field_array(
         module_name="atm_mod",
         field_name="var_2d",
+        datatype=np.float32,
         axes=axes_2d,
         long_name="Var in a lon/lat domain",
         units="muntin",
         missing_value=-99.99,
-        range=range_2d,
+        range_data=range_2d,
     )
 
     diag_manager.set_field_timestep(
@@ -201,12 +190,9 @@ def test_send_data():
 
     ntime = 24
     for itime in range(ntime):
-        ijk = 0
-        for i in range(NX):
-            for j in range(NY):
-                for k in range(NZ):
-                    var3[ijk] = -1.0 * var3[ijk]
-                    ijk += 1
+
+        var3 = -var3
+
         diag_manager.advance_field_time(diag_field_id=id_var3)
         diag_manager.send_data(
             diag_field_id=id_var3,

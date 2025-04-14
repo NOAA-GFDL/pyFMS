@@ -58,9 +58,7 @@ Array setting methods
 
 def set_ndpointer(arg: npt.NDArray) -> np.ctypeslib.ndpointer:
     c_type = np.ctypeslib.as_ctypes_type(arg.dtype)
-    return np.ctypeslib.ndpointer(
-        dtype=c_type, ndim=arg.ndim, shape=arg.shape, flags="FORTRAN"
-    )
+    return np.ctypeslib.ndpointer(dtype=c_type, ndim=arg.ndim, shape=arg.shape)
 
 
 def setarray_Cbool(
