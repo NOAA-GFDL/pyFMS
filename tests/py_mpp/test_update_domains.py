@@ -103,15 +103,15 @@ def test_update_domains():
     xsize_d = domain.data_domain.xsize.value
     ysize_d = domain.data_domain.ysize.value
 
-    global_data = np.zeros(shape=(xdatasize,ydatasize), dtype=np.float32)
+    global_data = np.zeros(shape=(xdatasize, ydatasize), dtype=np.float32)
     for ix in range(NX):
         for iy in range(NY):
-            global_data[WHALO+ix][SHALO+iy] = (iy+SHALO)*10+(ix+WHALO)
+            global_data[WHALO + ix][SHALO + iy] = (iy + SHALO) * 10 + (ix + WHALO)
 
-    idata = np.zeros(shape=(xsize_d,ysize_d), dtype=np.float32)
+    idata = np.zeros(shape=(xsize_d, ysize_d), dtype=np.float32)
     for ix in range(xsize_c):
         for iy in range(ysize_c):
-            idata[ix+WHALO][iy+SHALO] = global_data[isc+ix][jsc+iy]
+            idata[ix + WHALO][iy + SHALO] = global_data[isc + ix][jsc + iy]
 
     mpp_domains.update_domains(
         field=idata,
@@ -127,10 +127,12 @@ def test_update_domains():
 
     pyfms.pyfms_end()
 
+
 @pytest.mark.remove
 def test_remove_input_nml():
     os.remove("input.nml")
     assert not os.path.isfile("input.nml")
+
 
 if __name__ == "__main__":
     test_update_domains()
