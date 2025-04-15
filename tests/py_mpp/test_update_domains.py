@@ -122,8 +122,10 @@ def test_update_domains():
         nhalo=nhalo,
         )
 
-    if mpp.pe() == 0:
-        assert idata[ix][iy] == answers[0][ix][iy]
+    for ix in range(xsize_d):
+        for iy in range(ysize_d):
+            if mpp.pe() == 0:
+                assert idata[ix][iy] == answers[0][ix][iy]
 
     pyfms.pyfms_end()
 
