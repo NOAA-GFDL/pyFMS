@@ -16,33 +16,33 @@ def test_create_input_nml():
 @pytest.mark.parallel
 def test_update_domains():
 
-    NX = 8
-    NY = 8
-    NPES = 4
-    WHALO = 2
-    EHALO = 2
-    NHALO = 2
-    SHALO = 2
+    nx = 8
+    ny = 8
+    npes = 4
+    whalo = 2
+    ehalo = 2
+    nhalo = 2
+    shalo = 2
     domain_id = 0
 
     pyfms = pyFMS(cFMS_path="./cFMS/libcFMS/.libs/libcFMS.so")
     mpp = pyFMS_mpp(cFMS=pyfms.cFMS)
     mpp_domains = pyFMS_mpp_domains(cFMS=pyfms.cFMS)
 
-    global_indices = [0, (NX - 1), 0, (NY - 1)]
+    global_indices = [0, (nx - 1), 0, (ny - 1)]
     cyclic_global_domain = 2
 
-    layout = mpp_domains.define_layout(global_indices=global_indices, ndivs=NPES)
+    layout = mpp_domains.define_layout(global_indices=global_indices, ndivs=npes)
 
     domain = pyDomain(
         global_indices=global_indices,
         layout=layout,
         mpp_domains_obj=mpp_domains,
         domain_id=domain_id,
-        whalo=WHALO,
-        ehalo=EHALO,
-        shalo=SHALO,
-        nhalo=NHALO,
+        whalo=whalo,
+        ehalo=ehalo,
+        shalo=shalo,
+        nhalo=nhalo,
         xflags=cyclic_global_domain,
         yflags=cyclic_global_domain,
     )
@@ -93,8 +93,8 @@ def test_update_domains():
         dtype=np.float32,
     )
 
-    xdatasize = WHALO + NX + EHALO
-    ydatasize = SHALO + NY + NHALO
+    xdatasize = whalo + nx + ehalo
+    ydatasize = shalo + ny + nhalo
 
     isc = domain.compute_domain.xbegin.value
     jsc = domain.compute_domain.ybegin.value
@@ -104,23 +104,23 @@ def test_update_domains():
     ysize_d = domain.data_domain.ysize.value
 
     global_data = np.zeros(shape=(xdatasize, ydatasize), dtype=np.float32)
-    for ix in range(NX):
-        for iy in range(NY):
-            global_data[WHALO + ix][SHALO + iy] = (iy + SHALO) * 10 + (ix + WHALO)
+    for ix in range(nx):
+        for iy in range(ny):
+            global_data[whalo + ix][shalo + iy] = (iy + shalo) * 10 + (ix + whalo)
 
     idata = np.zeros(shape=(xsize_d, ysize_d), dtype=np.float32)
     for ix in range(xsize_c):
         for iy in range(ysize_c):
-            idata[ix + WHALO][iy + SHALO] = global_data[isc + ix][jsc + iy]
+            idata[ix + whalo][iy + whalo] = global_data[isc + ix][jsc + iy]
 
     mpp_domains.update_domains(
         field=idata,
         domain_id=domain_id,
-        whalo=WHALO,
-        ehalo=EHALO,
-        shalo=SHALO,
-        nhalo=NHALO,
-    )
+        whalo=whalo,
+        ehalo=ehalo,
+        shalo=shalo,
+        nhalo=nhalo,
+        )
 
     if mpp.pe() == 0:
         assert idata[ix][iy] == answers[0][ix][iy]
