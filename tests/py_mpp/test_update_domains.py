@@ -120,7 +120,7 @@ def test_update_domains():
         ehalo=ehalo,
         shalo=shalo,
         nhalo=nhalo,
-        )
+    )
 
     for ix in range(xsize_d):
         for iy in range(ysize_d):
