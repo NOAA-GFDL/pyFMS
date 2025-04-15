@@ -93,45 +93,44 @@ def test_update_domains():
         dtype=np.float32,
     )
 
-    # xdatasize = WHALO + NX + EHALO
-    # ydatasize = SHALO + NY + NHALO
+    xdatasize = WHALO + NX + EHALO
+    ydatasize = SHALO + NY + NHALO
 
-    # isc = domain.compute_domain.xbegin.value
-    # iec = domain.compute_domain.xend.value
-    # jsc = domain.compute_domain.ybegin.value
-    # jec = domain.compute_domain.yend.value
-    # isd = domain.data_domain.xbegin.value
-    # ied = domain.data_domain.xend.value
-    # jsd = domain.data_domain.ybegin.value
-    # jed = domain.data_domain.yend.value
-    # xsize_c = domain.compute_domain.xsize.value
-    # ysize_c = domain.compute_domain.ysize.value
-    # xsize_d = domain.compute_domain.xsize.value
-    # ysize_d = domain.data_domain.ysize.value
+    isc = domain.compute_domain.xbegin.value
+    jsc = domain.compute_domain.ybegin.value
+    xsize_c = domain.compute_domain.xsize.value
+    ysize_c = domain.compute_domain.ysize.value
+    xsize_d = domain.data_domain.xsize.value
+    ysize_d = domain.data_domain.ysize.value
 
-    # global_data = np.zeros(shape=(xdatasize,ydatasize), dtype=np.float32)
-    # for ix in range(NX):
-    #     for iy in range(NY):
-    #         global_data[WHALO+ix][SHALO+iy] = (iy+SHALO)*10+(ix+WHALO)
+    global_data = np.zeros(shape=(xdatasize,ydatasize), dtype=np.float32)
+    for ix in range(NX):
+        for iy in range(NY):
+            global_data[WHALO+ix][SHALO+iy] = (iy+SHALO)*10+(ix+WHALO)
 
-    # idata = np.zeros(shape=(xsize_d,ysize_d), dtype=np.float32, order="F")
-    # for ix in range(xsize_c):
-    #     for iy in range(ysize_c):
-    #         idata[ix+WHALO][iy+SHALO] = global_data[isc+ix][jsc+iy]
+    idata = np.zeros(shape=(xsize_d,ysize_d), dtype=np.float32)
+    for ix in range(xsize_c):
+        for iy in range(ysize_c):
+            idata[ix+WHALO][iy+SHALO] = global_data[isc+ix][jsc+iy]
 
-    # field_shape = np.array([xsize_d, ysize_d], dtype=np.int32)
+    mpp_domains.update_domains(
+        field=idata,
+        domain_id=domain_id,
+        whalo=WHALO,
+        ehalo=EHALO,
+        shalo=SHALO,
+        nhalo=NHALO,
+    )
 
-    # mpp_domains.update_domains(
-    #     field_shape=field_shape,
-    #     field=idata,
-    #     domain_id=domain_id,
-    #     whalo=WHALO,
-    #     ehalo=EHALO,
-    #     shalo=SHALO,
-    #     nhalo=NHALO,
-    # )
+    if mpp.pe() == 0:
+        assert idata[ix][iy] == answers[0][ix][iy]
 
-    # for ix in range(xsize_d):
-    #     for iy in range(ysize_d):
-    #         if mpp.pe() == 0:
-    #             assert idata[ix][iy] == answers[0][ix][iy]
+    pyfms.pyfms_end()
+
+@pytest.mark.remove
+def test_remove_input_nml():
+    os.remove("input.nml")
+    assert not os.path.isfile("input.nml")
+
+if __name__ == "__main__":
+    test_update_domains()

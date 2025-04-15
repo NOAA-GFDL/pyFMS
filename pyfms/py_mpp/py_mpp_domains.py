@@ -913,7 +913,6 @@ class pyFMS_mpp_domains:
 
     def update_domains(
         self,
-        field_shape: NDArray,
         field: NDArray,
         domain_id: int = None,
         flags: int = None,
@@ -990,6 +989,7 @@ class pyFMS_mpp_domains:
                 f"update_domains field dimension {field.ndim}d unsupported"
             )
 
+        field_shape = np.array(field.shape, dtype=np.int32)
         field_shape_p, field_shape_t = setarray_Cint32(field_shape)
         domain_id_c, domain_id_t = setscalar_Cint32(domain_id)
         flags_c, flags_t = setscalar_Cint32(flags)
