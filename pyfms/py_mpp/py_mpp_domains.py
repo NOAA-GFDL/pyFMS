@@ -7,6 +7,8 @@ from numpy.typing import NDArray
 from ..pyfms_utils.data_handling import (
     set_Cchar,
     setarray_Cbool,
+    setarray_Cdouble,
+    setarray_Cfloat,
     setarray_Cint32,
     setscalar_Cbool,
     setscalar_Cint32,
@@ -907,6 +909,128 @@ class pyFMS_mpp_domains:
             tile_count_c,
             whalo_c,
             shalo_c,
+        )
+
+    def update_domains(
+        self,
+        field: NDArray,
+        domain_id: int = None,
+        flags: int = None,
+        complete: bool = None,
+        position: int = None,
+        whalo: int = None,
+        ehalo: int = None,
+        shalo: int = None,
+        nhalo: int = None,
+        name: str = None,
+        tile_count: int = None,
+    ):
+        if name is not None:
+            name = name[:64]
+
+        if field.ndim == 2:
+            if field.dtype == np.float64:
+                _cfms_update_domains = self.cFMS.cFMS_update_domains_double_2d
+                field_p, field_t = setarray_Cdouble(field)
+            elif field.dtype == np.float32:
+                _cfms_update_domains = self.cFMS.cFMS_update_domains_float_2d
+                field_p, field_t = setarray_Cfloat(field)
+            elif field.dtype == np.int32:
+                _cfms_update_domains = self.cFMS.cFMS_update_domains_int_2d
+                field_p, field_t = setarray_Cfloat(field)
+            else:
+                raise RuntimeError(
+                    f"udate_domains input field datatype {field.dtype} unsupported"
+                )
+        elif field.ndim == 3:
+            if field.dtype == np.float64:
+                _cfms_update_domains = self.cFMS.cFMS_update_domains_double_3d
+                field_p, field_t = setarray_Cdouble(field)
+            elif field.dtype == np.float32:
+                _cfms_update_domains = self.cFMS.cFMS_update_domains_float_3d
+                field_p, field_t = setarray_Cfloat(field)
+            elif field.dtype == np.int32:
+                _cfms_update_domains = self.cFMS.cFMS_update_domains_int_3d
+                field_p, field_t = setarray_Cfloat(field)
+            else:
+                raise RuntimeError(
+                    f"udate_domains input field datatype {field.dtype} unsupported"
+                )
+        elif field.ndim == 4:
+            if field.dtype == np.float64:
+                _cfms_update_domains = self.cFMS.cFMS_update_domains_double_4d
+                field_p, field_t = setarray_Cdouble(field)
+            elif field.dtype == np.float32:
+                _cfms_update_domains = self.cFMS.cFMS_update_domains_float_4d
+                field_p, field_t = setarray_Cfloat(field)
+            elif field.dtype == np.int32:
+                _cfms_update_domains = self.cFMS.cFMS_update_domains_int_4d
+                field_p, field_t = setarray_Cfloat(field)
+            else:
+                raise RuntimeError(
+                    f"udate_domains input field datatype {field.dtype} unsupported"
+                )
+        elif field.ndim == 5:
+            if field.dtype == np.float64:
+                _cfms_update_domains = self.cFMS.cFMS_update_domains_double_5d
+                field_p, field_t = setarray_Cdouble(field)
+            elif field.dtype == np.float32:
+                _cfms_update_domains = self.cFMS.cFMS_update_domains_float_5d
+                field_p, field_t = setarray_Cfloat(field)
+            elif field.dtype == np.int32:
+                _cfms_update_domains = self.cFMS.cFMS_update_domains_int_5d
+                field_p, field_t = setarray_Cfloat(field)
+            else:
+                raise RuntimeError(
+                    f"udate_domains input field datatype {field.dtype} unsupported"
+                )
+        else:
+            raise RuntimeError(
+                f"update_domains field dimension {field.ndim}d unsupported"
+            )
+
+        field_shape = np.array(field.shape, dtype=np.int32)
+        field_shape_p, field_shape_t = setarray_Cint32(field_shape)
+        domain_id_c, domain_id_t = setscalar_Cint32(domain_id)
+        flags_c, flags_t = setscalar_Cint32(flags)
+        complete_c, complete_t = setscalar_Cbool(complete)
+        position_c, position_t = setscalar_Cint32(position)
+        whalo_c, whalo_t = setscalar_Cint32(whalo)
+        ehalo_c, ehalo_t = setscalar_Cint32(ehalo)
+        shalo_c, shalo_t = setscalar_Cint32(shalo)
+        nhalo_c, nhalo_t = setscalar_Cint32(nhalo)
+        name_c, name_t = set_Cchar(name)
+        tile_count_c, tile_count_t = setscalar_Cint32(tile_count)
+
+        _cfms_update_domains.argtypes = [
+            field_shape_t,
+            field_t,
+            domain_id_t,
+            flags_t,
+            complete_t,
+            position_t,
+            whalo_t,
+            ehalo_t,
+            shalo_t,
+            nhalo_t,
+            name_t,
+            tile_count_t,
+        ]
+        _cfms_update_domains.restype = None
+
+        _cfms_update_domains(
+            field_shape_p,
+            field_p,
+            domain_id_c,
+            flags_c,
+            complete_c,
+            position_c,
+            whalo_c,
+            ehalo_c,
+            shalo_c,
+            nhalo_c,
+            name_c,
+            tile_count_c,
         )
 
 

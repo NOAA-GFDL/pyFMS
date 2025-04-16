@@ -31,6 +31,11 @@ create_input $test
 run_test "mpirun -n 4 python -m pytest -m 'parallel' tests/py_mpp/test_getset_domains.py"
 remove_input $test
 
+test="tests/py_mpp/test_update_domains.py"
+create_input $test
+run_test "mpirun -n 4 python -m pytest -m 'parallel' tests/py_mpp/test_update_domains.py"
+remove_input $test
+
 run_test "pytest tests/py_horiz_interp"
 
 run_test "pytest tests/py_data_override/test_generate_files.py"
