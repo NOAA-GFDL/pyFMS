@@ -1034,19 +1034,19 @@ class pyFMS_mpp_domains:
         )
 
     def vector_update_domains(
-            self,
-            fieldx: NDArray,
-            fieldy: NDArray,
-            domain_id: int = None,
-            flags: int = None,
-            gridtype: int = None,
-            complete: bool = None,
-            whalo: int = None,
-            ehalo: int = None,
-            shalo: int = None,
-            nhalo: int = None,
-            name: str = None,
-            tile_count: int = None,
+        self,
+        fieldx: NDArray,
+        fieldy: NDArray,
+        domain_id: int = None,
+        flags: int = None,
+        gridtype: int = None,
+        complete: bool = None,
+        whalo: int = None,
+        ehalo: int = None,
+        shalo: int = None,
+        nhalo: int = None,
+        name: str = None,
+        tile_count: int = None,
     ):
         if name is not None:
             name = name[:64]
@@ -1061,9 +1061,9 @@ class pyFMS_mpp_domains:
                 fieldx_p, fieldx_t = setarray_Cdouble(fieldx)
                 fieldy_p, fieldy_t = setarray_Cdouble(fieldy)
             else:
-               raise RuntimeError(
+                raise RuntimeError(
                     f"udate_domains input field datatype {fieldx.dtype} unsupported"
-                ) 
+                )
         elif fieldx.ndim == 3:
             if fieldx.dtype == np.float32:
                 _cfms_v_update_domains = self.cFMS.cFMS_v_update_domains_float_3d
@@ -1074,7 +1074,7 @@ class pyFMS_mpp_domains:
                 fieldx_p, fieldx_t = setarray_Cdouble(fieldx)
                 fieldy_p, fieldy_t = setarray_Cdouble(fieldy)
             else:
-               raise RuntimeError(
+                raise RuntimeError(
                     f"udate_domains input field datatype {fieldx.dtype} unsupported"
                 )
         elif fieldx.ndim == 4:
@@ -1087,7 +1087,7 @@ class pyFMS_mpp_domains:
                 fieldx_p, fieldx_t = setarray_Cdouble(fieldx)
                 fieldy_p, fieldy_t = setarray_Cdouble(fieldy)
             else:
-               raise RuntimeError(
+                raise RuntimeError(
                     f"udate_domains input field datatype {fieldx.dtype} unsupported"
                 )
         elif fieldx.ndim == 5:
@@ -1100,14 +1100,14 @@ class pyFMS_mpp_domains:
                 fieldx_p, fieldx_t = setarray_Cdouble(fieldx)
                 fieldy_p, fieldy_t = setarray_Cdouble(fieldy)
             else:
-               raise RuntimeError(
+                raise RuntimeError(
                     f"udate_domains input field datatype {fieldx.dtype} unsupported"
                 )
         else:
             raise RuntimeError(
                 f"vector_update_domains field dimension {fieldx.ndim}d unsupported"
             )
-        
+
         fieldx_shape = np.array(fieldx.shape, dtype=np.int32)
         fieldy_shape = np.array(fieldy.shape, dtype=np.int32)
         fieldx_shape_p, fieldx_shape_t = setarray_Cint32(fieldx_shape)
@@ -1157,7 +1157,6 @@ class pyFMS_mpp_domains:
             name_c,
             tile_count_c,
         )
-
 
 
 class pyDomain:
