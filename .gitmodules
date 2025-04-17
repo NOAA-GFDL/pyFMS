@@ -1,5 +1,5 @@
 
 [submodule "cFMS"]
 	path = cFMS
-	url = https://github.com/mlee03/cFMS.git
+	url = https://github.com/NOAA-GFDL/cFMS.git
   branch = main
