@@ -65,6 +65,33 @@ def test_vector_update_domains():
     x_data = np.zeros(shape=(xsize_d, ysize_d), dtype=np.float64)
     y_data = np.zeros(shape=(xsize_d, ysize_d), dtype=np.float64)
 
+    for i in range(nx):
+        for j in range(ny):
+            global_data1[i + whalo][j + shalo] = (
+                1 + (i + whalo) * 1e-3 + (j + shalo) * 1e-6
+            )
+            global_data2[i + whalo][j + shalo] = (
+                1 + (i + whalo) * 1e-3 + (j + shalo) * 1e-6
+            )
+
+    for i in range(whalo):
+        for j in range(shalo, ny + shalo):
+            global_data1[i][j] = global_data1[i + nx][j]
+            global_data1[i + nx + whalo][j] = global_data1[i + whalo][j]
+            global_data2[i][j] = global_data2[i + nx][j]
+            global_data2[i + nx + whalo][j] = global_data2[i + whalo][j]
+
+    for i in range(nx + ehalo + 1):
+        for j in range(nhalo):
+            global_data1[i][j + ny + shalo] = -global_data1[nx + ehalo - i][ny + 1 - j]
+            global_data1[nx + whalo + 1][j + ny + shalo] = -global_data1[nx - 1][
+                ny + 1 - j
+            ]
+
+    for i in range(whalo + nx + ehalo):
+        for j in range(nhalo):
+            global_data2[i][j + ny + shalo] = -global_data2[whalo + nx + 1 - i][ny - j]
+
     for i in range(xsize_c):
         for j in range(ysize_c):
             x_data[i + whalo][j + shalo] = global_data1[i + isc][j + jsc]
