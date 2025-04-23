@@ -74,28 +74,44 @@ def test_vector_update_domains():
                 1 + (i + whalo) * 1e-3 + (j + shalo) * 1e-6
             )
 
-    for i in range(whalo):
-        for j in range(shalo, ny + shalo):
-            global_data1[i][j] = global_data1[i + nx][j]
-            global_data1[i + nx + whalo][j] = global_data1[i + whalo][j]
-            global_data2[i][j] = global_data2[i + nx][j]
-            global_data2[i + nx + whalo][j] = global_data2[i + whalo][j]
+    """
+    Cyclic wrapping of global data
+    """
+    global_data1[:whalo, shalo : ny + shalo] = global_data1[
+        nx : nx + whalo, shalo : ny + shalo
+    ]
+    global_data1[whalo + nx : whalo + nx + ehalo, shalo : ny + shalo] = global_data1[
+        whalo : whalo + 2, shalo : ny + shalo
+    ]
+    global_data2[:whalo, shalo : ny + shalo] = global_data2[
+        nx : nx + whalo, shalo : ny + shalo
+    ]
+    global_data2[whalo + nx : whalo + nx + ehalo, shalo : ny + shalo] = global_data2[
+        whalo : whalo + 2, shalo : ny + shalo
+    ]
 
-    for i in range(nx + ehalo + 1):
-        for j in range(nhalo):
-            global_data1[i][j + ny + shalo] = -global_data1[nx + ehalo - i][ny + 1 - j]
-            global_data1[nx + whalo + 1][j + ny + shalo] = -global_data1[nx - 1][
-                ny + 1 - j
-            ]
+    """
+    Folded xy north edge
+    """
+    global_data1[: whalo + nx + 1, shalo + ny : shalo + ny + nhalo] = -global_data1[
+        whalo + nx :: -1, ny + 1 : ny - 1 : -1
+    ]
+    global_data1[whalo + nx + 1, shalo + ny : shalo + ny + nhalo] = -global_data1[
+        nx - 1, ny + 1 : ny - 1 : -1
+    ]
+    global_data2[: whalo + nx + ehalo, shalo + ny : shalo + ny + nhalo] = -global_data2[
+        whalo + nx + 1 :: -1, ny : ny - 2 : -1
+    ]
 
-    for i in range(whalo + nx + ehalo):
-        for j in range(nhalo):
-            global_data2[i][j + ny + shalo] = -global_data2[whalo + nx + 1 - i][ny - j]
-
-    for i in range(xsize_c):
-        for j in range(ysize_c):
-            x_data[i + whalo][j + shalo] = global_data1[i + isc][j + jsc]
-            y_data[i + whalo][j + shalo] = global_data2[i + isc][j + jsc]
+    """
+    Populating compute domains of fields
+    """
+    x_data[whalo : whalo + xsize_c, shalo : shalo + ysize_c] = global_data1[
+        isc : isc + xsize_c, jsc : jsc + ysize_c
+    ]
+    y_data[whalo : whalo + xsize_c, shalo : shalo + ysize_c] = global_data2[
+        isc : isc + xsize_c, jsc : jsc + ysize_c
+    ]
 
     # TODO: change to module variable after refactor
     gridtype = 2 + 2**5 + 2**3
@@ -111,12 +127,13 @@ def test_vector_update_domains():
         nhalo=nhalo,
     )
 
-    for i in range(ehalo + whalo):
-        global_data2[nx - whalo + i][ny + 1] = -global_data2[nx - whalo - 1 - i][ny + 1]
-
-    for i in range(whalo):
-        global_data2[i][ny + 1] = -global_data2[nx + i][ny + 1]
-        global_data2[nx + whalo + i][ny + 1] = -global_data2[whalo + i][ny + 1]
+    global_data2[nx - whalo : nx + whalo, ny + 1] = -global_data2[
+        whalo + 3 : whalo - 1 : -1, ny + 1
+    ]
+    global_data2[:whalo, ny + 1] = -global_data2[nx : nx + whalo, ny + 1]
+    global_data2[whalo + nx : whalo + nx + ehalo, ny + 1] = -global_data2[
+        whalo : whalo + 2, ny + 1
+    ]
 
     pe = mpp.pe()
     ystart = pe * ysize_c
