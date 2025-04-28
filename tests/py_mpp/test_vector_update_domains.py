@@ -3,7 +3,7 @@ import os
 import numpy as np
 import pytest
 
-from pyfms import pyFMS, mpp, mpp_domains
+from pyfms import mpp, mpp_domains, pyFMS
 
 
 @pytest.mark.create
