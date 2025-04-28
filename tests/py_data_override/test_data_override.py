@@ -12,10 +12,9 @@ def test_data_override():
 
     pyfmsobj = pyfms.pyFMS()
     cfms = pyfmsobj.cFMS
-    mpp = pyfms.pyFMS_mpp(cFMS=cfms)
-    mpp_domains = pyfms.pyFMS_mpp_domains(cFMS=cfms)
+    mpp_obj = pyfms.mpp(cFMS=cfms)
+    mpp_domains_obj = pyfms.mpp_domains(cFMS=cfms)
 
-    ocn_domain_id = 0
     nx = 360
     ny = 180
     nz = 5
@@ -27,22 +26,23 @@ def test_data_override():
     global_indices = np.array([0, nx - 1, 0, ny - 1], dtype=np.int32, order="C")
     layout = np.array([2, 3], dtype=np.int32, order="C")
 
-    mpp_domains.define_domains(
+    domain = mpp_domains_obj.define_domains(
         global_indices=global_indices,
         layout=layout,
         ehalo=ehalo,
         whalo=whalo,
         shalo=shalo,
         nhalo=nhalo,
-        domain_id=ocn_domain_id,
     )
 
-    compute_dict = mpp_domains.get_compute_domain2(domain_id=ocn_domain_id)
+    compute_dict = mpp_domains_obj.get_compute_domain(domain_id=domain.domain_id)
+
     xsize = compute_dict["xsize"]
     ysize = compute_dict["ysize"]
 
     data_override = pyfms.pyDataOverride(cfms)
-    data_override.init(ocn_domain_id=ocn_domain_id)
+    data_override.init(ocn_domain_id=domain.domain_id)
+
     data_override.set_time(year=1, month=1, day=3, hour=0, minute=0, second=0, tick=0)
 
     data = data_override.override_scalar(

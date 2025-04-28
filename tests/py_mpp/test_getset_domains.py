@@ -1,9 +1,8 @@
 import os
 
-import numpy as np
 import pytest
 
-from pyfms import pyDomain, pyFMS, pyFMS_mpp, pyFMS_mpp_domains
+import pyfms
 
 
 @pytest.mark.create
@@ -16,6 +15,7 @@ def test_create_input_nml():
 @pytest.mark.parallel
 def test_getset_domains():
     """
+    copied from cFMS
     global domain
           *     *     *     *
           *     *     *     *
@@ -26,8 +26,6 @@ def test_getset_domains():
           *     *     *     *
           *     *     *     *
     """
-    domain_id = 0
-    ndiv = 4
     global_indices = [0, 3, 0, 3]
     whalo = 2
     ehalo = 2
@@ -35,19 +33,17 @@ def test_getset_domains():
     nhalo = 2
     name = "test domain"
 
-    pyfms = pyFMS(cFMS_path="./cFMS/libcFMS/.libs/libcFMS.so")
-    mpp = pyFMS_mpp(cFMS=pyfms.cFMS)
-    mpp_domains = pyFMS_mpp_domains(cFMS=pyfms.cFMS)
+    pyfms_obj = pyfms.pyFMS(cFMS_path="./cFMS/libcFMS/.libs/libcFMS.so")
+    mpp_obj = pyfms.mpp(cFMS=pyfms_obj.cFMS)
+    mpp_domains_obj = pyfms.mpp_domains(cFMS=pyfms_obj.cFMS)
 
     # set domain
 
-    layout = mpp_domains.define_layout(global_indices=global_indices, ndivs=ndiv)
+    layout = mpp_domains_obj.define_layout(global_indices=global_indices, ndivs=4)
 
-    domain = pyDomain(
+    domain = mpp_domains_obj.define_domains(
         global_indices=global_indices,
         layout=layout,
-        mpp_domains_obj=mpp_domains,
-        domain_id=domain_id,
         name=name,
         whalo=whalo,
         ehalo=ehalo,
@@ -55,10 +51,9 @@ def test_getset_domains():
         nhalo=nhalo,
     )
 
-    if not mpp_domains.domain_is_initialized(domain_id):
-        mpp.pyfms_error(1, "error in setting domain")
+    assert mpp_domains_obj.domain_is_initialized(domain.domain_id)
 
-    mpp.set_current_pelist()
+    mpp_obj.set_current_pelist()
 
     """
     flipping the domain:
@@ -68,10 +63,10 @@ def test_getset_domains():
     pe 3: isc=4, iec=5, jsc=4, jec=5 --> pe 0
     """
 
-    isc = np.array([4, 2, 4, 2], dtype=np.int32, order="C")
-    iec = np.array([5, 3, 5, 3], dtype=np.int32, order="C")
-    jsc = np.array([4, 4, 2, 2], dtype=np.int32, order="C")
-    jec = np.array([5, 5, 3, 3], dtype=np.int32, order="C")
+    isc = [4, 2, 4, 2]
+    iec = [5, 3, 5, 3]
+    jsc = [4, 4, 2, 2]
+    jec = [5, 5, 3, 3]
 
     """
     pe 0: isd=0, ied=5, jsd=0, jed=5 --> pe 3
@@ -80,77 +75,76 @@ def test_getset_domains():
     pe 3: isd=2, ied=7, jsd=2, jed=7 --> pe 0
     """
 
-    isd = np.array([2, 0, 2, 0], dtype=np.int32, order="C")
-    ied = np.array([7, 5, 7, 5], dtype=np.int32, order="C")
-    jsd = np.array([2, 2, 0, 0], dtype=np.int32, order="C")
-    jed = np.array([7, 7, 5, 5], dtype=np.int32, order="C")
+    isd = [2, 0, 2, 0]
+    ied = [7, 5, 7, 5]
+    jsd = [2, 2, 0, 0]
+    jed = [7, 7, 5, 5]
 
-    pe = mpp.pe()
+    pe = mpp_obj.pe()
     tile_count = 0
     x_is_global = False
     y_is_global = False
 
     # set compute and data domains
 
-    xsize = 2
-    ysize = 2
-
-    domain.set_compute_domain(
-        domain_id=domain_id,
+    mpp_domains_obj.set_compute_domain(
+        domain_id=domain.domain_id,
         xbegin=isc[pe],
         xend=iec[pe],
         ybegin=jsc[pe],
         yend=jec[pe],
-        xsize=xsize,
-        ysize=ysize,
+        xsize=2,
+        ysize=2,
         x_is_global=x_is_global,
         y_is_global=y_is_global,
-        tile_count=tile_count,
         whalo=whalo,
         shalo=shalo,
     )
 
-    xsize = 6
-    ysize = 6
-
-    domain.set_data_domain(
-        domain_id=domain_id,
+    mpp_domains_obj.set_data_domain(
+        domain_id=domain.domain_id,
         xbegin=isd[pe],
         xend=ied[pe],
         ybegin=jsd[pe],
         yend=jed[pe],
-        xsize=xsize,
-        ysize=ysize,
+        xsize=6,
+        ysize=6,
         x_is_global=x_is_global,
         y_is_global=y_is_global,
-        tile_count=tile_count,
         whalo=whalo,
         shalo=shalo,
     )
 
+    compute = mpp_domains_obj.get_compute_domain(
+        domain_id=domain.domain_id, whalo=whalo, shalo=shalo
+    )
+    data = mpp_domains_obj.get_data_domain(
+        domain_id=domain.domain_id, whalo=whalo, shalo=shalo
+    )
+
     # get domain
 
-    assert domain.compute_domain.xbegin.value == isc[pe]
-    assert domain.compute_domain.xend.value == iec[pe]
-    assert domain.compute_domain.ybegin.value == jsc[pe]
-    assert domain.compute_domain.yend.value == jec[pe]
-    assert domain.compute_domain.xsize.value == 2
-    assert domain.compute_domain.ysize.value == 2
-    assert domain.compute_domain.xmax_size.value == 2
-    assert domain.compute_domain.ymax_size.value == 2
-    assert domain.compute_domain.x_is_global.value is False
-    assert domain.compute_domain.y_is_global.value is False
+    assert compute["xbegin"] == isc[pe]
+    assert compute["xend"] == iec[pe]
+    assert compute["ybegin"] == jsc[pe]
+    assert compute["yend"] == jec[pe]
+    assert compute["xsize"] == 2
+    assert compute["ysize"] == 2
+    assert compute["xmax_size"] == 2
+    assert compute["ymax_size"] == 2
+    assert compute["x_is_global"] is False
+    assert compute["y_is_global"] is False
 
-    assert domain.data_domain.xbegin.value == isd[pe]
-    assert domain.data_domain.xend.value == ied[pe]
-    assert domain.data_domain.ybegin.value == jsd[pe]
-    assert domain.data_domain.yend.value == jed[pe]
-    assert domain.data_domain.xsize.value == 6
-    assert domain.data_domain.ysize.value == 6
-    assert domain.data_domain.xmax_size.value == 6
-    assert domain.data_domain.ymax_size.value == 6
+    assert data["xbegin"] == isd[pe]
+    assert data["xend"] == ied[pe]
+    assert data["ybegin"] == jsd[pe]
+    assert data["yend"] == jed[pe]
+    assert data["xsize"] == 6
+    assert data["ysize"] == 6
+    assert data["xmax_size"] == 6
+    assert data["ymax_size"] == 6
 
-    pyfms.pyfms_end()
+    pyfms_obj.pyfms_end()
 
 
 @pytest.mark.remove

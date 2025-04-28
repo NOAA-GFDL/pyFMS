@@ -107,19 +107,3 @@ class pyFMS:
             nnest_domain_c,
             calendar_type_c,
         )
-
-    """
-    Subroutine: pyfms_set_pelist_npes
-
-    This method is used to set a npes variable of the cFMS module it wraps
-    """
-
-    def set_pelist_npes(self, npes_in: int):
-        _cfms_set_npes = self.cFMS.cFMS_set_pelist_npes
-
-        npes_in_c, npes_in_t = setscalar_Cint32(npes_in)
-
-        _cfms_set_npes.argtypes = [npes_in_t]
-        _cfms_set_npes.restype = None
-
-        _cfms_set_npes(npes_in_c)

@@ -3,7 +3,7 @@ import os
 import numpy as np
 import pytest
 
-from pyfms import pyDomain, pyFMS, pyFMS_mpp, pyFMS_mpp_domains
+from pyfms import mpp, mpp_domains, pyFMS
 
 
 @pytest.mark.create
@@ -25,95 +25,98 @@ def test_update_domains():
     shalo = 2
     domain_id = 0
 
-    pyfms = pyFMS(cFMS_path="./cFMS/libcFMS/.libs/libcFMS.so")
-    mpp = pyFMS_mpp(cFMS=pyfms.cFMS)
-    mpp_domains = pyFMS_mpp_domains(cFMS=pyfms.cFMS)
+    pyfms_obj = pyFMS(cFMS_path="./cFMS/libcFMS/.libs/libcFMS.so")
+    mpp_obj = mpp(cFMS=pyfms_obj.cFMS)
+    mpp_domains_obj = mpp_domains(cFMS=pyfms_obj.cFMS)
 
     global_indices = [0, (nx - 1), 0, (ny - 1)]
-    cyclic_global_domain = 2
 
-    layout = mpp_domains.define_layout(global_indices=global_indices, ndivs=npes)
+    layout = mpp_domains_obj.define_layout(global_indices=global_indices, ndivs=npes)
 
-    domain = pyDomain(
+    domain = mpp_domains_obj.define_domains(
         global_indices=global_indices,
         layout=layout,
-        mpp_domains_obj=mpp_domains,
-        domain_id=domain_id,
         whalo=whalo,
         ehalo=ehalo,
         shalo=shalo,
         nhalo=nhalo,
-        xflags=cyclic_global_domain,
-        yflags=cyclic_global_domain,
+        xflags=mpp_domains_obj.CYCLIC_GLOBAL_DOMAIN,
+        yflags=mpp_domains_obj.CYCLIC_GLOBAL_DOMAIN,
     )
 
     answers = np.array(
         [
             [
-                [88, 98, 28, 38, 48, 58, 68, 78],
-                [89, 99, 29, 39, 49, 59, 69, 79],
-                [82, 92, 22, 32, 42, 52, 62, 72],
-                [83, 93, 23, 33, 43, 53, 63, 73],
-                [84, 94, 24, 34, 44, 54, 64, 74],
-                [85, 95, 25, 35, 45, 55, 65, 75],
-                [86, 96, 26, 36, 46, 56, 66, 76],
-                [87, 97, 27, 37, 47, 57, 67, 77],
+                [66, 76, 6, 16, 26, 36, 46, 56],
+                [67, 77, 7, 17, 27, 37, 47, 57],
+                [60, 70, 0, 10, 20, 30, 40, 50],
+                [61, 71, 1, 11, 21, 31, 41, 51],
+                [62, 72, 2, 12, 22, 32, 42, 52],
+                [63, 73, 3, 13, 23, 33, 43, 53],
+                [64, 74, 4, 14, 24, 34, 44, 54],
+                [65, 75, 5, 15, 25, 35, 45, 55],
             ],
             [
-                [84, 94, 24, 34, 44, 54, 64, 74],
-                [85, 95, 25, 35, 45, 55, 65, 75],
-                [86, 96, 26, 36, 46, 56, 66, 76],
-                [87, 97, 27, 37, 47, 57, 67, 77],
-                [88, 98, 28, 38, 48, 58, 68, 78],
-                [89, 99, 29, 39, 49, 59, 69, 79],
-                [82, 92, 22, 32, 42, 52, 62, 72],
-                [83, 93, 23, 33, 43, 53, 63, 73],
+                [62, 72, 2, 12, 22, 32, 42, 52],
+                [63, 73, 3, 13, 23, 33, 43, 53],
+                [64, 74, 4, 14, 24, 34, 44, 54],
+                [65, 75, 5, 15, 25, 35, 45, 55],
+                [66, 76, 6, 16, 26, 36, 46, 56],
+                [67, 77, 7, 17, 27, 37, 47, 57],
+                [60, 70, 0, 10, 20, 30, 40, 50],
+                [61, 71, 1, 11, 21, 31, 41, 51],
             ],
             [
-                [48, 58, 68, 78, 88, 98, 28, 38],
-                [49, 59, 69, 79, 89, 99, 29, 39],
-                [42, 52, 62, 72, 82, 92, 22, 32],
-                [43, 53, 63, 73, 83, 93, 23, 33],
-                [44, 54, 64, 74, 84, 94, 24, 34],
-                [45, 55, 65, 75, 85, 95, 25, 35],
-                [46, 56, 66, 76, 86, 96, 26, 36],
-                [47, 57, 67, 77, 87, 97, 27, 37],
+                [26, 36, 46, 56, 66, 76, 6, 16],
+                [27, 37, 47, 57, 67, 77, 7, 17],
+                [20, 30, 40, 50, 60, 70, 0, 10],
+                [21, 31, 41, 51, 61, 71, 1, 11],
+                [22, 32, 42, 52, 62, 72, 2, 12],
+                [23, 33, 43, 53, 63, 73, 3, 13],
+                [24, 34, 44, 54, 64, 74, 4, 14],
+                [25, 35, 45, 55, 65, 75, 5, 15],
             ],
             [
-                [44, 54, 64, 74, 84, 94, 24, 34],
-                [45, 55, 65, 75, 85, 95, 25, 35],
-                [46, 56, 66, 76, 86, 96, 26, 36],
-                [47, 57, 67, 77, 87, 97, 27, 37],
-                [48, 58, 68, 78, 88, 98, 28, 38],
-                [49, 59, 69, 79, 89, 99, 29, 39],
-                [42, 52, 62, 72, 82, 92, 22, 32],
-                [43, 53, 63, 73, 83, 93, 23, 33],
+                [22, 32, 42, 52, 62, 72, 2, 12],
+                [23, 33, 43, 53, 63, 73, 3, 13],
+                [24, 34, 44, 54, 64, 74, 4, 14],
+                [25, 35, 45, 55, 65, 75, 5, 15],
+                [26, 36, 46, 56, 66, 76, 6, 16],
+                [27, 37, 47, 57, 67, 77, 7, 17],
+                [20, 30, 40, 50, 60, 70, 0, 10],
+                [21, 31, 41, 51, 61, 71, 1, 11],
             ],
         ],
         dtype=np.float32,
     )
 
-    xdatasize = whalo + nx + ehalo
-    ydatasize = shalo + ny + nhalo
+    compute = mpp_domains_obj.get_compute_domain(
+        domain_id=domain.domain_id, whalo=whalo, shalo=shalo
+    )
+    data = mpp_domains_obj.get_data_domain(
+        domain_id=domain.domain_id, whalo=whalo, shalo=shalo
+    )
 
-    isc = domain.compute_domain.xbegin.value
-    jsc = domain.compute_domain.ybegin.value
-    xsize_c = domain.compute_domain.xsize.value
-    ysize_c = domain.compute_domain.ysize.value
-    xsize_d = domain.data_domain.xsize.value
-    ysize_d = domain.data_domain.ysize.value
+    isc = compute["xbegin"]
+    jsc = compute["ybegin"]
+    xsize_c = compute["xsize"]
+    ysize_c = compute["ysize"]
+    xsize_d = data["xsize"]
+    ysize_d = data["ysize"]
 
-    global_data = np.zeros(shape=(xdatasize, ydatasize), dtype=np.float32)
+    global_data = np.zeros(
+        shape=(nx + ehalo + whalo, ny + ehalo + whalo), dtype=np.float32
+    )
     for ix in range(nx):
         for iy in range(ny):
-            global_data[whalo + ix][shalo + iy] = (iy + shalo) * 10 + (ix + whalo)
+            global_data[whalo + ix][shalo + iy] = iy * 10 + ix
 
     idata = np.zeros(shape=(xsize_d, ysize_d), dtype=np.float32)
-    for ix in range(xsize_c):
-        for iy in range(ysize_c):
-            idata[ix + whalo][iy + whalo] = global_data[isc + ix][jsc + iy]
+    for i in range(xsize_c):
+        for j in range(ysize_c):
+            idata[whalo + i][shalo + j] = global_data[isc + i][jsc + j]
 
-    mpp_domains.update_domains(
+    mpp_domains_obj.update_domains(
         field=idata,
         domain_id=domain_id,
         whalo=whalo,
@@ -122,9 +125,9 @@ def test_update_domains():
         nhalo=nhalo,
     )
 
-    assert np.array_equal(idata, answers[mpp.pe()])
+    assert np.array_equal(idata, answers[mpp_obj.pe()])
 
-    pyfms.pyfms_end()
+    pyfms_obj.pyfms_end()
 
 
 @pytest.mark.remove

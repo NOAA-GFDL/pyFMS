@@ -1,6 +1,6 @@
 import numpy as np
 
-from pyfms import DiagManager, pyFMS, pyFMS_mpp_domains
+import pyfms
 
 
 def test_send_data():
@@ -29,19 +29,18 @@ def test_send_data():
 
     cfms_path = "./cFMS/libcFMS/.libs/libcFMS.so"
 
-    pyfms = pyFMS(cFMS_path=cfms_path, calendar_type=calendar_type)
-    mpp_domains = pyFMS_mpp_domains(cFMS=pyfms.cFMS)
+    pyfms_obj = pyfms.pyFMS(cFMS_path=cfms_path, calendar_type=calendar_type)
+    mpp_domains_obj = pyfms.mpp_domains(cFMS=pyfms_obj.cFMS)
 
     global_indices = [0, (NX - 1), 0, (NY - 1)]
     layout = [1, 1]
     io_layout = [1, 1]
 
-    mpp_domains.define_domains(
-        domain_id=domain_id,
+    domain = mpp_domains_obj.define_domains(
         global_indices=global_indices,
         layout=layout,
     )
-    mpp_domains.define_io_domain(
+    mpp_domains_obj.define_io_domain(
         domain_id=domain_id,
         io_layout=io_layout,
     )
@@ -50,10 +49,8 @@ def test_send_data():
     diag manager init
     """
 
-    diag_manager = DiagManager(clibFMS=pyfms.cFMS)
+    diag_manager = pyfms.DiagManager(clibFMS=pyfms_obj.cFMS)
     diag_manager.init(diag_model_subset=diag_manager.DIAG_ALL)
-
-    mpp_domains.set_current_domain(domain_id=domain_id)
 
     """
     diag axis init x
@@ -65,6 +62,7 @@ def test_send_data():
         axis_data=x,
         units="point_E",
         cart_name="x",
+        domain_id=domain.domain_id,
         long_name="point_E",
         set_name="atm",
     )
@@ -79,6 +77,7 @@ def test_send_data():
         axis_data=y,
         units="point_N",
         cart_name="y",
+        domain_id=domain.domain_id,
         long_name="point_N",
         set_name="atm",
     )
@@ -213,7 +212,7 @@ def test_send_data():
 
     diag_manager.end()
 
-    pyfms.pyfms_end()
+    pyfms_obj.pyfms_end()
 
 
 if __name__ == "__main__":

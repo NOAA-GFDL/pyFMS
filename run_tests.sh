@@ -12,7 +12,7 @@ function remove_input() {
 
 function run_test() {
     eval $1
-    if [ $? -ne 0 ] ; then exit 1 ; fi                                                                                                 }
+    if [ $? -ne 0 ] ; then exit 1 ; fi                                                                                           }
 
 run_test "pytest tests/test_build.py"
 
@@ -49,6 +49,8 @@ remove_input "tests/py_data_override/test_data_override.py"
 
 run_test "pytest tests/py_diag_manager/test_generate_files.py"
 run_test "mpirun -n 1 python -m pytest tests/py_diag_manager/test_diag_manager.py"
-remove_input "tests/py_diag_manager/test_diag_manager.py
+remove_input "tests/py_diag_manager/test_diag_manager.py"
+
+pytest tests/pyfms_utils/test_constants.py
 
 rm -rf INPUT *logfile* *warnfile*

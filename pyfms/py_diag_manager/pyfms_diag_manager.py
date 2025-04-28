@@ -215,6 +215,7 @@ class DiagManager:
         axis_data: NDArray,
         units: str,
         cart_name: str,
+        domain_id: int = None,
         long_name: str = None,
         set_name: str = None,
         direction: int = None,
@@ -233,6 +234,7 @@ class DiagManager:
         naxis_data_c, naxis_data_t = setscalar_Cint32(axis_data.size)
         units_c, units_t = set_Cchar(units)
         cart_name_c, cart_name_t = set_Cchar(cart_name)
+        domain_id_c, domain_id_t = setscalar_Cint32(domain_id)
         long_name_c, long_name_t = set_Cchar(long_name)
         set_name_c, set_name_t = set_Cchar(set_name)
         direction_c, direction_t = setscalar_Cint32(direction)
@@ -258,6 +260,7 @@ class DiagManager:
             axis_data_t,
             units_t,
             cart_name_t,
+            domain_id_t,
             long_name_t,
             direction_t,
             set_name_t,
@@ -276,6 +279,7 @@ class DiagManager:
             axis_data_p,
             units_c,
             cart_name_c,
+            domain_id_c,
             long_name_c,
             direction_c,
             set_name_c,
