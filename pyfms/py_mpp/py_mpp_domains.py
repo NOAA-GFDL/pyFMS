@@ -13,6 +13,36 @@ from ..pyfms_utils.data_handling import (
     setscalar_Cint32,
 )
 
+
+class pyDomain:
+
+    def __init__(
+        self,
+        domain_id: int = None,
+        isc: int = None,
+        jsc: int = None,
+        iec: int = None,
+        jec: int = None,
+        isd: int = None,
+        jsd: int = None,
+        ied: int = None,
+        jed: int = None,
+        tile: int = None,
+        layout: list[int] = None,
+    ):
+        self.domain_id = domain_id
+        self.isc = isc
+        self.jsc = jsc
+        self.iec = iec
+        self.jec = jec
+        self.isd = isd
+        self.jsd = jsd
+        self.ied = ied
+        self.jed = jed
+        self.tile = tile
+        self.layout = layout
+
+
 class mpp_domains:
 
     GLOBAL_DATA_DOMAIN: int = None
@@ -23,6 +53,7 @@ class mpp_domains:
     FOLD_SOUTH_EDGE: int = None
     FOLD_WEST_EDGE: int = None
     FOLD_EAST_EDGE: int = None
+    FOLD_NORTH_EDGE: int = None
     CYCLIC_GLOBAL_DOMAIN: int = None
     NUPDATE: int = None
     EUPDATE: int = None
@@ -49,6 +80,7 @@ class mpp_domains:
         self.FOLD_SOUTH_EDGE = ctypes.c_int.in_dll(self.cFMS, "FOLD_SOUTH_EDGE").value
         self.FOLD_WEST_EDGE = ctypes.c_int.in_dll(self.cFMS, "FOLD_WEST_EDGE").value
         self.FOLD_EAST_EDGE = ctypes.c_int.in_dll(self.cFMS, "FOLD_EAST_EDGE").value
+        self.FOLD_NORTH_EDGE = ctypes.c_int.in_dll(self.cFMS, "FOLD_NORTH_EDGE").value
         self.CYCLIC_GLOBAL_DOMAIN = ctypes.c_int.in_dll(
             self.cFMS, "CYCLIC_GLOBAL_DOMAIN"
         ).value
@@ -1036,6 +1068,131 @@ class mpp_domains:
             flags_c,
             complete_c,
             position_c,
+            whalo_c,
+            ehalo_c,
+            shalo_c,
+            nhalo_c,
+            name_c,
+            tile_count_c,
+        )
+
+    def vector_update_domains(
+        self,
+        fieldx: NDArray,
+        fieldy: NDArray,
+        domain_id: int = None,
+        flags: int = None,
+        gridtype: int = None,
+        complete: bool = None,
+        whalo: int = None,
+        ehalo: int = None,
+        shalo: int = None,
+        nhalo: int = None,
+        name: str = None,
+        tile_count: int = None,
+    ):
+        if name is not None:
+            name = name[:64]
+
+        if fieldx.ndim == 2:
+            if fieldx.dtype == np.float32:
+                _cfms_v_update_domains = self.cFMS.cFMS_v_update_domains_float_2d
+                fieldx_p, fieldx_t = setarray_Cfloat(fieldx)
+                fieldy_p, fieldy_t = setarray_Cfloat(fieldy)
+            elif fieldx.dtype == np.float64:
+                _cfms_v_update_domains = self.cFMS.cFMS_v_update_domains_double_2d
+                fieldx_p, fieldx_t = setarray_Cdouble(fieldx)
+                fieldy_p, fieldy_t = setarray_Cdouble(fieldy)
+            else:
+                raise RuntimeError(
+                    f"udate_domains input field datatype {fieldx.dtype} unsupported"
+                )
+        elif fieldx.ndim == 3:
+            if fieldx.dtype == np.float32:
+                _cfms_v_update_domains = self.cFMS.cFMS_v_update_domains_float_3d
+                fieldx_p, fieldx_t = setarray_Cfloat(fieldx)
+                fieldy_p, fieldy_t = setarray_Cfloat(fieldy)
+            elif fieldx.dtype == np.float64:
+                _cfms_v_update_domains = self.cFMS.cFMS_v_update_domains_double_3d
+                fieldx_p, fieldx_t = setarray_Cdouble(fieldx)
+                fieldy_p, fieldy_t = setarray_Cdouble(fieldy)
+            else:
+                raise RuntimeError(
+                    f"udate_domains input field datatype {fieldx.dtype} unsupported"
+                )
+        elif fieldx.ndim == 4:
+            if fieldx.dtype == np.float32:
+                _cfms_v_update_domains = self.cFMS.cFMS_v_update_domains_float_4d
+                fieldx_p, fieldx_t = setarray_Cfloat(fieldx)
+                fieldy_p, fieldy_t = setarray_Cfloat(fieldy)
+            elif fieldx.dtype == np.float64:
+                _cfms_v_update_domains = self.cFMS.cFMS_v_update_domains_double_4d
+                fieldx_p, fieldx_t = setarray_Cdouble(fieldx)
+                fieldy_p, fieldy_t = setarray_Cdouble(fieldy)
+            else:
+                raise RuntimeError(
+                    f"udate_domains input field datatype {fieldx.dtype} unsupported"
+                )
+        elif fieldx.ndim == 5:
+            if fieldx.dtype == np.float32:
+                _cfms_v_update_domains = self.cFMS.cFMS_v_update_domains_float_5d
+                fieldx_p, fieldx_t = setarray_Cfloat(fieldx)
+                fieldy_p, fieldy_t = setarray_Cfloat(fieldy)
+            elif fieldx.dtype == np.float64:
+                _cfms_v_update_domains = self.cFMS.cFMS_v_update_domains_double_5d
+                fieldx_p, fieldx_t = setarray_Cdouble(fieldx)
+                fieldy_p, fieldy_t = setarray_Cdouble(fieldy)
+            else:
+                raise RuntimeError(
+                    f"udate_domains input field datatype {fieldx.dtype} unsupported"
+                )
+        else:
+            raise RuntimeError(
+                f"vector_update_domains field dimension {fieldx.ndim}d unsupported"
+            )
+
+        fieldx_shape = np.array(fieldx.shape, dtype=np.int32)
+        fieldy_shape = np.array(fieldy.shape, dtype=np.int32)
+        fieldx_shape_p, fieldx_shape_t = setarray_Cint32(fieldx_shape)
+        fieldy_shape_p, fieldy_shape_t = setarray_Cint32(fieldy_shape)
+        domain_id_c, domain_id_t = setscalar_Cint32(domain_id)
+        flags_c, flags_t = setscalar_Cint32(flags)
+        gridtype_c, gridtype_t = setscalar_Cint32(gridtype)
+        complete_c, complete_t = setscalar_Cbool(complete)
+        whalo_c, whalo_t = setscalar_Cint32(whalo)
+        ehalo_c, ehalo_t = setscalar_Cint32(ehalo)
+        shalo_c, shalo_t = setscalar_Cint32(shalo)
+        nhalo_c, nhalo_t = setscalar_Cint32(nhalo)
+        name_c, name_t = set_Cchar(name)
+        tile_count_c, tile_count_t = setscalar_Cint32(tile_count)
+
+        _cfms_v_update_domains.argtypes = [
+            fieldx_shape_t,
+            fieldx_t,
+            fieldy_shape_t,
+            fieldy_t,
+            domain_id_t,
+            flags_t,
+            gridtype_t,
+            complete_t,
+            whalo_t,
+            ehalo_t,
+            shalo_t,
+            nhalo_t,
+            name_t,
+            tile_count_t,
+        ]
+        _cfms_v_update_domains.restype = None
+
+        _cfms_v_update_domains(
+            fieldx_shape_p,
+            fieldx_p,
+            fieldy_shape_p,
+            fieldy_p,
+            domain_id_c,
+            flags_c,
+            gridtype_c,
+            complete_c,
             whalo_c,
             ehalo_c,
             shalo_c,

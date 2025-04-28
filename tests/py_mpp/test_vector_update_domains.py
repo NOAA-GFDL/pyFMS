@@ -3,7 +3,7 @@ import os
 import numpy as np
 import pytest
 
-from pyfms import pyDomain, pyFMS, pyFMS_mpp, pyFMS_mpp_domains
+from pyfms import pyFMS, mpp, mpp_domains
 
 
 @pytest.mark.create
@@ -26,22 +26,19 @@ def test_vector_update_domains():
     domain_id = 0
 
     # TODO: Change after refactor
-    pyfms = pyFMS(cFMS_path="./cFMS/libcFMS/.libs/libcFMS.so")
-    mpp = pyFMS_mpp(cFMS=pyfms.cFMS)
-    mpp_domains = pyFMS_mpp_domains(cFMS=pyfms.cFMS)
+    pyfms_obj = pyFMS(cFMS_path="./cFMS/libcFMS/.libs/libcFMS.so")
+    mpp_obj = mpp(cFMS=pyfms_obj.cFMS)
+    mpp_domains_obj = mpp_domains(cFMS=pyfms_obj.cFMS)
 
     global_indices = [0, (nx - 1), 0, (ny - 1)]
-    # TODO: Use module level variable after refactor
-    cyclic_global_domain = 2
-    fold_north_edge = 2**5
+    cyclic_global_domain = mpp_domains_obj.CYCLIC_GLOBAL_DOMAIN
+    fold_north_edge = mpp_domains_obj.FOLD_NORTH_EDGE
 
-    layout = mpp_domains.define_layout(global_indices=global_indices, ndivs=npes)
+    layout = mpp_domains_obj.define_layout(global_indices=global_indices, ndivs=npes)
 
-    domain = pyDomain(
+    domain = mpp_domains_obj.define_domains(
         global_indices=global_indices,
         layout=layout,
-        mpp_domains_obj=mpp_domains,
-        domain_id=domain_id,
         whalo=whalo,
         ehalo=ehalo,
         shalo=shalo,
@@ -50,14 +47,26 @@ def test_vector_update_domains():
         yflags=fold_north_edge,
     )
 
+    compute_domain_dict = mpp_domains_obj.get_compute_domain(
+        domain_id=domain.domain_id,
+        whalo=whalo,
+        shalo=shalo,
+    )
+
+    data_domain_dict = mpp_domains_obj.get_data_domain(
+        domain_id=domain.domain_id,
+        whalo=whalo,
+        shalo=shalo,
+    )
+
     xdatasize = whalo + nx + ehalo
     ydatasize = shalo + ny + nhalo
-    isc = domain.compute_domain.xbegin.value
-    jsc = domain.compute_domain.ybegin.value
-    xsize_c = domain.compute_domain.xsize.value
-    ysize_c = domain.compute_domain.ysize.value
-    xsize_d = domain.data_domain.xsize.value
-    ysize_d = domain.data_domain.ysize.value
+    isc = compute_domain_dict["xbegin"]
+    jsc = compute_domain_dict["ybegin"]
+    xsize_c = compute_domain_dict["xsize"]
+    ysize_c = compute_domain_dict["ysize"]
+    xsize_d = data_domain_dict["xsize"]
+    ysize_d = data_domain_dict["ysize"]
 
     global_data1 = np.zeros(shape=(xdatasize, ydatasize), dtype=np.float64)
     global_data2 = np.zeros(shape=(xdatasize, ydatasize), dtype=np.float64)
@@ -113,10 +122,9 @@ def test_vector_update_domains():
         isc : isc + xsize_c, jsc : jsc + ysize_c
     ]
 
-    # TODO: change to module variable after refactor
-    gridtype = 2 + 2**5 + 2**3
+    gridtype = mpp_domains_obj.CGRID_NE
 
-    mpp_domains.vector_update_domains(
+    mpp_domains_obj.vector_update_domains(
         fieldx=x_data,
         fieldy=y_data,
         domain_id=domain_id,
@@ -135,13 +143,13 @@ def test_vector_update_domains():
         whalo : whalo + 2, ny + 1
     ]
 
-    pe = mpp.pe()
+    pe = mpp_obj.pe()
     ystart = pe * ysize_c
     yend = ystart + ysize_d
     assert np.array_equal(x_data, global_data1[0:xsize_d, ystart:yend])
     assert np.array_equal(y_data, global_data2[0:xsize_d, ystart:yend])
 
-    pyfms.pyfms_end()
+    pyfms_obj.pyfms_end()
 
 
 @pytest.mark.remove
