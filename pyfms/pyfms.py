@@ -22,7 +22,7 @@ class fms:
 
     @classmethod
     def setlib(cls, libpath: str, lib: type[ctypes.CDLL]):
-        cls.__lib_path = libpath
+        cls.__libpath = libpath
         cls.__lib = lib
 
     @classmethod
