@@ -2,7 +2,7 @@ import os
 
 import pytest
 
-from pyfms import mpp, mpp_domains, pyFMS
+import pyfms
 
 
 @pytest.mark.create
@@ -14,11 +14,6 @@ def test_create_input_nml():
 
 @pytest.mark.parallel
 def test_define_domains():
-
-    ndomain = 2
-    nnest_domain = 2
-    domain_id = -99
-    nest_domain_id = -99
 
     nx = 96
     ny = 96
@@ -34,47 +29,31 @@ def test_define_domains():
     fine_pelist = list(range(fine_npes))
     fine_tile_id = 1
 
-    cfms_path = "./cFMS/libcFMS/.libs/libcFMS.so"
-
-    assert os.path.exists(cfms_path)
-
-    pyfms = pyFMS(
-        cFMS_path=cfms_path,
-        ndomain=ndomain,
-        nnest_domain=nnest_domain,
-    )
-
-    mpp_obj = mpp(cFMS=pyfms.cFMS)
-    mpp_domains_obj = mpp_domains(cFMS=pyfms.cFMS)
-
-    assert isinstance(pyfms, pyFMS)
+    pyfms.fms.init(ndomain=2, nnest_domain=2)
 
     """get global pelist"""
 
-    mpp_obj.set_pelist_npes(npes_in=mpp_obj.npes())
-    global_pelist = mpp_obj.get_current_pelist()
+    global_pelist = pyfms.mpp.get_current_pelist(npes=pyfms.mpp.npes())
 
     """set coarse domain as tile=0"""
 
     coarse_pelist = global_pelist[:coarse_npes]
-    mpp_obj.set_pelist_npes(npes_in=coarse_npes)
-    mpp_obj.declare_pelist(pelist=coarse_pelist, name="test coarse pelist")
+    pyfms.mpp.declare_pelist(pelist=coarse_pelist, name="test coarse pelist")
 
-    if mpp_obj.pe() in coarse_pelist:
-        mpp_obj.set_pelist_npes(coarse_npes)
-        mpp_obj.set_current_pelist(coarse_pelist)
+    if pyfms.mpp.pe() in coarse_pelist:
+        pyfms.mpp.set_current_pelist(coarse_pelist)
 
-        layout = mpp_domains_obj.define_layout(
+        layout = pyfms.mpp_domains.define_layout(
             global_indices=coarse_global_indices,
             ndivs=coarse_npes,
         )
 
-        domain = mpp_domains_obj.define_domains(
+        domain = pyfms.mpp_domains.define_domains(
             global_indices=coarse_global_indices,
             layout=layout,
             pelist=coarse_pelist,
-            xflags=mpp_domains_obj.WEST,
-            yflags=mpp_domains_obj.SOUTH,
+            xflags=pyfms.mpp_domains.WEST,
+            yflags=pyfms.mpp_domains.SOUTH,
             xextent=[nx / 2] * 4,
             yextent=[ny / 2] * 4,
             maskmap=[[True, True], [True, True]],
@@ -88,24 +67,22 @@ def test_define_domains():
             tile_id=coarse_tile_id,
         )
         assert domain.domain_id == 0
-    mpp_obj.set_current_pelist()
+    pyfms.mpp.set_current_pelist()
 
     """set fine domain as tile=1"""
 
     fine_pelist = global_pelist[coarse_npes : coarse_npes + fine_npes]
-    mpp_obj.set_pelist_npes(fine_npes)
-    mpp_obj.declare_pelist(pelist=fine_pelist, name="test fine pelist")
+    pyfms.mpp.declare_pelist(pelist=fine_pelist, name="test fine pelist")
 
-    if mpp_obj.pe() in fine_pelist:
-        mpp_obj.set_pelist_npes(fine_npes)
-        mpp_obj.set_current_pelist(pelist=fine_pelist)
+    if pyfms.mpp.pe() in fine_pelist:
+        pyfms.mpp.set_current_pelist(pelist=fine_pelist)
 
-        layout = mpp_domains_obj.define_layout(
+        layout = pyfms.mpp_domains.define_layout(
             global_indices=fine_global_indices,
             ndivs=fine_npes,
         )
 
-        domain = mpp_domains_obj.define_domains(
+        domain = pyfms.mpp_domains.define_domains(
             global_indices=fine_global_indices,
             layout=layout,
             pelist=fine_pelist,
@@ -119,13 +96,13 @@ def test_define_domains():
             tile_id=fine_tile_id,
         )
         assert domain.domain_id == 0
-    assert mpp_domains_obj.domain_is_initialized(domain.domain_id)
+    assert pyfms.mpp_domains.domain_is_initialized(domain.domain_id)
 
-    mpp_obj.set_current_pelist()
+    pyfms.mpp.set_current_pelist()
 
     """set nest domain"""
 
-    nest_domain = mpp_domains_obj.define_nest_domains(
+    nest_domain = pyfms.mpp_domains.define_nest_domains(
         num_nest=1,
         ntiles=2,
         nest_level=[1],
@@ -142,9 +119,9 @@ def test_define_domains():
         name="test nest domain",
     )
 
-    mpp_obj.set_current_pelist()
+    pyfms.mpp.set_current_pelist()
 
-    pyfms.pyfms_end()
+    pyfms.fms.end()
 
 
 @pytest.mark.remove

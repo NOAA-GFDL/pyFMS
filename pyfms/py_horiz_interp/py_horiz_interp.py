@@ -4,16 +4,27 @@ import numpy as np
 import numpy.typing as npt
 
 
-class HorizInterp:
-    def __init__(self, cfms: ctypes.CDLL):
-        self.cfms = cfms
+class horiz_interp:
 
-    def get_maxxgrid(self) -> np.int32:
-        self.cfms.get_maxxgrid.restype = np.int32
-        return self.cfms.get_maxxgrid()
+    __libpath: str = None
+    __lib: type[ctypes.CDLL] = None
 
+    @classmethod
+    def setlib(cls, libpath: str, lib: type[ctypes.CDLL]):
+        cls.__libpath = libpath
+        cls.__lib = lib
+
+    @classmethod
+    def lib(cls) -> type[ctypes.CDLL]:
+        return cls.__lib
+
+    @classmethod
+    def libpath(cls) -> str:
+        return cls.__libpath
+
+    @classmethod
     def create_xgrid_2dx2d_order1(
-        self,
+        cls,
         nlon_src: int,
         nlat_src: int,
         nlon_tgt: int,
@@ -31,7 +42,7 @@ class HorizInterp:
         ngrid_src_p1 = (nlon_src + 1) * (nlat_src + 1)
         ngrid_tgt_p1 = (nlon_tgt + 1) * (nlat_tgt + 1)
 
-        maxxgrid = self.get_maxxgrid()
+        maxxgrid = cls.get_maxxgrid()
 
         nlon_src_t = ctypes.c_int
         nlat_src_t = ctypes.c_int
@@ -75,7 +86,7 @@ class HorizInterp:
         j_tgt = np.zeros(maxxgrid, dtype=np.int32)
         xarea = np.zeros(maxxgrid, dtype=np.float64)
 
-        _create_xgrid = self.cfms.cFMS_create_xgrid_2dx2d_order1
+        _create_xgrid = cls.lib().cFMS_create_xgrid_2dx2d_order1
 
         _create_xgrid.restype = ctypes.c_int
         _create_xgrid.argtypes = [
@@ -129,8 +140,14 @@ class HorizInterp:
             "xarea": xarea[:nxgrid],
         }
 
-    def horiz_interp_init(self, ninterp: int = None):
-        _cfms_horiz_interp_init = self.cfms.cFMS_horiz_interp_init
+    @classmethod
+    def get_maxxgrid(cls) -> np.int32:
+        cls.lib().get_maxxgrid.restype = np.int32
+        return cls.lib().get_maxxgrid()
+
+    @classmethod
+    def init(cls, ninterp: int = None):
+        _cfms_horiz_interp_init = cls.lib().cFMS_horiz_interp_init
 
         ninterp_c, ninterp_t = ctypes.c_int(ninterp), ctypes.POINTER(ctypes.c_int)
 
@@ -139,8 +156,9 @@ class HorizInterp:
 
         _cfms_horiz_interp_init(ctypes.byref(ninterp_c))
 
-    def set_current_interp(self, interp_id: int = None):
-        _cfms_set_current_interp = self.cfms.cFMS_set_current_interp
+    @classmethod
+    def set_current_interp(cls, interp_id: int = None):
+        _cfms_set_current_interp = cls.lib().cFMS_set_current_interp
 
         interp_id_c, interp_id_t = ctypes.c_int(interp_id), ctypes.POINTER(ctypes.c_int)
 

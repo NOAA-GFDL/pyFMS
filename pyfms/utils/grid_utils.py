@@ -4,10 +4,27 @@ import numpy as np
 import numpy.typing as npt
 
 
-class GridUtils:
-    @staticmethod
+class grid_utils:
+
+    __libpath: str = None
+    __lib: type[ctypes.CDLL] = None
+
+    @classmethod
+    def setlib(cls, libpath: str, lib: type[ctypes.CDLL]):
+        cls.__libpath = libpath
+        cls.__lib = lib
+
+    @classmethod
+    def lib(cls) -> type[ctypes.CDLL]:
+        return cls.__lib
+
+    @classmethod
+    def libpath(cls) -> str:
+        return cls.__libpath
+
+    @classmethod
     def get_grid_area(
-        cfms: ctypes.CDLL,
+        cls,
         nlon: int,
         nlat: int,
         lon: npt.NDArray[np.float64],
@@ -33,7 +50,7 @@ class GridUtils:
         nlat_c = nlat_t(nlat)
         area = np.zeros(ncells, dtype=np.float64)
 
-        _get_grid_area = cfms.cFMS_get_grid_area
+        _get_grid_area = cls.lib().cFMS_get_grid_area
 
         _get_grid_area.restype = None
         _get_grid_area.argtypes = [

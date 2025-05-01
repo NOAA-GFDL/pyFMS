@@ -3,7 +3,7 @@ import ctypes
 import numpy as np
 from numpy.typing import NDArray
 
-from ..pyfms_utils.data_handling import (
+from ..utils.data_handling import (
     set_Cchar,
     setarray_Cbool,
     setarray_Cdouble,
@@ -16,6 +16,15 @@ from ..pyfms_utils.data_handling import (
 
 class pyDomain:
 
+    """
+    Carries useful information about the domain
+    such as array indices corresponding to each domain
+    pyfms.mpp_domains.define() will return an instance of pyDomain
+    Instance variables can be updated with the update method
+    with dictionaries returned from pyfms.mpp_domains.get_compute_domain and
+    pyfms.mpp_domains.get_data_domain
+    """
+
     def __init__(
         self,
         domain_id: int = None,
@@ -27,8 +36,18 @@ class pyDomain:
         jsd: int = None,
         ied: int = None,
         jed: int = None,
-        tile: int = None,
-        layout: list[int] = None,
+        xsize_c: int = None,
+        ysize_c: int = None,
+        xmax_size_c: int = None,
+        ymax_size_c: int = None,
+        x_is_global_c: int = None,
+        y_is_global_c: int = None,
+        xsize_d: int = None,
+        ysize_d: int = None,
+        xmax_size_d: int = None,
+        ymax_size_d: int = None,
+        x_is_global_d: bool = None,
+        y_is_global_d: bool = None,
     ):
         self.domain_id = domain_id
         self.isc = isc
@@ -39,8 +58,23 @@ class pyDomain:
         self.jsd = jsd
         self.ied = ied
         self.jed = jed
-        self.tile = tile
-        self.layout = layout
+        self.xsize_c = xsize_c
+        self.ysize_c = ysize_c
+        self.xmax_size_c = xmax_size_c
+        self.ymax_size_c = ymax_size_c
+        self.x_is_global_c = x_is_global_c
+        self.y_is_global_c = y_is_global_c
+        self.xsize_d = xsize_d
+        self.ysize_d = ysize_d
+        self.xmax_size_d = xmax_size_d
+        self.ymax_size_d = ymax_size_d
+        self.x_is_global_d = x_is_global_d
+        self.y_is_global_d = y_is_global_d
+
+    def update(self, domain_dict: dict):
+        for key in domain_dict:
+            setattr(self, key, domain_dict[key])
+        return self
 
 
 class mpp_domains:
@@ -68,36 +102,51 @@ class mpp_domains:
     SOUTH: int = None
     SOUTH_WEST: int = None
 
-    def __init__(self, cFMS: ctypes.CDLL = None):
-        self.cFMS = cFMS
-        self.GLOBAL_DATA_DOMAIN = ctypes.c_int.in_dll(
-            self.cFMS, "GLOBAL_DATA_DOMAIN"
-        ).value
-        self.BGRID_NE = ctypes.c_int.in_dll(self.cFMS, "BGRID_NE").value
-        self.CGRID_NE = ctypes.c_int.in_dll(self.cFMS, "CGRID_NE").value
-        self.DGRID_NE = ctypes.c_int.in_dll(self.cFMS, "DGRID_NE").value
-        self.AGRID = ctypes.c_int.in_dll(self.cFMS, "AGRID").value
-        self.FOLD_SOUTH_EDGE = ctypes.c_int.in_dll(self.cFMS, "FOLD_SOUTH_EDGE").value
-        self.FOLD_WEST_EDGE = ctypes.c_int.in_dll(self.cFMS, "FOLD_WEST_EDGE").value
-        self.FOLD_EAST_EDGE = ctypes.c_int.in_dll(self.cFMS, "FOLD_EAST_EDGE").value
-        self.FOLD_NORTH_EDGE = ctypes.c_int.in_dll(self.cFMS, "FOLD_NORTH_EDGE").value
-        self.CYCLIC_GLOBAL_DOMAIN = ctypes.c_int.in_dll(
-            self.cFMS, "CYCLIC_GLOBAL_DOMAIN"
-        ).value
-        self.NUPDATE = ctypes.c_int.in_dll(self.cFMS, "NUPDATE").value
-        self.EUPDATE = ctypes.c_int.in_dll(self.cFMS, "EUPDATE").value
-        self.XUPDATE = ctypes.c_int.in_dll(self.cFMS, "XUPDATE").value
-        self.YUPDATE = ctypes.c_int.in_dll(self.cFMS, "YUPDATE").value
-        self.NORTH = ctypes.c_int.in_dll(self.cFMS, "NORTH").value
-        self.NORTH_EAST = ctypes.c_int.in_dll(self.cFMS, "NORTH_EAST").value
-        self.EAST = ctypes.c_int.in_dll(self.cFMS, "EAST").value
-        self.SOUTH_EAST = ctypes.c_int.in_dll(self.cFMS, "SOUTH_EAST").value
-        self.CORNER = ctypes.c_int.in_dll(self.cFMS, "CORNER").value
-        self.CENTER = ctypes.c_int.in_dll(self.cFMS, "CENTER").value
-        self.SOUTH = ctypes.c_int.in_dll(self.cFMS, "SOUTH").value
-        self.SOUTH_WEST = ctypes.c_int.in_dll(self.cFMS, "SOUTH_WEST").value
-        self.WEST = ctypes.c_int.in_dll(self.cFMS, "WEST").value
-        self.NORTH_WEST = ctypes.c_int.in_dll(self.cFMS, "NORTH_WEST").value
+    __libpath: str = None
+    __lib: type[ctypes.CDLL] = None
+
+    @classmethod
+    def setlib(cls, libpath: str, lib: type[ctypes.CDLL]):
+        cls.__libpath = libpath
+        cls.__lib = lib
+
+    @classmethod
+    def lib(cls) -> type[ctypes.CDLL]:
+        return cls.__lib
+
+    @classmethod
+    def libpath(cls) -> str:
+        return cls.__libpath
+
+    @classmethod
+    def init(cls):
+        def get_constant(variable):
+            return int(ctypes.c_int.in_dll(cls.lib(), variable).value)
+
+        cls.GLOBAL_DATA_DOMAIN = get_constant("GLOBAL_DATA_DOMAIN")
+        cls.BGRID_NE = get_constant("BGRID_NE")
+        cls.CGRID_NE = get_constant("CGRID_NE")
+        cls.DGRID_NE = get_constant("DGRID_NE")
+        cls.AGRID = get_constant("AGRID")
+        cls.FOLD_SOUTH_EDGE = get_constant("FOLD_SOUTH_EDGE")
+        cls.FOLD_WEST_EDGE = get_constant("FOLD_WEST_EDGE")
+        cls.FOLD_EAST_EDGE = get_constant("FOLD_EAST_EDGE")
+        cls.FOLD_NORTH_EDGE = get_constant("FOLD_NORTH_EDGE")
+        cls.CYCLIC_GLOBAL_DOMAIN = get_constant("CYCLIC_GLOBAL_DOMAIN")
+        cls.NUPDATE = get_constant("NUPDATE")
+        cls.EUPDATE = get_constant("EUPDATE")
+        cls.XUPDATE = get_constant("XUPDATE")
+        cls.YUPDATE = get_constant("YUPDATE")
+        cls.NORTH = get_constant("NORTH")
+        cls.NORTH_EAST = get_constant("NORTH_EAST")
+        cls.EAST = get_constant("EAST")
+        cls.SOUTH_EAST = get_constant("SOUTH_EAST")
+        cls.CORNER = get_constant("CORNER")
+        cls.CENTER = get_constant("CENTER")
+        cls.SOUTH = get_constant("SOUTH")
+        cls.SOUTH_WEST = get_constant("SOUTH_WEST")
+        cls.WEST = get_constant("WEST")
+        cls.NORTH_WEST = get_constant("NORTH_WEST")
 
     """
     Subroutine: define_domains
@@ -111,8 +160,9 @@ class mpp_domains:
     to the result of the method to update their values.
     """
 
+    @classmethod
     def define_domains(
-        self,
+        cls,
         global_indices: list[int],
         layout: list[int],
         pelist: list[int] = None,
@@ -136,9 +186,9 @@ class mpp_domains:
         complete: bool = None,
         x_cyclic_offset: int = None,
         y_cyclic_offset: int = None,
-    ) -> pyDomain:
+    ) -> type(pyDomain):
 
-        _cfms_define_domains = self.cFMS.cFMS_define_domains
+        _cfms_define_domains = cls.lib().cFMS_define_domains
 
         global_indices_arr = np.array(global_indices, dtype=np.int32)
         layout_arr = np.array(layout, dtype=np.int32)
@@ -237,7 +287,19 @@ class mpp_domains:
             y_cyclic_offset_c,
         )
 
-        return pyDomain(domain_id=domain_id, layout=layout, tile=tile_id)
+        compute = cls.get_compute_domain(
+            domain_id=domain_id, tile_count=tile_count, whalo=whalo, shalo=shalo
+        )
+        data = cls.get_data_domain(
+            domain_id=domain_id, tile_count=tile_count, whalo=whalo, shalo=shalo
+        )
+
+        pydomain = pyDomain()
+        for key in compute:
+            setattr(pydomain, key, compute[key])
+        for key in data:
+            setattr(pydomain, key, data[key])
+        return pydomain
 
     """
     Subroutine: define_io_domains
@@ -247,8 +309,9 @@ class mpp_domains:
     Returns: No return
     """
 
-    def define_io_domain(self, io_layout: list[int], domain_id: int):
-        _cfms_define_io_domain = self.cFMS.cFMS_define_io_domain
+    @classmethod
+    def define_io_domain(cls, io_layout: list[int], domain_id: int):
+        _cfms_define_io_domain = cls.lib().cFMS_define_io_domain
 
         io_layout_arr = np.array(io_layout, dtype=np.int32)
 
@@ -268,8 +331,9 @@ class mpp_domains:
     Returns: A NDArray containing the layout
     """
 
+    @classmethod
     def define_layout(
-        self,
+        cls,
         global_indices: list[int],
         ndivs: int,
     ) -> list:
@@ -278,7 +342,7 @@ class mpp_domains:
 
         global_indices_arr = np.array(global_indices, dtype=np.int32)
 
-        _cfms_define_layout = self.cFMS.cFMS_define_layout
+        _cfms_define_layout = cls.lib().cFMS_define_layout
 
         global_indices_p, global_indices_t = setarray_Cint32(global_indices_arr)
         ndivs_c, ndivs_t = setscalar_Cint32(ndivs)
@@ -299,8 +363,9 @@ class mpp_domains:
     Returns: No return
     """
 
+    @classmethod
     def define_nest_domains(
-        self,
+        cls,
         num_nest: int,
         ntiles: int,
         nest_level: list[int],
@@ -317,7 +382,7 @@ class mpp_domains:
         extra_halo: int = None,
         name: str = None,
     ) -> int:
-        _cfms_define_nest_domain = self.cFMS.cFMS_define_nest_domains
+        _cfms_define_nest_domain = cls.lib().cFMS_define_nest_domains
 
         nest_level_arr = np.array(nest_level, dtype=np.int32)
         tile_fine_arr = np.array(tile_fine, dtype=np.int32)
@@ -392,8 +457,9 @@ class mpp_domains:
     Returns: Boolean
     """
 
-    def domain_is_initialized(self, domain_id: int) -> bool:
-        _cfms_domain_is_initialized = self.cFMS.cFMS_domain_is_initialized
+    @classmethod
+    def domain_is_initialized(cls, domain_id: int) -> bool:
+        _cfms_domain_is_initialized = cls.lib().cFMS_domain_is_initialized
 
         domain_id_c, domain_id_t = setscalar_Cint32(domain_id)
 
@@ -416,8 +482,9 @@ class mpp_domains:
     which were passed, overwriting the passed value.
     """
 
+    @classmethod
     def get_compute_domain(
-        self,
+        cls,
         domain_id: int,
         position: int = None,
         tile_count: int = None,
@@ -425,7 +492,7 @@ class mpp_domains:
         shalo: int = None,
     ) -> dict:
 
-        _cfms_get_compute_domain = self.cFMS.cFMS_get_compute_domain
+        _cfms_get_compute_domain = cls.lib().cFMS_get_compute_domain
 
         default_i = 0
         default_b = False
@@ -502,16 +569,16 @@ class mpp_domains:
 
         return dict(
             domain_id=domain_id_c.value,
-            xbegin=xbegin_c.value,
-            ybegin=ybegin_c.value,
-            xend=xend_c.value,
-            yend=yend_c.value,
-            xsize=xsize_c.value,
-            ysize=ysize_c.value,
-            xmax_size=xmax_size_c.value,
-            ymax_size=ymax_size_c.value,
-            x_is_global=x_is_global_c.value,
-            y_is_global=y_is_global_c.value,
+            isc=xbegin_c.value,
+            jsc=ybegin_c.value,
+            iec=xend_c.value,
+            jec=yend_c.value,
+            xsize_c=xsize_c.value,
+            ysize_c=ysize_c.value,
+            xmax_size_c=xmax_size_c.value,
+            ymax_size_c=ymax_size_c.value,
+            x_is_global_c=x_is_global_c.value,
+            y_is_global_c=y_is_global_c.value,
         )
 
     """
@@ -528,15 +595,16 @@ class mpp_domains:
     which were passed, overwriting the passed value.
     """
 
+    @classmethod
     def get_data_domain(
-        self,
+        cls,
         domain_id: int,
         position: int = None,
         tile_count: int = None,
         whalo: int = None,
         shalo: int = None,
     ) -> dict:
-        _cfms_get_data_domain = self.cFMS.cFMS_get_data_domain
+        _cfms_get_data_domain = cls.lib().cFMS_get_data_domain
 
         default_i = 0
         default_b = False
@@ -613,16 +681,16 @@ class mpp_domains:
 
         return dict(
             domain_id=domain_id_c.value,
-            xbegin=xbegin_c.value,
-            ybegin=ybegin_c.value,
-            xend=xend_c.value,
-            yend=yend_c.value,
-            xsize=xsize_c.value,
-            ysize=ysize_c.value,
-            xmax_size=xmax_size_c.value,
-            ymax_size=ymax_size_c.value,
-            x_is_global=x_is_global_c.value,
-            y_is_global=y_is_global_c.value,
+            isd=xbegin_c.value,
+            jsd=ybegin_c.value,
+            ied=xend_c.value,
+            jed=yend_c.value,
+            xsize_d=xsize_c.value,
+            ysize_d=ysize_c.value,
+            xmax_size_d=xmax_size_c.value,
+            ymax_size_d=ymax_size_c.value,
+            x_is_global_d=x_is_global_c.value,
+            y_is_global_d=y_is_global_c.value,
         )
 
     """
@@ -636,8 +704,9 @@ class mpp_domains:
     its value as well.
     """
 
-    def get_domain_name(self, domain_id: int) -> str:
-        _cfms_get_domain_name = self.cFMS.cFMS_get_domain_name
+    @classmethod
+    def get_domain_name(cls, domain_id: int) -> str:
+        _cfms_get_domain_name = cls.lib().cFMS_get_domain_name
 
         domain_name = ""
 
@@ -659,11 +728,12 @@ class mpp_domains:
     Returns: NDArray with layout info
     """
 
-    def get_layout(self, domain_id: int) -> list[int]:
+    @classmethod
+    def get_layout(cls, domain_id: int) -> list[int]:
 
         layout = np.empty(shape=2, dtype=np.int32, order="C")
 
-        _cfms_get_layout = self.cFMS.cFMS_get_layout
+        _cfms_get_layout = cls.lib().cFMS_get_layout
 
         layout_p, layout_t = setarray_Cint32(layout)
         domain_id_c, domain_id_t = setscalar_Cint32(domain_id)
@@ -681,12 +751,13 @@ class mpp_domains:
     Returns: NDArray containing pelist
     """
 
-    def get_domain_pelist(self, domain_id: int) -> list[int]:
+    @classmethod
+    def get_domain_pelist(cls, domain_id: int) -> list[int]:
 
-        npes = ctypes.c_int.in_dll(self.cFMS, "cFMS_pelist_npes")
+        npes = ctypes.c_int.in_dll(cls.lib(), "cFMS_pelist_npes")
         pelist = np.empty(shape=npes.value, dtype=np.int32, order="C")
 
-        _cfms_get_domain_pelist = self.cFMS.cFMS_get_domain_pelist
+        _cfms_get_domain_pelist = cls.lib().cFMS_get_domain_pelist
 
         pelist_p, pelist_t = setarray_Cint32(pelist)
         domain_id_c, domain_id_t = setscalar_Cint32(domain_id)
@@ -715,8 +786,9 @@ class mpp_domains:
     which were passed, overwriting the passed value.
     """
 
+    @classmethod
     def set_compute_domain(
-        self,
+        cls,
         domain_id: int,
         xbegin: int = None,
         xend: int = None,
@@ -730,7 +802,7 @@ class mpp_domains:
         whalo: int = None,
         shalo: int = None,
     ):
-        _cfms_set_compute_domain = self.cFMS.cFMS_set_compute_domain
+        _cfms_set_compute_domain = cls.lib().cFMS_set_compute_domain
 
         domain_id_c, domain_id_t = setscalar_Cint32(domain_id)
         xbegin_c, xbegin_t = setscalar_Cint32(xbegin)
@@ -783,8 +855,9 @@ class mpp_domains:
     to domain_id
     """
 
-    def set_current_domain(self, domain_id: int):
-        _cfms_set_current_domain = self.cFMS.cFMS_set_current_domain
+    @classmethod
+    def set_current_domain(cls, domain_id: int):
+        _cfms_set_current_domain = cls.lib().cFMS_set_current_domain
 
         domain_id_c, domain_id_t = setscalar_Cint32(domain_id)
 
@@ -800,8 +873,9 @@ class mpp_domains:
     to nest_domain_id
     """
 
-    def set_current_nest_domain(self, nest_domain_id: int):
-        _cfms_set_current_nest_domain = self.cFMS.cFMS_set_current_nest_domain
+    @classmethod
+    def set_current_nest_domain(cls, nest_domain_id: int):
+        _cfms_set_current_nest_domain = cls.lib().cFMS_set_current_nest_domain
 
         nest_domain_id_c, nest_domain_id_t = setscalar_Cint32(nest_domain_id)
 
@@ -823,8 +897,9 @@ class mpp_domains:
     which were passed, overwriting the passed value.
     """
 
+    @classmethod
     def set_data_domain(
-        self,
+        cls,
         domain_id: int,
         xbegin: int = None,
         xend: int = None,
@@ -838,7 +913,7 @@ class mpp_domains:
         whalo: int = None,
         shalo: int = None,
     ):
-        _cfms_set_data_domain = self.cFMS.cFMS_set_data_domain
+        _cfms_set_data_domain = cls.lib().cFMS_set_data_domain
 
         domain_id_c, domain_id_t = setscalar_Cint32(domain_id)
         xbegin_c, xbegin_t = setscalar_Cint32(xbegin)
@@ -901,8 +976,9 @@ class mpp_domains:
     which were passed, overwriting the passed value.
     """
 
+    @classmethod
     def set_global_domain(
-        self,
+        cls,
         domain_id: int,
         xbegin: int = None,
         xend: int = None,
@@ -914,7 +990,7 @@ class mpp_domains:
         whalo: int = None,
         shalo: int = None,
     ):
-        _cfms_set_global_domain = self.cFMS.cFMS_set_global_domain
+        _cfms_set_global_domain = cls.lib().cFMS_set_global_domain
 
         domain_id_c, domain_id_t = setscalar_Cint32(domain_id)
         xbegin_c, xbegin_t = setscalar_Cint32(xbegin)
@@ -954,8 +1030,9 @@ class mpp_domains:
             shalo_c,
         )
 
+    @classmethod
     def update_domains(
-        self,
+        cls,
         field: NDArray,
         domain_id: int = None,
         flags: int = None,
@@ -973,13 +1050,13 @@ class mpp_domains:
 
         if field.ndim == 2:
             if field.dtype == np.float64:
-                _cfms_update_domains = self.cFMS.cFMS_update_domains_double_2d
+                _cfms_update_domains = cls.lib().cFMS_update_domains_double_2d
                 field_p, field_t = setarray_Cdouble(field)
             elif field.dtype == np.float32:
-                _cfms_update_domains = self.cFMS.cFMS_update_domains_float_2d
+                _cfms_update_domains = cls.lib().cFMS_update_domains_float_2d
                 field_p, field_t = setarray_Cfloat(field)
             elif field.dtype == np.int32:
-                _cfms_update_domains = self.cFMS.cFMS_update_domains_int_2d
+                _cfms_update_domains = cls.lib().cFMS_update_domains_int_2d
                 field_p, field_t = setarray_Cfloat(field)
             else:
                 raise RuntimeError(
@@ -987,13 +1064,13 @@ class mpp_domains:
                 )
         elif field.ndim == 3:
             if field.dtype == np.float64:
-                _cfms_update_domains = self.cFMS.cFMS_update_domains_double_3d
+                _cfms_update_domains = cls.lib().cFMS_update_domains_double_3d
                 field_p, field_t = setarray_Cdouble(field)
             elif field.dtype == np.float32:
-                _cfms_update_domains = self.cFMS.cFMS_update_domains_float_3d
+                _cfms_update_domains = cls.lib().cFMS_update_domains_float_3d
                 field_p, field_t = setarray_Cfloat(field)
             elif field.dtype == np.int32:
-                _cfms_update_domains = self.cFMS.cFMS_update_domains_int_3d
+                _cfms_update_domains = cls.lib().cFMS_update_domains_int_3d
                 field_p, field_t = setarray_Cfloat(field)
             else:
                 raise RuntimeError(
@@ -1001,13 +1078,13 @@ class mpp_domains:
                 )
         elif field.ndim == 4:
             if field.dtype == np.float64:
-                _cfms_update_domains = self.cFMS.cFMS_update_domains_double_4d
+                _cfms_update_domains = cls.lib().cFMS_update_domains_double_4d
                 field_p, field_t = setarray_Cdouble(field)
             elif field.dtype == np.float32:
-                _cfms_update_domains = self.cFMS.cFMS_update_domains_float_4d
+                _cfms_update_domains = cls.lib().cFMS_update_domains_float_4d
                 field_p, field_t = setarray_Cfloat(field)
             elif field.dtype == np.int32:
-                _cfms_update_domains = self.cFMS.cFMS_update_domains_int_4d
+                _cfms_update_domains = cls.lib().cFMS_update_domains_int_4d
                 field_p, field_t = setarray_Cfloat(field)
             else:
                 raise RuntimeError(
@@ -1015,13 +1092,13 @@ class mpp_domains:
                 )
         elif field.ndim == 5:
             if field.dtype == np.float64:
-                _cfms_update_domains = self.cFMS.cFMS_update_domains_double_5d
+                _cfms_update_domains = cls.lib().cFMS_update_domains_double_5d
                 field_p, field_t = setarray_Cdouble(field)
             elif field.dtype == np.float32:
-                _cfms_update_domains = self.cFMS.cFMS_update_domains_float_5d
+                _cfms_update_domains = cls.lib().cFMS_update_domains_float_5d
                 field_p, field_t = setarray_Cfloat(field)
             elif field.dtype == np.int32:
-                _cfms_update_domains = self.cFMS.cFMS_update_domains_int_5d
+                _cfms_update_domains = cls.lib().cFMS_update_domains_int_5d
                 field_p, field_t = setarray_Cfloat(field)
             else:
                 raise RuntimeError(
@@ -1076,8 +1153,9 @@ class mpp_domains:
             tile_count_c,
         )
 
+    @classmethod
     def vector_update_domains(
-        self,
+        cls,
         fieldx: NDArray,
         fieldy: NDArray,
         domain_id: int = None,
@@ -1096,11 +1174,11 @@ class mpp_domains:
 
         if fieldx.ndim == 2:
             if fieldx.dtype == np.float32:
-                _cfms_v_update_domains = self.cFMS.cFMS_v_update_domains_float_2d
+                _cfms_v_update_domains = cls.lib().cFMS_v_update_domains_float_2d
                 fieldx_p, fieldx_t = setarray_Cfloat(fieldx)
                 fieldy_p, fieldy_t = setarray_Cfloat(fieldy)
             elif fieldx.dtype == np.float64:
-                _cfms_v_update_domains = self.cFMS.cFMS_v_update_domains_double_2d
+                _cfms_v_update_domains = cls.lib().cFMS_v_update_domains_double_2d
                 fieldx_p, fieldx_t = setarray_Cdouble(fieldx)
                 fieldy_p, fieldy_t = setarray_Cdouble(fieldy)
             else:
@@ -1109,11 +1187,11 @@ class mpp_domains:
                 )
         elif fieldx.ndim == 3:
             if fieldx.dtype == np.float32:
-                _cfms_v_update_domains = self.cFMS.cFMS_v_update_domains_float_3d
+                _cfms_v_update_domains = cls.lib().cFMS_v_update_domains_float_3d
                 fieldx_p, fieldx_t = setarray_Cfloat(fieldx)
                 fieldy_p, fieldy_t = setarray_Cfloat(fieldy)
             elif fieldx.dtype == np.float64:
-                _cfms_v_update_domains = self.cFMS.cFMS_v_update_domains_double_3d
+                _cfms_v_update_domains = cls.lib().cFMS_v_update_domains_double_3d
                 fieldx_p, fieldx_t = setarray_Cdouble(fieldx)
                 fieldy_p, fieldy_t = setarray_Cdouble(fieldy)
             else:
@@ -1122,11 +1200,11 @@ class mpp_domains:
                 )
         elif fieldx.ndim == 4:
             if fieldx.dtype == np.float32:
-                _cfms_v_update_domains = self.cFMS.cFMS_v_update_domains_float_4d
+                _cfms_v_update_domains = cls.lib().cFMS_v_update_domains_float_4d
                 fieldx_p, fieldx_t = setarray_Cfloat(fieldx)
                 fieldy_p, fieldy_t = setarray_Cfloat(fieldy)
             elif fieldx.dtype == np.float64:
-                _cfms_v_update_domains = self.cFMS.cFMS_v_update_domains_double_4d
+                _cfms_v_update_domains = cls.lib().cFMS_v_update_domains_double_4d
                 fieldx_p, fieldx_t = setarray_Cdouble(fieldx)
                 fieldy_p, fieldy_t = setarray_Cdouble(fieldy)
             else:
@@ -1135,11 +1213,11 @@ class mpp_domains:
                 )
         elif fieldx.ndim == 5:
             if fieldx.dtype == np.float32:
-                _cfms_v_update_domains = self.cFMS.cFMS_v_update_domains_float_5d
+                _cfms_v_update_domains = cls.lib().cFMS_v_update_domains_float_5d
                 fieldx_p, fieldx_t = setarray_Cfloat(fieldx)
                 fieldy_p, fieldy_t = setarray_Cfloat(fieldy)
             elif fieldx.dtype == np.float64:
-                _cfms_v_update_domains = self.cFMS.cFMS_v_update_domains_double_5d
+                _cfms_v_update_domains = cls.lib().cFMS_v_update_domains_double_5d
                 fieldx_p, fieldx_t = setarray_Cdouble(fieldx)
                 fieldy_p, fieldy_t = setarray_Cdouble(fieldy)
             else:

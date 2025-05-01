@@ -5,13 +5,44 @@ import numpy as np
 import numpy.typing as npt
 
 
-class pyDataOverride:
+class data_override:
 
-    def __init__(self, cFMS: ctypes.CDLL = None):
-        self.cfms = cFMS
+    """
+    Parameters for initializing data_override in FMS
+    These parameters can be specified through data_override.init()
+    mode=CFLOAT_MODE initializes data_override in 32-bit mode for real variables
+    mode=CDOUBLE_MODE initializes data_override in 64-bit mode for real variables
+    if mode is not specified, both 32-bit and 64-bit modes are initialized
+    """
 
+    CFLOAT_MODE: int = None
+    CDOUBLE_MODE: int = None
+
+    __libpath: str = None
+    __lib: type[ctypes.CDLL] = None
+
+    @classmethod
+    def setlib(cls, libpath: str, lib: type[ctypes.CDLL]):
+        cls.__libpath = libpath
+        cls.__lib = lib
+
+    @classmethod
+    def lib(cls) -> type[ctypes.CDLL]:
+        return cls.__lib
+
+    @classmethod
+    def libpath(cls) -> str:
+        return cls.__libpath
+
+    """
+    pyfms.data_override.init()
+    Calls data_override_init in FMS.  Domain_id's are required to pass in the
+    domains data_override_init.  Domain_id's is generated through mpp_domains.define
+    """
+
+    @classmethod
     def init(
-        self,
+        cls,
         atm_domain_id: int = None,
         ocn_domain_id: int = None,
         ice_domain_id: int = None,
@@ -20,7 +51,10 @@ class pyDataOverride:
         mode: int = None,
     ):
 
-        _data_override_init = self.cfms.cFMS_data_override_init
+        CFLOAT_MODE = int(ctypes.c_int.in_dll(cls.lib(), "CFLOAT_MODE").value)
+        CDOUBLE_MODE = int(ctypes.c_int.in_dll(cls.lib(), "CDOUBLE_MODE").value)
+
+        _data_override_init = cls.lib().cFMS_data_override_init
 
         atm_domain_id_t = ctypes.c_int
         ocn_domain_id_t = ctypes.c_int
@@ -67,8 +101,15 @@ class pyDataOverride:
             mode_c,
         )
 
+    """
+    pyfms.data_override.set_time()
+    Sets the time type in cFMS.  The set time will be used to specify
+    targeted time for temporal interpolation in FMS data_override
+    """
+
+    @classmethod
     def set_time(
-        self,
+        cls,
         year: int = None,
         month: int = None,
         day: int = None,
@@ -78,7 +119,7 @@ class pyDataOverride:
         tick: int = None,
     ):
 
-        _data_override_set_time = self.cfms.cFMS_data_override_set_time
+        _data_override_set_time = cls.lib().cFMS_data_override_set_time
 
         year_t = ctypes.c_int
         month_t = ctypes.c_int
@@ -114,15 +155,21 @@ class pyDataOverride:
             year_c, month_c, day_c, hour_c, minute_c, second_c, tick_c, err_msg_c
         )
 
+    """
+    pyfms.data_override.override_scalar
+    Calls data_override in FMS for scalar variables
+    """
+
+    @classmethod
     def override_scalar(
-        self,
+        cls,
         gridname: str,
         fieldname: str,
         data_type: Any,
         data_index: int = None,
     ) -> np.float32 | np.float64:
 
-        _data_override_scalar = self.cfms.cFMS_data_override_0d_cdouble
+        _data_override_scalar = cls.lib().cFMS_data_override_0d_cdouble
         gridname_t = ctypes.c_char_p
         fieldname_t = ctypes.c_char_p
         data_t = ctypes.c_float if data_type is np.float32 else ctypes.c_double
@@ -149,8 +196,14 @@ class pyDataOverride:
         # TODO:  add check for override
         return data_c.value
 
+    """
+    pyfms.data_override.override
+    Calls data override in FMS
+    """
+
+    @classmethod
     def override(
-        self,
+        cls,
         gridname: str,
         fieldname: str,
         data_shape: list[int],
@@ -165,14 +218,14 @@ class pyDataOverride:
 
         if data_type is np.float32:
             if nshape == 2:
-                _data_override = self.cfms.cFMS_data_override_2d_cfloat
+                _data_override = cls.lib().cFMS_data_override_2d_cfloat
             if nshape == 3:
-                _data_override = self.cfms.cFMS_data_override_3d_cfloat
+                _data_override = cls.lib().cFMS_data_override_3d_cfloat
         elif data_type is np.float64:
             if nshape == 2:
-                _data_override = self.cfms.cFMS_data_override_2d_cdouble
+                _data_override = cls.lib().cFMS_data_override_2d_cdouble
             if nshape == 3:
-                _data_override = self.cfms.cFMS_data_override_3d_cdouble
+                _data_override = cls.lib().cFMS_data_override_3d_cdouble
         else:
             # add cFMS_end
             raise RuntimeError("Data_override, datatype not supported")

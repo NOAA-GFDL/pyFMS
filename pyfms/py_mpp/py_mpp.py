@@ -3,7 +3,7 @@ from typing import Any
 
 import numpy as np
 
-from ..pyfms_utils.data_handling import (
+from ..utils.data_handling import (
     set_Cchar,
     setarray_Cint32,
     setscalar_Cbool,
@@ -13,8 +13,21 @@ from ..pyfms_utils.data_handling import (
 
 class mpp:
 
-    def __init__(self, cFMS: ctypes.CDLL = None):
-        self.cFMS = cFMS
+    __libpath: str = None
+    __lib: type[ctypes.CDLL] = None
+
+    @classmethod
+    def setlib(cls, libpath: str, lib: type[ctypes.CDLL]):
+        cls.__libpath = libpath
+        cls.__lib = lib
+
+    @classmethod
+    def lib(cls) -> type[ctypes.CDLL]:
+        return cls.__lib
+
+    @classmethod
+    def libpath(cls) -> str:
+        return cls.__libpath
 
     """
     Subroutine: declare_pelist
@@ -36,13 +49,14 @@ class mpp:
     set to the result of the call
     """
 
+    @classmethod
     def declare_pelist(
-        self,
+        cls,
         pelist: list[int],
         name: str = None,
     ) -> int:
 
-        _cfms_declare_pelist = self.cFMS.cFMS_declare_pelist
+        _cfms_declare_pelist = cls.lib().cFMS_declare_pelist
 
         commID = 0
 
@@ -54,6 +68,7 @@ class mpp:
         _cfms_declare_pelist.argtypes = [pelist_t, name_t, commID_t]
         _cfms_declare_pelist.restype = None
 
+        cls.set_pelist_npes(npes_in=len(pelist))
         _cfms_declare_pelist(pelist_p, name_c, commID_c)
 
         return commID_c.value
@@ -66,12 +81,13 @@ class mpp:
     Returns: No return
     """
 
-    def pyfms_error(self, errortype: int, errormsg: str = None):
+    @classmethod
+    def error(cls, errortype: int, errormsg: str = None):
         # truncating string
         if errormsg is not None:
             errormsg = errormsg[:128]
 
-        _cfms_error = self.cFMS.cFMS_error
+        _cfms_error = cls.lib().cFMS_error
 
         errortype_c, errortype_t = setscalar_Cint32(errortype)
         errormsg_c, errormsg_t = set_Cchar(errormsg)
@@ -92,8 +108,10 @@ class mpp:
     Returns: NDArray containing pelist
     """
 
+    @classmethod
     def get_current_pelist(
-        self,
+        cls,
+        npes: int,
         get_name: str = None,
         get_commID: bool = False,
     ) -> Any:
@@ -102,10 +120,9 @@ class mpp:
         name = None
         # if get_name: name="NAME"
 
-        npes = ctypes.c_int.in_dll(self.cFMS, "cFMS_pelist_npes")
-        pelist = np.empty(shape=npes.value, dtype=np.int32)
+        pelist = np.empty(shape=npes, dtype=np.int32)
 
-        _cfms_get_current_pelist = self.cFMS.cFMS_get_current_pelist
+        _cfms_get_current_pelist = cls.lib().cFMS_get_current_pelist
 
         pelist_p, pelist_t = setarray_Cint32(pelist)
         name_c, name_t = set_Cchar(name)
@@ -114,6 +131,7 @@ class mpp:
         _cfms_get_current_pelist.argtypes = [pelist_t, name_t, commID_t]
         _cfms_get_current_pelist.restype = None
 
+        cls.set_pelist_npes(npes_in=npes)
         _cfms_get_current_pelist(pelist_p, name_c, commID_c)
 
         # TODO: allow for return of name after cFMS fix
@@ -134,8 +152,9 @@ class mpp:
     Returns: number of pes in use
     """
 
-    def npes(self) -> int:
-        _cfms_npes = self.cFMS.cFMS_npes
+    @classmethod
+    def npes(cls) -> int:
+        _cfms_npes = cls.lib().cFMS_npes
 
         _cfms_npes.restype = ctypes.c_int32
 
@@ -147,8 +166,9 @@ class mpp:
     Returns: pe number of calling pe
     """
 
-    def pe(self) -> int:
-        _cfms_pe = self.cFMS.cFMS_pe
+    @classmethod
+    def pe(cls) -> int:
+        _cfms_pe = cls.lib().cFMS_pe
 
         _cfms_pe.restype = ctypes.c_int32
 
@@ -165,13 +185,16 @@ class mpp:
     Returns: No return
     """
 
-    def set_current_pelist(self, pelist: list[int] = None, no_sync: bool = None):
-        _cfms_set_current_pelist = self.cFMS.cFMS_set_current_pelist
+    @classmethod
+    def set_current_pelist(cls, pelist: list[int] = None, no_sync: bool = None):
+        _cfms_set_current_pelist = cls.lib().cFMS_set_current_pelist
 
         if pelist is not None:
+            npes = len(pelist)
             pelist_p = np.array(pelist, dtype=np.int32)
             pelist_t = np.ctypeslib.ndpointer(dtype=np.int32, shape=pelist_p.shape)
         else:
+            npes = None
             pelist_p = None
             pelist_t = ctypes.POINTER(ctypes.c_int)
         no_sync_c, no_sync_t = setscalar_Cbool(no_sync)
@@ -179,6 +202,7 @@ class mpp:
         _cfms_set_current_pelist.argtypes = [pelist_t, no_sync_t]
         _cfms_set_current_pelist.restype = None
 
+        cls.set_pelist_npes(npes_in=npes)
         _cfms_set_current_pelist(pelist_p, no_sync_c)
 
     """
@@ -186,12 +210,14 @@ class mpp:
     This method is used to set a npes variable of the cFMS module it wraps
     """
 
-    def set_pelist_npes(self, npes_in: int):
-        _cfms_set_npes = self.cFMS.cFMS_set_pelist_npes
+    @classmethod
+    def set_pelist_npes(cls, npes_in: int = None):
+        _cfms_set_npes = cls.lib().cFMS_set_pelist_npes
 
         npes_in_c, npes_in_t = setscalar_Cint32(npes_in)
 
         _cfms_set_npes.argtypes = [npes_in_t]
         _cfms_set_npes.restype = None
 
-        _cfms_set_npes(npes_in_c)
+        if npes_in is not None:
+            _cfms_set_npes(npes_in_c)

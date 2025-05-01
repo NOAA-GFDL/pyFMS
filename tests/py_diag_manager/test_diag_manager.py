@@ -1,3 +1,5 @@
+import os
+
 import numpy as np
 
 import pyfms
@@ -5,43 +7,33 @@ import pyfms
 
 def test_send_data():
 
-    NX = 8
-    NY = 8
-    NZ = 2
+    nx = 8
+    ny = 8
+    nz = 2
 
-    domain_id = 0
-    calendar_type = 4
-
-    var2_shape = [NX, NY]
-    var2 = np.empty(shape=(NX, NY), dtype=np.float32)
-
-    var3_shape = [NX, NY, NZ]
-    var3 = np.empty(shape=(NX, NY, NZ), dtype=np.float32)
-
-    for i in range(NX):
-        for j in range(NY):
-            for k in range(NZ):
-                var3[i][j][k] = i * 100 + j * 10 + k * 1
-
-    for i in range(NX):
-        for j in range(NY):
+    var2 = np.empty(shape=(nx, ny), dtype=np.float32)
+    for i in range(nx):
+        for j in range(ny):
             var2[i][j] = i * 10.0 + j * 1.0
 
-    cfms_path = "./cFMS/libcFMS/.libs/libcFMS.so"
+    var3 = np.empty(shape=(nx, ny, nz), dtype=np.float32)
+    for i in range(nx):
+        for j in range(ny):
+            for k in range(nz):
+                var3[i][j][k] = i * 100 + j * 10 + k * 1
 
-    pyfms_obj = pyfms.pyFMS(cFMS_path=cfms_path, calendar_type=calendar_type)
-    mpp_domains_obj = pyfms.mpp_domains(cFMS=pyfms_obj.cFMS)
+    pyfms.fms.init(calendar_type=pyfms.fms.NOLEAP)
 
-    global_indices = [0, (NX - 1), 0, (NY - 1)]
+    global_indices = [0, (nx - 1), 0, (ny - 1)]
     layout = [1, 1]
     io_layout = [1, 1]
 
-    domain = mpp_domains_obj.define_domains(
+    domain = pyfms.mpp_domains.define_domains(
         global_indices=global_indices,
         layout=layout,
     )
-    mpp_domains_obj.define_io_domain(
-        domain_id=domain_id,
+    pyfms.mpp_domains.define_io_domain(
+        domain_id=domain.domain_id,
         io_layout=io_layout,
     )
 
@@ -49,15 +41,16 @@ def test_send_data():
     diag manager init
     """
 
-    diag_manager = pyfms.DiagManager(clibFMS=pyfms_obj.cFMS)
-    diag_manager.init(diag_model_subset=diag_manager.DIAG_ALL)
+    pyfms.diag_manager.init(diag_model_subset=pyfms.diag_manager.DIAG_ALL)
+
+    pyfms.mpp_domains.set_current_domain(domain_id=domain.domain_id)
 
     """
     diag axis init x
     """
-    x = np.arange(NX, dtype=np.float64)
+    x = np.arange(nx, dtype=np.float64)
 
-    id_x = diag_manager.axis_init(
+    id_x = pyfms.diag_manager.axis_init(
         name="x",
         axis_data=x,
         units="point_E",
@@ -70,9 +63,9 @@ def test_send_data():
     """
     diag axis init y
     """
-    y = np.arange(NY, dtype=np.float64)
+    y = np.arange(ny, dtype=np.float64)
 
-    id_y = diag_manager.axis_init(
+    id_y = pyfms.diag_manager.axis_init(
         name="y",
         axis_data=y,
         units="point_N",
@@ -86,9 +79,9 @@ def test_send_data():
     diag axis init z
     """
 
-    z = np.arange(NZ, dtype=np.float64)
+    z = np.arange(nz, dtype=np.float64)
 
-    id_z = diag_manager.axis_init(
+    id_z = pyfms.diag_manager.axis_init(
         name="z",
         axis_data=z,
         units="point_Z",
@@ -102,10 +95,7 @@ def test_send_data():
     register diag field var3
     """
 
-    axes_3d = [id_x, id_y, id_z]
-    range_3d = np.array([-1000.0, 1000.0], dtype=np.float32)
-
-    diag_manager.set_field_init_time(
+    pyfms.diag_manager.set_field_init_time(
         year=2,
         month=1,
         day=1,
@@ -114,18 +104,18 @@ def test_send_data():
         second=1,
     )
 
-    id_var3 = diag_manager.register_field_array(
+    id_var3 = pyfms.diag_manager.register_field_array(
         module_name="atm_mod",
         field_name="var_3d",
         datatype=np.float32,
-        axes=axes_3d,
+        axes=[id_x, id_y, id_z],
         long_name="Var in a lon/lat domain",
         units="muntin",
         missing_value=-99.99,
-        range_data=range_3d,
+        range_data=np.array([-1000.0, 1000.0], dtype=np.float32),
     )
 
-    diag_manager.set_field_timestep(
+    pyfms.diag_manager.set_field_timestep(
         diag_field_id=id_var3, dseconds=60 * 60, ddays=0, dticks=0
     )
 
@@ -133,10 +123,7 @@ def test_send_data():
     register diag_field var 2
     """
 
-    axes_2d = [id_x, id_y]
-    range_2d = np.array([-1000.0, 1000.0], dtype=np.float32)
-
-    diag_manager.set_field_init_time(
+    pyfms.diag_manager.set_field_init_time(
         year=2,
         month=1,
         day=1,
@@ -145,18 +132,18 @@ def test_send_data():
         second=1,
     )
 
-    id_var2 = diag_manager.register_field_array(
+    id_var2 = pyfms.diag_manager.register_field_array(
         module_name="atm_mod",
         field_name="var_2d",
         datatype=np.float32,
-        axes=axes_2d,
+        axes=[id_x, id_y],
         long_name="Var in a lon/lat domain",
         units="muntin",
         missing_value=-99.99,
-        range_data=range_2d,
+        range_data=np.array([-1000.0, 1000.0], dtype=np.float32),
     )
 
-    diag_manager.set_field_timestep(
+    pyfms.diag_manager.set_field_timestep(
         diag_field_id=id_var2,
         dseconds=60 * 60,
         ddays=0,
@@ -167,7 +154,7 @@ def test_send_data():
     diag set time end
     """
 
-    diag_manager.set_time_end(
+    pyfms.diag_manager.set_time_end(
         year=2,
         month=1,
         day=2,
@@ -181,9 +168,9 @@ def test_send_data():
     send data
     """
 
-    diag_manager.send_data(
+    pyfms.diag_manager.send_data(
         diag_field_id=id_var3,
-        field_shape=var3_shape,
+        field_shape=var3.shape,
         field=var3,
     )
 
@@ -192,27 +179,29 @@ def test_send_data():
 
         var3 = -var3
 
-        diag_manager.advance_field_time(diag_field_id=id_var3)
-        diag_manager.send_data(
+        pyfms.diag_manager.advance_field_time(diag_field_id=id_var3)
+        pyfms.diag_manager.send_data(
             diag_field_id=id_var3,
-            field_shape=var3_shape,
+            field_shape=var3.shape,
             field=var3,
         )
-        diag_manager.send_complete(diag_field_id=id_var3)
+        pyfms.diag_manager.send_complete(diag_field_id=id_var3)
 
         var2 = -var2
 
-        diag_manager.advance_field_time(diag_field_id=id_var2)
-        diag_manager.send_data(
+        pyfms.diag_manager.advance_field_time(diag_field_id=id_var2)
+        pyfms.diag_manager.send_data(
             diag_field_id=id_var2,
-            field_shape=var2_shape,
+            field_shape=var2.shape,
             field=var2,
         )
-        diag_manager.send_complete(diag_field_id=id_var2)
+        pyfms.diag_manager.send_complete(diag_field_id=id_var2)
 
-    diag_manager.end()
+    pyfms.diag_manager.end()
+    pyfms.fms.end()
 
-    pyfms_obj.pyfms_end()
+    assert os.path.isfile("test_send_data.nc")
+    os.remove("test_send_data.nc")
 
 
 if __name__ == "__main__":

@@ -5,9 +5,6 @@ import numpy as np
 import pyfms
 
 
-cfms_path = os.path.dirname(__file__) + "/../../cFMS/cLIBFMS/lib/libcFMS.so"
-
-
 def test_create_input_nml():
     inputnml = open("input.nml", "w")
     inputnml.close()
@@ -16,8 +13,8 @@ def test_create_input_nml():
 
 def test_create_xgrid():
 
-    cfms = pyfms.pyFMS(cFMS_path=cfms_path).cFMS
-    create_xgrid = pyfms.HorizInterp(cfms=cfms).create_xgrid_2dx2d_order1
+    pyfms.fms.init()
+    create_xgrid = pyfms.horiz_interp.create_xgrid_2dx2d_order1
 
     refine = 1
     lon_init = 0.0
@@ -70,8 +67,8 @@ def test_create_xgrid():
     )
 
     # answer checking
-    area = pyfms.GridUtils.get_grid_area(
-        cfms=cfms, nlon=nlon_src, nlat=nlat_src, lon=lon_src, lat=lat_src
+    area = pyfms.grid_utils.get_grid_area(
+        nlon=nlon_src, nlat=nlat_src, lon=lon_src, lat=lat_src
     )
 
     assert xgrid["nxgrid"] == nlon_src * nlat_src

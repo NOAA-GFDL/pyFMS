@@ -21,7 +21,7 @@ repos:
       additional_dependencies: [types-pyyaml]
       name: mypy-pace
       files: pace
-      args: [--config-file, setup.cfg]
+      args: [--config-file, setup.cfg, --disallow-untyped-calls]
 
 -   repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v2.3.0

@@ -49,8 +49,9 @@ remove_input "tests/py_data_override/test_data_override.py"
 
 run_test "pytest tests/py_diag_manager/test_generate_files.py"
 run_test "mpirun -n 1 python -m pytest tests/py_diag_manager/test_diag_manager.py"
-remove_input "tests/py_diag_manager/test_diag_manager.py"
 
-pytest tests/pyfms_utils/test_constants.py
+pytest tests/utils/test_constants.py
+
+pytest tests/test_init.py
 
 rm -rf INPUT *logfile* *warnfile*
