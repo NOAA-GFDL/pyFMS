@@ -21,7 +21,7 @@ extras_requires = {
     "develop": develop_requirements,
 }
 
-requirements: List[str] = ["dacite", "h5netcdf", "numpy", "pyyaml", "mpi4py", "xarray"]
+requirements: List[str] = ["dacite", "h5netcdf", "numpy", "pyyaml", "mpi4py", "xarray", "netcdf4"]
 
 setup(
     author="NOAA/GFDL",
