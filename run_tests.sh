@@ -14,7 +14,7 @@ function run_test() {
     eval $1
     if [ $? -ne 0 ] ; then exit 1 ; fi                                                                                           }
 
-run_test "pytest tests/test_build.py"
+run_test "python -m pytest tests/test_build.py"
 
 test="tests/test_pyfms.py"
 create_input $test
@@ -45,8 +45,8 @@ remove_input "tests/py_data_override/test_data_override.py"
 run_test "python -m pytest tests/py_diag_manager/test_generate_files.py"
 run_test "mpirun -n 1 python -m pytest tests/py_diag_manager/test_diag_manager.py"
 
-python -m pytest tests/utils/test_constants.py
+run_test "python -m pytest tests/utils/test_constants.py"
 
-python -m pytest tests/test_init.py
+run_test "python -m pytest tests/test_init.py"
 
 rm -rf INPUT *logfile* *warnfile*
