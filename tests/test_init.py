@@ -5,6 +5,7 @@ import pytest
 
 import pyfms
 
+
 curr_dir = os.path.dirname(os.path.abspath(__file__))
 par_dir = os.path.dirname(curr_dir)
 
