@@ -1,7 +1,7 @@
 import subprocess
 from typing import List
 
-from setuptools import find_namespace_packages, setup
+from setuptools import find_namespace_packages, setup, find_packages
 from setuptools.command.install import install
 
 

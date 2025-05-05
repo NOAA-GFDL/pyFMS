@@ -1,12 +1,13 @@
 #!/bin/bash
 
-curr_dir=$PWD/cFMS
-install_fms=$curr_dir/FMS/LIBFMS
+top_dir=$PWD
+cfms_dir=$PWD/cFMS
+install_fms=$cfms_dir/FMS/LIBFMS
 
 export FC=mpif90
 export CC=mpicc
 
-cd $curr_dir/FMS
+cd $cfms_dir/FMS
 autoreconf -iv
 export FCFLAGS="$FCFLAGS -fPIC"
 export CFLAGS="$CFLAGS -fPIC"
@@ -21,5 +22,5 @@ export CFLAGS="$CFLAGS -I$install_fms/include"
 export LDFLAGS="$LDFLAGS -lFMS -L$install_fms/lib"
 
 autoreconf -iv
-./configure --prefix=$curr_dir/cLIBFMS
+./configure --prefix=$top_dir/pyfms/cLIBFMS
 make install
