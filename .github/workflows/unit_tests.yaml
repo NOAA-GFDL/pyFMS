@@ -19,6 +19,7 @@ jobs:
 
         - name: install packages
           run: |
+            dnf install -y diffutils
             pip install -v .[test]
             cat cFMS/FMS/config.log
 
