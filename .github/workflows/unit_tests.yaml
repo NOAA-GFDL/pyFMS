@@ -19,8 +19,8 @@ jobs:
 
         - name: install packages
           run: |
-            pip install .[test]
-            cat cFMS/config.log
+            pip install -v .[test]
+            cat cFMS/FMS/config.log
 
         - name: run tests
           run: |
