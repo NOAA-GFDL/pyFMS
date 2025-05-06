@@ -10,8 +10,8 @@ export CC=mpicc
 
 cd $curr_dir/FMS
 autoreconf -iv
-export FCFLAGS="$FCFLAGS -fPIC"
-export CFLAGS="$CFLAGS -fPIC"
+export FCFLAGS="$FCFLAGS `nf-config --fflags` -fPIC"
+export CFLAGS="$CFLAGS `nc-config --cflags` -fPIC"
 ./configure --enable-portable-kinds --with-yaml --prefix=$install_fms
 make install
 
