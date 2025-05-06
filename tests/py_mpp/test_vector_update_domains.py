@@ -66,6 +66,33 @@ def test_vector_update_domains():
             )
 
     """
+    Populating compute domains of fields
+    """
+    x_data[whalo : whalo + xsize_c, shalo : shalo + ysize_c] = global_data1[
+        isc : isc + xsize_c, jsc : jsc + ysize_c
+    ]
+    y_data[whalo : whalo + xsize_c, shalo : shalo + ysize_c] = global_data2[
+        isc : isc + xsize_c, jsc : jsc + ysize_c
+    ]
+
+    gridtype = pyfms.mpp_domains.CGRID_NE
+
+    pyfms.mpp_domains.vector_update_domains(
+        fieldx=x_data,
+        fieldy=y_data,
+        domain_id=domain_id,
+        gridtype=gridtype,
+        whalo=whalo,
+        ehalo=ehalo,
+        shalo=shalo,
+        nhalo=nhalo,
+    )
+
+    """
+    Updating global data for comparison to updated fields
+    """
+
+    """
     Cyclic wrapping of global data
     """
     global_data1[:whalo, shalo : ny + shalo] = global_data1[
@@ -93,30 +120,6 @@ def test_vector_update_domains():
     global_data2[: whalo + nx + ehalo, shalo + ny : shalo + ny + nhalo] = -global_data2[
         whalo + nx + 1 :: -1, ny : ny - 2 : -1
     ]
-
-    """
-    Populating compute domains of fields
-    """
-    x_data[whalo : whalo + xsize_c, shalo : shalo + ysize_c] = global_data1[
-        isc : isc + xsize_c, jsc : jsc + ysize_c
-    ]
-    y_data[whalo : whalo + xsize_c, shalo : shalo + ysize_c] = global_data2[
-        isc : isc + xsize_c, jsc : jsc + ysize_c
-    ]
-
-    gridtype = pyfms.mpp_domains.CGRID_NE
-
-    pyfms.mpp_domains.vector_update_domains(
-        fieldx=x_data,
-        fieldy=y_data,
-        domain_id=domain_id,
-        gridtype=gridtype,
-        whalo=whalo,
-        ehalo=ehalo,
-        shalo=shalo,
-        nhalo=nhalo,
-    )
-
     global_data2[nx - whalo : nx + whalo, ny + 1] = -global_data2[
         whalo + 3 : whalo - 1 : -1, ny + 1
     ]
