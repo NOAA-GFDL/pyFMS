@@ -9,20 +9,21 @@ concurrency:
 jobs:
   pyfms_unit_tests:
     runs-on: ubuntu-latest
-    container:
-      image: ghcr.io/noaa-gfdl/fre-cli:miniconda24_gcc14_v2
     steps:
         - name: Checkout out hash that triggered CI
           uses: actions/checkout@v4
           with:
             submodules: 'recursive'
-
+        - name: Step Python
+          uses: actions/setup-python@v4.6.0
+          with:
+            python-version: '3.11.7'
+        - name: Install OpenMPI for gt4py
+          run: |
+            sudo apt-get install libopenmpi-dev netcdf-bin libnetcdf-dev libnetcdff-dev nco libyaml-dev diffutils
         - name: install packages
           run: |
-            dnf install -y diffutils
-            pip install -v .[test]
-            cat cFMS/FMS/config.log
-
+            pip install .[test]
         - name: run tests
           run: |
             ./run_tests.sh
