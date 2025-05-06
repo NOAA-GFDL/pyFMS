@@ -23,7 +23,7 @@ jobs:
             sudo apt-get install libopenmpi-dev netcdf-bin libnetcdf-dev libnetcdff-dev nco libyaml-dev diffutils
         - name: install packages
           run: |
-            pip install .[test]
+            pip install -e .[test]
         - name: run tests
           run: |
             ./run_tests.sh
