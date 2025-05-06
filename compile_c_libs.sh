@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -xe
+
 curr_dir=$PWD/cFMS
 install_fms=$curr_dir/FMS/LIBFMS
 

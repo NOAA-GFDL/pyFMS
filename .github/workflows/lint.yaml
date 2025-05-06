@@ -26,6 +26,7 @@ jobs:
           run: |
             python -m pip install --upgrade pip setuptools wheel
             pip install .[develop]
+            cat install.log
         - name: Run lint via pre-commit
           run: |
             pre-commit run --all-files
