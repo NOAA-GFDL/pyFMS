@@ -21,10 +21,10 @@ run_test "python -m pytest tests/test_build.py"
 # run_test "python -m pytest -m parallel $test"
 # remove_input $test
 
-# test="tests/py_mpp/test_define_domains.py"
-# create_input $test
-# run_test "mpirun -n 8 python -m pytest -m 'parallel' $test"
-# remove_input $test
+test="tests/py_mpp/test_define_domains.py"
+create_input $test
+run_test "mpirun -n 8 python -m pytest -m 'parallel' $test"
+remove_input $test
 
 # test="tests/py_mpp/test_getset_domains.py"
 # create_input $test
