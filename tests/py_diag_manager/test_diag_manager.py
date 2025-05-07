@@ -107,7 +107,7 @@ def test_send_data():
     id_var3 = pyfms.diag_manager.register_field_array(
         module_name="atm_mod",
         field_name="var_3d",
-        datatype=np.float32,
+        dtype="float32",
         axes=[id_x, id_y, id_z],
         long_name="Var in a lon/lat domain",
         units="muntin",
@@ -135,7 +135,7 @@ def test_send_data():
     id_var2 = pyfms.diag_manager.register_field_array(
         module_name="atm_mod",
         field_name="var_2d",
-        datatype=np.float32,
+        dtype="float32",
         axes=[id_x, id_y],
         long_name="Var in a lon/lat domain",
         units="muntin",
