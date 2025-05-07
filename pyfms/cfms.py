@@ -4,33 +4,58 @@ import os
 import pyfms
 
 
-class cfms:
+_libpath: str = os.path.dirname(__file__) + "/cLIBFMS/lib/libcFMS.so"
+_lib: type[ctypes.CDLL] = ctypes.cdll.LoadLibrary(_libpath)
 
-    __libpath: str = os.path.dirname(__file__) + "/cLIBFMS/lib/libcFMS.so"
-    __lib: type[ctypes.CDLL] = ctypes.cdll.LoadLibrary(__libpath)
-    lib = None
 
-    @classmethod
-    def init(cls):
-        pyfms.constants.setlib(cls.libpath(), cls.lib())
-        pyfms.data_override.setlib(cls.libpath(), cls.lib())
-        pyfms.fms.setlib(cls.libpath(), cls.lib())
-        pyfms.diag_manager.setlib(cls.libpath(), cls.lib())
-        pyfms.grid_utils.setlib(cls.libpath(), cls.lib())
-        pyfms.horiz_interp.setlib(cls.libpath(), cls.lib())
-        pyfms.mpp.setlib(cls.libpath(), cls.lib())
-        pyfms.mpp_domains.setlib(cls.libpath(), cls.lib())
+def init(libpath: str = None):
 
-    @classmethod
-    def changelib(cls, libpath: str):
-        cls.__libpath = libpath
-        cls.__lib = ctypes.cdll.LoadLibrary(cls.__libpath)
-        cls.init()
+    """
+    Initializes the pyfms package by
+    setting the cFMS library in all modules
+    and initializing all constants in each
+    module.  pyFMS will use the library
+    compiled during installation.  Users can override
+    this default library by specifying a cFMS library path
+    """
 
-    @classmethod
-    def lib(cls) -> type[ctypes.CDLL]:
-        return cls.__lib
+    global _libpath, _lib
 
-    @classmethod
-    def libpath(cls) -> str:
-        return cls.__libpath
+    if libpath is not None:
+        _libpath = libpath
+        _lib = ctypes.cdll.LoadLibrary(_libpath)
+
+    pyfms.constants.setlib(_libpath, _lib)
+    pyfms.data_override.setlib(_libpath, _lib)
+    pyfms.fms.setlib(_libpath, _lib)
+    pyfms.diag_manager.setlib(_libpath, _lib)
+    pyfms.grid_utils.setlib(_libpath, _lib)
+    pyfms.horiz_interp.setlib(_libpath, _lib)
+    pyfms.mpp.setlib(_libpath, _lib)
+    pyfms.mpp_domains.setlib(_libpath, _lib)
+
+    pyfms.constants.constants_init()
+    pyfms.data_override.constants_init()
+    pyfms.fms.constants_init()
+    pyfms.diag_manager.constants_init()
+    pyfms.mpp_domains.constants_init()
+
+
+def lib() -> type[ctypes.CDLL]:
+
+    """
+    returns the currently used ctypes.CDLL
+    cFMS object
+    """
+
+    return _lib
+
+
+def libpath() -> str:
+
+    """
+    returns the library path of the currently
+    used cFMS object
+    """
+
+    return _libpath
