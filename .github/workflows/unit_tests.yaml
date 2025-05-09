@@ -24,7 +24,6 @@ jobs:
         - name: install packages
           run: |
             pip install .[test]
-            pip install -e .
         - name: run tests
           run: |
             ./run_tests.sh
