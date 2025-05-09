@@ -1,8 +1,13 @@
 import os
+import sys
 
 import pytest
 
 import pyfms
+
+
+curr_dir = os.path.dirname(os.path.abspath(__file__))
+par_dir = os.path.dirname(curr_dir)
 
 
 def test_write_module():
@@ -28,6 +33,7 @@ def test_share_same_library():
 
 
 def test_load_library_same_object():
+    sys.path.append(par_dir)
 
     """
     Test to ensure the ctypes CDLL Library object
