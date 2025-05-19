@@ -24,5 +24,5 @@ export CFLAGS="$CFLAGS -I$install_fms/include"
 export LDFLAGS="$LDFLAGS -lFMS -L$install_fms/lib"
 
 autoreconf -iv
-./configure --prefix=$pyfms_dir/cLIBFMS
+./configure --with-fms=$install_fms --prefix=$pyfms_dir/cLIBFMS
 make install
