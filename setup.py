@@ -2,8 +2,6 @@ import subprocess
 from typing import List
 
 from setuptools import find_namespace_packages, setup
-
-# from setuptools.command.install import install
 from setuptools.command.build_py import build_py
 
 
