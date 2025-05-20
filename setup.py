@@ -2,19 +2,13 @@ import subprocess
 from typing import List
 
 from setuptools import find_namespace_packages, setup
+
 # from setuptools.command.install import install
 from setuptools.command.build_py import build_py
 
 
-# class CustomInstall(install):
-#     def run(self):
-#         # subprocess.run(["./compile_c_libs.sh"], capture_output=True, text=True)
-#         with open("install.log", "w") as f:
-#             subprocess.run(["./compile_c_libs.sh"], stdout=f)
-#         install.run(self)
 class CustomBuild_Py(build_py):
     def run(self):
-        # subprocess.run(["./compile_c_libs.sh"], capture_output=True, text=True)
         with open("install.log", "w") as f:
             subprocess.run(["./compile_c_libs.sh"], stdout=f)
         build_py.run(self)
@@ -53,7 +47,6 @@ setup(
     name="pyfms",
     license="",
     packages=find_namespace_packages(include=["pyfms", "pyfms.*"]),
-    # cmdclass={"install": CustomInstall},
     cmdclass={"build_py": CustomBuild_Py},
     include_package_data=True,
     url="https://github.com/fmalatino/pyFMS.git",
