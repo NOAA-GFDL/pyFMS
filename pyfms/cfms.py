@@ -4,8 +4,8 @@ import os
 import pyfms
 
 
-_libpath: str = os.path.dirname(__file__) + "/../cFMS/cLIBFMS/lib/libcFMS.so"
-_lib: type[ctypes.CDLL] = ctypes.cdll.LoadLibrary(_libpath)
+_libpath = os.path.dirname(__file__) + "/../cFMS/cLIBFMS/lib/libcFMS.so"
+_lib = ctypes.cdll.LoadLibrary(_libpath)
 
 
 def init(libpath: str = None):
@@ -25,20 +25,14 @@ def init(libpath: str = None):
         _libpath = libpath
         _lib = ctypes.cdll.LoadLibrary(_libpath)
 
-    pyfms.constants.setlib(_libpath, _lib)
-    pyfms.data_override.setlib(_libpath, _lib)
-    pyfms.fms.setlib(_libpath, _lib)
-    pyfms.diag_manager.setlib(_libpath, _lib)
-    pyfms.grid_utils.setlib(_libpath, _lib)
-    pyfms.horiz_interp.setlib(_libpath, _lib)
-    pyfms.mpp.setlib(_libpath, _lib)
-    pyfms.mpp_domains.setlib(_libpath, _lib)
-
-    pyfms.constants.constants_init()
-    pyfms.data_override.constants_init()
-    pyfms.fms.constants_init()
-    pyfms.diag_manager.constants_init()
-    pyfms.mpp_domains.constants_init()
+    pyfms.utils.constants._init(_libpath, _lib)
+    pyfms.utils.grid_utils._init(_libpath, _lib)
+    pyfms.py_data_override.data_override._init(_libpath, _lib)
+    pyfms.py_fms.fms._init(_libpath, _lib)
+    pyfms.py_diag_manager.diag_manager._init(_libpath, _lib)
+    pyfms.py_horiz_interp.horiz_interp._init(_libpath, _lib)
+    pyfms.py_mpp.mpp._init(_libpath, _lib)
+    pyfms.py_mpp.mpp_domains._init(_libpath, _lib)
 
 
 def lib() -> type[ctypes.CDLL]:

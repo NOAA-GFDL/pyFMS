@@ -1,43 +1,39 @@
-from ctypes import CDLL, POINTER, c_bool, c_char_p, c_double, c_float, c_int
 from typing import Any
 
 import numpy as np
 import numpy.typing as npt
 
-
-_libpath: str = None
-_lib: type[CDLL] = None
-
-CFLOAT_MODE: int = None
-CDOUBLE_MODE: int = None
-
-
-def setlib(libpath: str, lib: type[CDLL]):
-
-    """
-    Sets _libpath and _lib module variables associated
-    with the loaded cFMS library.  This function is
-    to be used internally by the cfms module
-    """
-
-    global _libpath, _lib
-
-    _libpath = libpath
-    _lib = lib
+from pyfms.py_data_override import _functions
+from pyfms.utils.ctypes_utils import (
+    get_constant_int,
+    set_array,
+    set_c_bool,
+    set_c_int,
+    set_c_str,
+    set_list,
+)
 
 
-def constants_init():
+# library
+_libpath = None
+_lib = None
 
-    """
-    Initializes parameters used in data_override_init
-    mode=CFLOAT_MODE initializes data_override in 32-bit mode for real variables
-    mode=CDOUBLE_MODE initializes data_override in 64-bit mode for real variables
-    if mode is not specified, both 32-bit and 64-bit modes are initialized
-    """
+# module parameters
+CFLOAT_MODE = None
+CDOUBLE_MODE = None
 
-    global CFLOAT_MODE, CDOUBLE_MODE
-    CFLOAT_MODE = int(c_int.in_dll(_lib, "CFLOAT_MODE").value)
-    CDOUBLE_MODE = int(c_int.in_dll(_lib, "CDOUBLE_MODE").value)
+# module functions
+_cFMS_data_override_init = None
+_cFMS_data_override_set_time = None
+_cFMS_data_override_0d_cfloat = None
+_cFMS_data_override_0d_cdouble = None
+_cFMS_data_override_2d_cfloat = None
+_cFMS_data_override_2d_cdouble = None
+_cFMS_data_override_3d_cfloat = None
+_cFMS_data_override_3d_cdouble = None
+
+_cFMS_data_override_scalars = {}
+_cFMS_data_overrides = {}
 
 
 def init(
@@ -66,50 +62,15 @@ def init(
     load an alternative cFMS and FMS library during cfms.init()
     """
 
-    data_override_init = _lib.cFMS_data_override_init
+    arglist = []
+    set_c_int(atm_domain_id, arglist)
+    set_c_int(ocn_domain_id, arglist)
+    set_c_int(ice_domain_id, arglist)
+    set_c_int(land_domain_id, arglist)
+    set_c_int(land_domainUG_id, arglist)
+    set_c_int(mode, arglist)
 
-    atm_domain_id_t = c_int
-    ocn_domain_id_t = c_int
-    ice_domain_id_t = c_int
-    land_domain_id_t = c_int
-    land_domainUG_id_t = c_int
-    mode_t = c_int
-
-    atm_domain_id_c = (
-        atm_domain_id_t(atm_domain_id) if atm_domain_id is not None else None
-    )
-    ocn_domain_id_c = (
-        ocn_domain_id_t(ocn_domain_id) if ocn_domain_id is not None else None
-    )
-    ice_domain_id_c = (
-        ice_domain_id_t(ice_domain_id) if ice_domain_id is not None else None
-    )
-    land_domain_id_c = (
-        land_domain_id_t(land_domain_id) if land_domain_id is not None else None
-    )
-    land_domainUG_id_c = (
-        land_domainUG_id_t(land_domainUG_id) if land_domainUG_id is not None else None
-    )
-    mode_c = mode_t(mode) if mode is not None else None
-
-    data_override_init.restype = None
-    data_override_init.argtypes = [
-        POINTER(atm_domain_id_t),
-        POINTER(ocn_domain_id_t),
-        POINTER(ice_domain_id_t),
-        POINTER(land_domain_id_t),
-        POINTER(land_domainUG_id_t),
-        POINTER(mode_t),
-    ]
-
-    data_override_init(
-        atm_domain_id_c,
-        ocn_domain_id_c,
-        ice_domain_id_c,
-        land_domain_id_c,
-        land_domainUG_id_c,
-        mode_c,
-    )
+    _cFMS_data_override_init(*arglist)
 
 
 def set_time(
@@ -127,47 +88,23 @@ def set_time(
     targeted time for temporal interpolation in FMS data_override
     """
 
-    data_override_set_time = _lib.cFMS_data_override_set_time
+    arglist = []
+    set_c_int(year, arglist)
+    set_c_int(month, arglist)
+    set_c_int(day, arglist)
+    set_c_int(hour, arglist)
+    set_c_int(minute, arglist)
+    set_c_int(second, arglist)
+    set_c_int(tick, arglist)
+    err_msg = set_c_str(" ", arglist)
 
-    year_t = c_int
-    month_t = c_int
-    day_t = c_int
-    hour_t = c_int
-    minute_t = c_int
-    second_t = c_int
-    tick_t = c_int
-    err_msg_t = c_char_p
-
-    year_c = year_t(year) if year is not None else None
-    month_c = month_t(month) if month is not None else None
-    day_c = day_t(day) if day is not None else None
-    hour_c = hour_t(hour) if hour is not None else None
-    minute_c = minute_t(minute) if minute is not None else None
-    second_c = second_t(second) if second is not None else None
-    tick_c = tick_t(tick) if tick is not None else None
-    err_msg_c = err_msg_t("NONE".encode("utf-8"))
-
-    data_override_set_time.restype = None
-    data_override_set_time.argtypes = [
-        POINTER(year_t),
-        POINTER(month_t),
-        POINTER(day_t),
-        POINTER(hour_t),
-        POINTER(minute_t),
-        POINTER(second_t),
-        POINTER(tick_t),
-        POINTER(err_msg_t),
-    ]
-
-    data_override_set_time(
-        year_c, month_c, day_c, hour_c, minute_c, second_c, tick_c, err_msg_c
-    )
+    _cFMS_data_override_set_time(*arglist)
 
 
 def override_scalar(
     gridname: str,
     fieldname: str,
-    data_type: Any,
+    dtype: str,
     data_index: int = None,
 ) -> np.float32 | np.float64:
 
@@ -178,44 +115,32 @@ def override_scalar(
     data_override.set_time() before calling this function
     """
 
-    data_override_scalar = _lib.cFMS_data_override_0d_cdouble
-    gridname_t = c_char_p
-    fieldname_t = c_char_p
-    data_t = c_float if data_type is np.float32 else c_double
-    override_t = c_bool
-    data_index_t = c_int
+    try:
+        _cFMS_data_override = _cFMS_data_override_scalars[dtype]
+    except KeyError:
+        raise RuntimeError(f"data_override.override_scalar {dtype} not supported")
 
-    gridname_c = gridname_t(gridname.encode("utf-8"))
-    fieldname_c = fieldname_t(fieldname.encode("utf-8"))
-    data_c = data_t(-99.99)
-    override_c = c_bool(False)
-    data_index_c = data_index_t(data_index) if data_index is not None else None
+    arglist = []
+    set_c_str(gridname, arglist)
+    set_c_str(fieldname, arglist)
+    data = set_array(np.array([1.0], dtype=dtype), arglist)
+    override = set_c_bool(False, arglist)
+    set_c_int(data_index, arglist)
 
-    data_override_scalar.restype = None
-    data_override_scalar.argtypes = [
-        gridname_t,
-        fieldname_t,
-        POINTER(data_t),
-        POINTER(override_t),
-        POINTER(data_index_t),
-    ]
+    _cFMS_data_override(*arglist)
 
-    data_override_scalar(gridname_c, fieldname_c, data_c, override_c, data_index_c)
-
-    # TODO:  add check for override
-    return data_c.value
+    return data[0], override.value
 
 
 def override(
     gridname: str,
     fieldname: str,
-    data_shape: list[int],
-    data_type: Any,
+    data: npt.NDArray,
     is_in: int = None,
     ie_in: int = None,
     js_in: int = None,
     je_in: int = None,
-) -> npt.NDArray:
+) -> bool:
 
     """
     pyfms.data_override.override
@@ -224,66 +149,101 @@ def override(
     data_override.set_time() before calling this function
     """
 
-    nshape = len(data_shape)
+    try:
+        _cFMS_data_override = _cFMS_data_overrides[data.ndim][data.dtype.name]
+    except KeyError:
+        raise RuntimeError(
+            (
+                "data_override.override:"
+                f"data of dimensions {data.ndim}"
+                f"and/or of type {data.dtype}"
+            )
+        )
 
-    if data_type is np.float32:
-        if nshape == 2:
-            data_override = _lib.cFMS_data_override_2d_cfloat
-        if nshape == 3:
-            data_override = _lib.cFMS_data_override_3d_cfloat
-    elif data_type is np.float64:
-        if nshape == 2:
-            data_override = _lib.cFMS_data_override_2d_cdouble
-        if nshape == 3:
-            data_override = _lib.cFMS_data_override_3d_cdouble
-    else:
-        # add cFMS_end
-        raise RuntimeError("Data_override, datatype not supported")
+    arglist = []
+    set_c_str(gridname, arglist)
+    set_c_str(fieldname, arglist)
+    set_list(data.shape, np.int32, arglist)
+    set_array(data, arglist)
+    override = set_c_bool(False, arglist)
+    set_c_int(is_in, arglist)
+    set_c_int(ie_in, arglist)
+    set_c_int(js_in, arglist)
+    set_c_int(je_in, arglist)
 
-    ndata = np.prod(data_shape)
+    _cFMS_data_override(*arglist)
 
-    gridname_t = c_char_p
-    fieldname_t = c_char_p
-    data_shape_t = np.ctypeslib.ndpointer(dtype=np.int32, ndim=(1), shape=(nshape))
-    data_t = np.ctypeslib.ndpointer(dtype=data_type, ndim=(nshape), shape=data_shape)
-    override_t = c_bool
-    is_in_t = c_int
-    ie_in_t = c_int
-    js_in_t = c_int
-    je_in_t = c_int
+    return override.value
 
-    gridname_c = gridname_t(gridname.encode("utf-8"))
-    fieldname_c = fieldname_t(fieldname.encode("utf-8"))
-    data_shape_c = np.array(data_shape, dtype=np.int32)
-    data = np.ascontiguousarray(np.zeros(data_shape, dtype=data_type, order="C"))
-    override = override_t(False)
-    is_in_c = is_in_t(is_in) if is_in is not None else None
-    js_in_c = js_in_t(js_in) if js_in is not None else None
-    ie_in_c = ie_in_t(ie_in) if ie_in is not None else None
-    je_in_c = je_in_t(je_in) if je_in is not None else None
 
-    data_override.restype = None
-    data_override.argtypes = [
-        gridname_t,
-        fieldname_t,
-        data_shape_t,
-        data_t,
-        POINTER(override_t),
-        POINTER(is_in_t),
-        POINTER(ie_in_t),
-        POINTER(js_in_t),
-        POINTER(je_in_t),
-    ]
-    data_override(
-        gridname_c,
-        fieldname_c,
-        data_shape_c,
-        data,
-        override,
-        is_in_c,
-        js_in_c,
-        ie_in_c,
-        je_in_c,
-    )
+def _init_constants():
 
-    return data
+    """
+    Initializes parameters used in data_override_init
+    mode=CFLOAT_MODE initializes data_override in 32-bit mode for real variables
+    mode=CDOUBLE_MODE initializes data_override in 64-bit mode for real variables
+    if mode is not specified, both 32-bit and 64-bit modes are initialized
+    """
+
+    global CFLOAT_MODE, CDOUBLE_MODE
+
+    CFLOAT_MODE = get_constant_int(_lib, "CFLOAT_MODE")
+    CDOUBLE_MODE = get_constant_int(_lib, "CDOUBLE_MODE")
+
+
+def _init_functions():
+
+    global _cFMS_data_override_init
+    global _cFMS_data_override_set_time
+    global _cFMS_data_override_0d_cfloat
+    global _cFMS_data_override_0d_cdouble
+    global _cFMS_data_override_2d_cfloat
+    global _cFMS_data_override_2d_cdouble
+    global _cFMS_data_override_3d_cfloat
+    global _cFMS_data_override_3d_cdouble
+    global _cFMS_data_override_scalars
+    global _cFMS_data_overrides
+
+    _functions.define(_lib)
+
+    _cFMS_data_override_init = _lib.cFMS_data_override_init
+    _cFMS_data_override_set_time = _lib.cFMS_data_override_set_time
+    _cFMS_data_override_0d_cfloat = _lib.cFMS_data_override_0d_cfloat
+    _cFMS_data_override_0d_cdouble = _lib.cFMS_data_override_0d_cdouble
+    _cFMS_data_override_2d_cfloat = _lib.cFMS_data_override_2d_cfloat
+    _cFMS_data_override_3d_cfloat = _lib.cFMS_data_override_3d_cfloat
+    _cFMS_data_override_2d_cdouble = _lib.cFMS_data_override_2d_cdouble
+    _cFMS_data_override_3d_cdouble = _lib.cFMS_data_override_3d_cdouble
+
+    _cFMS_data_override_scalars = {
+        "float32": _cFMS_data_override_0d_cfloat,
+        "float64": _cFMS_data_override_0d_cdouble,
+    }
+
+    _cFMS_data_overrides = {
+        2: {
+            "float32": _cFMS_data_override_2d_cfloat,
+            "float64": _cFMS_data_override_2d_cdouble,
+        },
+        3: {
+            "float32": _cFMS_data_override_3d_cfloat,
+            "float64": _cFMS_data_override_3d_cdouble,
+        },
+    }
+
+
+def _init(libpath: str, lib: Any):
+
+    """
+    Sets the library path and library object
+    Initializes constants
+    Initializes the argtypes and restype of functions
+    """
+
+    global _libpath, _lib
+
+    _libpath = libpath
+    _lib = lib
+
+    _init_constants()
+    _init_functions()
