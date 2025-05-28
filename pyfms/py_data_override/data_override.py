@@ -4,7 +4,7 @@ import numpy as np
 import numpy.typing as npt
 
 from pyfms.py_data_override import _functions
-from pyfms.utils.ctypes import (
+from pyfms.utils.ctypes_utils import (
     get_constant_int,
     set_array,
     set_c_bool,

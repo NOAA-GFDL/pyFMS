@@ -5,7 +5,7 @@ from numpy.typing import NDArray
 
 from pyfms.py_mpp import _mpp_domains_functions
 from pyfms.py_mpp.domain import Domain
-from pyfms.utils.ctypes import (
+from pyfms.utils.ctypes_utils import (
     check_str,
     get_constant_int,
     set_array,

@@ -4,7 +4,7 @@ import numpy as np
 from numpy.typing import NDArray
 
 from pyfms.py_diag_manager import _functions
-from pyfms.utils.ctypes import (
+from pyfms.utils.ctypes_utils import (
     check_str,
     get_constant_int,
     set_array,

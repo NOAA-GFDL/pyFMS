@@ -3,7 +3,7 @@ from typing import Any
 import numpy as np
 
 from pyfms.py_mpp import _mpp_functions
-from pyfms.utils.ctypes import check_str, set_c_bool, set_c_int, set_c_str, set_list
+from pyfms.utils.ctypes_utils import check_str, set_c_bool, set_c_int, set_c_str, set_list
 
 
 # library

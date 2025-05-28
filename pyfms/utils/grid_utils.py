@@ -4,7 +4,7 @@ import numpy as np
 import numpy.typing as npt
 
 from pyfms.utils import _grid_utils_functions
-from pyfms.utils.ctypes import set_array, set_c_int
+from pyfms.utils.ctypes_utils import set_array, set_c_int
 
 
 _libpath = None

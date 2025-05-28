@@ -1,6 +1,6 @@
 from typing import Any
 
-from pyfms.utils.ctypes import get_constant_double
+from pyfms.utils.ctypes_utils import get_constant_double
 
 
 _libpath = None
