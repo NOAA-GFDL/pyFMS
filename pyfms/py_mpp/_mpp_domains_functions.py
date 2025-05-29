@@ -183,3 +183,27 @@ def define(lib):
                 c_char_p,  # name
                 POINTER(c_int),  # tile_count
             ]
+
+    # cFMS_v_update_domains_float/double_2/3/4/5d
+    dtypes = {"float": np.float32, "double": np.float64}
+
+    for ndim in range(2, 6):
+        for name, dtype in dtypes.items():
+            function = getattr(lib, f"cFMS_v_update_domains_{name}_{ndim}d")
+            function.restype = None
+            function.argtypes = [
+                npptr(np.int32, shape=(ndim), flags=C),  # fieldxshape
+                npptr(dtype, ndim=(ndim), flags=C),  # fieldx
+                npptr(np.int32, shape=(ndim), flags=C),  # fieldyshape
+                npptr(dtype, ndim=(ndim), flags=C),  # fieldy
+                POINTER(c_int),  # domain_id
+                POINTER(c_int),  # flags
+                POINTER(c_int),  # grid_type
+                POINTER(c_bool),  # complete
+                POINTER(c_int),  # whalo
+                POINTER(c_int),  # ehalo
+                POINTER(c_int),  # shalo
+                POINTER(c_int),  # nhalo
+                c_char_p,  # name
+                POINTER(c_int),  # tile_count
+            ]
