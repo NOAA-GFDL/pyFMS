@@ -1,5 +1,3 @@
-import os
-
 import pytest
 
 import pyfms
@@ -12,7 +10,7 @@ def test_library_loaded():
     """
 
     assert pyfms.cfms._lib is not None
-    
+
 
 def test_share_same_library():
 

@@ -27,6 +27,7 @@ AGRID = None
 FOLD_SOUTH_EDGE = None
 FOLD_WEST_EDGE = None
 FOLD_EAST_EDGE = None
+FOLD_NORTH_EDGE = None
 CYCLIC_GLOBAL_DOMAIN = None
 NUPDATE = None
 EUPDATE = None
@@ -69,6 +70,15 @@ _cFMS_update_domains_int_5d = None
 _cFMS_update_domains_float_5d = None
 _cFMS_update_domains_double_5d = None
 _cFMS_update_domains = {}
+_cFMS_v_update_domains_float_2d = None
+_cFMS_v_update_domains_double_2d = None
+_cFMS_v_update_domains_float_3d = None
+_cFMS_v_update_domains_double_3d = None
+_cFMS_v_update_domains_float_4d = None
+_cFMS_v_update_domains_double_4d = None
+_cFMS_v_update_domains_float_5d = None
+_cFMS_v_update_domains_double_5d = None
+_cFMS_v_update_domains = {}
 
 
 def get_compute_domain(
@@ -554,6 +564,50 @@ def update_domains(
     cFMS_update_this(*arglist)
 
 
+def vector_update_domains(
+    fieldx: NDArray,
+    fieldy: NDArray,
+    domain_id: int = None,
+    flags: int = None,
+    gridtype: int = None,
+    complete: bool = None,
+    whalo: int = None,
+    ehalo: int = None,
+    shalo: int = None,
+    nhalo: int = None,
+    name: str = None,
+    tile_count: int = None,
+):
+    try:
+        cFMS_v_update_this = _cFMS_v_update_domains[fieldx.ndim][fieldx.dtype.name]
+    except KeyError:
+        raise RuntimeError(
+            f"mpp_domains.vector_update:"
+            f"data of dimensions {fieldx.ndim} and/or "
+            f"of type {fieldx.dtype} "
+            "not implemented"
+        )
+    check_str(name, 64, "mpp_domains.vector_update")
+
+    arglist = []
+    set_list(fieldx.shape, np.int32, arglist)
+    set_array(fieldx, arglist)
+    set_list(fieldy.shape, np.int32, arglist)
+    set_array(fieldy, arglist)
+    set_c_int(domain_id, arglist)
+    set_c_int(flags, arglist)
+    set_c_int(gridtype, arglist)
+    set_c_bool(complete, arglist)
+    set_c_int(whalo, arglist)
+    set_c_int(ehalo, arglist)
+    set_c_int(shalo, arglist)
+    set_c_int(nhalo, arglist)
+    set_c_str(name, arglist)
+    set_c_int(tile_count, arglist)
+
+    cFMS_v_update_this(*arglist)
+
+
 def _init_constants():
 
     """
@@ -562,7 +616,7 @@ def _init_constants():
     """
 
     global GLOBAL_DATA_DOMAIN, BGRID_NE, CGRID_NE, DGRID_NE, AGRID
-    global FOLD_SOUTH_EDGE, FOLD_WEST_EDGE, FOLD_EAST_EDGE
+    global FOLD_SOUTH_EDGE, FOLD_WEST_EDGE, FOLD_EAST_EDGE, FOLD_NORTH_EDGE
     global CYCLIC_GLOBAL_DOMAIN
     global NUPDATE, EUPDATE, XUPDATE, YUPDATE
     global NORTH, NORTH_EAST, EAST, SOUTH_EAST
@@ -576,6 +630,7 @@ def _init_constants():
     FOLD_SOUTH_EDGE = get_constant_int(_lib, "FOLD_SOUTH_EDGE")
     FOLD_WEST_EDGE = get_constant_int(_lib, "FOLD_WEST_EDGE")
     FOLD_EAST_EDGE = get_constant_int(_lib, "FOLD_EAST_EDGE")
+    FOLD_NORTH_EDGE = get_constant_int(_lib, "FOLD_NORTH_EDGE")
     CYCLIC_GLOBAL_DOMAIN = get_constant_int(_lib, "CYCLIC_GLOBAL_DOMAIN")
     NUPDATE = get_constant_int(_lib, "NUPDATE")
     EUPDATE = get_constant_int(_lib, "EUPDATE")
@@ -622,6 +677,15 @@ def _init_functions():
     global _cFMS_update_domains_float_5d
     global _cFMS_update_domains_double_5d
     global _cFMS_update_domains
+    global _cFMS_v_update_domains_float_2d
+    global _cFMS_v_update_domains_double_2d
+    global _cFMS_v_update_domains_float_3d
+    global _cFMS_v_update_domains_double_3d
+    global _cFMS_v_update_domains_float_4d
+    global _cFMS_v_update_domains_double_4d
+    global _cFMS_v_update_domains_float_5d
+    global _cFMS_v_update_domains_double_5d
+    global _cFMS_v_update_domains
 
     _cFMS_get_compute_domain = _lib.cFMS_get_compute_domain
     _cFMS_get_data_domain = _lib.cFMS_get_data_domain
@@ -649,6 +713,14 @@ def _init_functions():
     _cFMS_update_domains_int_5d = _lib.cFMS_update_domains_int_5d
     _cFMS_update_domains_float_5d = _lib.cFMS_update_domains_float_5d
     _cFMS_update_domains_double_5d = _lib.cFMS_update_domains_double_5d
+    _cFMS_v_update_domains_float_2d = _lib.cFMS_v_update_domains_float_2d
+    _cFMS_v_update_domains_double_2d = _lib.cFMS_v_update_domains_double_2d
+    _cFMS_v_update_domains_float_3d = _lib.cFMS_v_update_domains_float_3d
+    _cFMS_v_update_domains_double_3d = _lib.cFMS_v_update_domains_double_3d
+    _cFMS_v_update_domains_float_4d = _lib.cFMS_v_update_domains_float_4d
+    _cFMS_v_update_domains_double_4d = _lib.cFMS_v_update_domains_double_4d
+    _cFMS_v_update_domains_float_5d = _lib.cFMS_v_update_domains_float_5d
+    _cFMS_v_update_domains_double_5d = _lib.cFMS_v_update_domains_double_5d
 
     _mpp_domains_functions.define(_lib)
 
@@ -672,6 +744,25 @@ def _init_functions():
             "int": _cFMS_update_domains_int_5d,
             "float32": _cFMS_update_domains_float_5d,
             "float64": _cFMS_update_domains_double_5d,
+        },
+    }
+
+    _cFMS_v_update_domains = {
+        2: {
+            "float32": _cFMS_v_update_domains_float_2d,
+            "float64": _cFMS_v_update_domains_double_2d,
+        },
+        3: {
+            "float32": _cFMS_v_update_domains_float_3d,
+            "float64": _cFMS_v_update_domains_double_3d,
+        },
+        4: {
+            "float32": _cFMS_v_update_domains_float_4d,
+            "float64": _cFMS_v_update_domains_double_4d,
+        },
+        5: {
+            "float32": _cFMS_v_update_domains_float_5d,
+            "float64": _cFMS_v_update_domains_double_5d,
         },
     }
 

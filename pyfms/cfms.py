@@ -4,6 +4,9 @@ import os
 import pyfms
 
 
+_libpath = None
+_lib = None
+
 
 def init(libpath: str = None):
 
@@ -22,12 +25,15 @@ def init(libpath: str = None):
         _libpath = os.path.dirname(__file__) + "/lib/cFMS/lib/libcFMS.so"
         try:
             _lib = ctypes.cdll.LoadLibrary(_libpath)
-        except:
-            print (f"_libpath does not exist.  Please compile cFMS with ./compile.py\
-            or provide a path to cFMS with pyfms.cfms.init(libpath=path_to_cfms_so")
+        except OSError:
+            print(
+                f"{_libpath} does not exist.  Please compile cFMS with ./compile.py\
+                or provide a path to cFMS with pyfms.cfms.init(libpath=path_to_cfms"
+            )
+            return
     else:
         _libpath = libpath
-        _lib = ctypes.cdll.LoadLibrary(_libpath)        
+        _lib = ctypes.cdll.LoadLibrary(_libpath)
 
     pyfms.utils.constants._init(_libpath, _lib)
     pyfms.utils.grid_utils._init(_libpath, _lib)
