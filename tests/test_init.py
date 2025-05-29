@@ -1,8 +1,13 @@
 import os
+import sys
 
 import pytest
 
 import pyfms
+
+
+curr_dir = os.path.dirname(os.path.abspath(__file__))
+par_dir = os.path.dirname(curr_dir)
 
 
 def test_write_module():
@@ -18,10 +23,23 @@ class Module1Class():
 
 
 def test_share_same_library():
-    assert id(pyfms.cfms.lib()) == id(pyfms.mpp_domains.lib())
+
+    """
+    Test to ensure pyfms modules use the same
+    ctypes CDLL library object
+    """
+
+    assert id(pyfms.cfms._lib) == id(pyfms.mpp_domains._lib)
 
 
 def test_load_library_same_object():
+    sys.path.append(par_dir)
+
+    """
+    Test to ensure the ctypes CDLL Library object
+    is instantiated only once
+    """
+
     import module1
 
     myclass = module1.Module1Class()
@@ -30,6 +48,12 @@ def test_load_library_same_object():
 
 @pytest.mark.xfail
 def test_library_load_fail():
+
+    """
+    Partial test to ensure the changelib function
+    works
+    """
+
     pyfms.cfms.changelib(libpath="do_not_exist")
 
 
