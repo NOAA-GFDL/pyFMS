@@ -199,7 +199,7 @@ def define(lib):
                 POINTER(c_int),  # domain_id
                 POINTER(c_int),  # flags
                 POINTER(c_int),  # grid_type
-                POINTER(c_bool), # complete
+                POINTER(c_bool),  # complete
                 POINTER(c_int),  # whalo
                 POINTER(c_int),  # ehalo
                 POINTER(c_int),  # shalo

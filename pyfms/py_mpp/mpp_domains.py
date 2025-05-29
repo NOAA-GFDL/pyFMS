@@ -563,6 +563,7 @@ def update_domains(
 
     cFMS_update_this(*arglist)
 
+
 def vector_update_domains(
     fieldx: NDArray,
     fieldy: NDArray,
