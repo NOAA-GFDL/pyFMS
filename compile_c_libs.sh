@@ -1,15 +1,18 @@
 #!/bin/bash
 
-curr_dir=$PWD/cFMS
-install_fms=$curr_dir/FMS/LIBFMS
+set -xe
+
+pyfms_dir=$PWD/pyfms
+cfms_dir=$PWD/cFMS
+install_fms=$cfms_dir/FMS/LIBFMS
 
 export FC=mpif90
 export CC=mpicc
 
-cd $curr_dir/FMS
+cd $cfms_dir/FMS
 autoreconf -iv
-export FCFLAGS="$FCFLAGS -fPIC"
-export CFLAGS="$CFLAGS -fPIC"
+export FCFLAGS="$FCFLAGS `nf-config --fflags` -fPIC"
+export CFLAGS="$CFLAGS `nc-config --cflags` -fPIC"
 ./configure --enable-portable-kinds --with-yaml --prefix=$install_fms
 make install
 
@@ -21,5 +24,5 @@ export CFLAGS="$CFLAGS -I$install_fms/include"
 export LDFLAGS="$LDFLAGS -lFMS -L$install_fms/lib"
 
 autoreconf -iv
-./configure --prefix=$curr_dir/cLIBFMS
+./configure --with-fms=$install_fms --prefix=$pyfms_dir/cLIBFMS
 make install

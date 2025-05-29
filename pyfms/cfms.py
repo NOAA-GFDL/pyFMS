@@ -4,8 +4,8 @@ import os
 import pyfms
 
 
-_libpath = os.path.dirname(__file__) + "/../cFMS/cLIBFMS/lib/libcFMS.so"
-_lib = ctypes.cdll.LoadLibrary(_libpath)
+_libpath: str = os.path.dirname(__file__) + "/cLIBFMS/lib/libcFMS.so"
+_lib: type[ctypes.CDLL] = ctypes.cdll.LoadLibrary(_libpath)
 
 
 def init(libpath: str = None):
