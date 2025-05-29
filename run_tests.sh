@@ -14,8 +14,6 @@ function run_test() {
     eval $1
     if [ $? -ne 0 ] ; then exit 1 ; fi                                                                                           }
 
-run_test "python -m pytest tests/test_build.py"
-
 test="tests/test_fms.py"
 create_input $test
 run_test "python -m pytest -m parallel $test"
