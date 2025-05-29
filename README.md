@@ -28,8 +28,8 @@ pyfms.cfms.init(libpath=path_to_cfms/libcFMS.so)
 ```
 
 ## compile.py
-In order to compile cFMS, users will need to specify the following
-fields in the script `compile.py`:
+To compile cFMS with the script `compile.py`, users will need to specify the following
+fields:
 
 1.  Fortran and C compilers, for example, as shown below:
 
