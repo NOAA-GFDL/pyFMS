@@ -16,7 +16,7 @@ function run_test() {
 
 run_test "python -m pytest tests/test_build.py"
 
-test="tests/test_pyfms.py"
+test="tests/test_fms.py"
 create_input $test
 run_test "python -m pytest -m parallel $test"
 remove_input $test

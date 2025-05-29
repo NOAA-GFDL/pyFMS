@@ -107,12 +107,12 @@ def test_send_data():
     id_var3 = pyfms.diag_manager.register_field_array(
         module_name="atm_mod",
         field_name="var_3d",
-        datatype=np.float32,
+        dtype="float32",
         axes=[id_x, id_y, id_z],
         long_name="Var in a lon/lat domain",
         units="muntin",
         missing_value=-99.99,
-        range_data=np.array([-1000.0, 1000.0], dtype=np.float32),
+        range_data=[-1000.0, 1000.0],
     )
 
     pyfms.diag_manager.set_field_timestep(
@@ -135,7 +135,7 @@ def test_send_data():
     id_var2 = pyfms.diag_manager.register_field_array(
         module_name="atm_mod",
         field_name="var_2d",
-        datatype=np.float32,
+        dtype="float32",
         axes=[id_x, id_y],
         long_name="Var in a lon/lat domain",
         units="muntin",
@@ -168,33 +168,27 @@ def test_send_data():
     send data
     """
 
-    pyfms.diag_manager.send_data(
-        diag_field_id=id_var3,
-        field_shape=var3.shape,
-        field=var3,
-    )
-
     ntime = 24
     for itime in range(ntime):
 
         var3 = -var3
 
         pyfms.diag_manager.advance_field_time(diag_field_id=id_var3)
-        pyfms.diag_manager.send_data(
+        success = pyfms.diag_manager.send_data(
             diag_field_id=id_var3,
-            field_shape=var3.shape,
             field=var3,
         )
+        assert success
         pyfms.diag_manager.send_complete(diag_field_id=id_var3)
 
         var2 = -var2
 
         pyfms.diag_manager.advance_field_time(diag_field_id=id_var2)
-        pyfms.diag_manager.send_data(
+        success = pyfms.diag_manager.send_data(
             diag_field_id=id_var2,
-            field_shape=var2.shape,
             field=var2,
         )
+        assert success
         pyfms.diag_manager.send_complete(diag_field_id=id_var2)
 
     pyfms.diag_manager.end()

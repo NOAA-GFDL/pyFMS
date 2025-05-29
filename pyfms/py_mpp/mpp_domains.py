@@ -1,101 +1,74 @@
-from ctypes import CDLL, POINTER, c_bool, c_int
+from typing import Any
 
 import numpy as np
 from numpy.typing import NDArray
 
-from ..utils.data_handling import (
-    set_Cchar,
-    setarray_Cbool,
-    setarray_Cdouble,
-    setarray_Cfloat,
-    setarray_Cint32,
-    setscalar_Cbool,
-    setscalar_Cint32,
+from pyfms.py_mpp import _mpp_domains_functions
+from pyfms.py_mpp.domain import Domain
+from pyfms.utils.ctypes_utils import (
+    check_str,
+    get_constant_int,
+    set_array,
+    set_c_bool,
+    set_c_int,
+    set_c_str,
+    set_list,
 )
-from .domain import Domain
 
 
-_libpath: str = None
-_lib: type[CDLL] = None
+_libpath = None
+_lib = None
 
-GLOBAL_DATA_DOMAIN: int = None
-BGRID_NE: int = None
-CGRID_NE: int = None
-DGRID_NE: int = None
-AGRID: int = None
-FOLD_SOUTH_EDGE: int = None
-FOLD_WEST_EDGE: int = None
-FOLD_EAST_EDGE: int = None
-CYCLIC_GLOBAL_DOMAIN: int = None
-NUPDATE: int = None
-EUPDATE: int = None
-XUPDATE: int = None
-YUPDATE: int = None
-NORTH: int = None
-NORTH_EAST: int = None
-EAST: int = None
-SOUTH_EAST: int = None
-CORNER: int = None
-CENTER: int = None
-SOUTH: int = None
-WEST: int = None
-SOUTH_WEST: int = None
+GLOBAL_DATA_DOMAIN = None
+BGRID_NE = None
+CGRID_NE = None
+DGRID_NE = None
+AGRID = None
+FOLD_SOUTH_EDGE = None
+FOLD_WEST_EDGE = None
+FOLD_EAST_EDGE = None
+CYCLIC_GLOBAL_DOMAIN = None
+NUPDATE = None
+EUPDATE = None
+XUPDATE = None
+YUPDATE = None
+NORTH = None
+NORTH_EAST = None
+EAST = None
+SOUTH_EAST = None
+CORNER = None
+CENTER = None
+SOUTH = None
+WEST = None
+SOUTH_WEST = None
 
-
-def setlib(libpath: str, lib: type[CDLL]):
-
-    """
-    Sets _libpath and _lib module variables associated
-    with the loaded cFMS library.  This function is
-    to be used internally by the cfms module
-    """
-
-    global _libpath, _lib
-
-    _libpath = libpath
-    _lib = lib
-
-
-def constants_init():
-
-    """
-    Retrieves and assigns mpp_domain related parameters
-    from FMS
-    """
-
-    global GLOBAL_DATA_DOMAIN, BGRID_NE, CGRID_NE, DGRID_NE, AGRID
-    global FOLD_SOUTH_EDGE, FOLD_WEST_EDGE, FOLD_EAST_EDGE
-    global CYCLIC_GLOBAL_DOMAIN
-    global NUPDATE, EUPDATE, XUPDATE, YUPDATE
-    global NORTH, NORTH_EAST, EAST, SOUTH_EAST
-    global CORNER, CENTER, SOUTH, SOUTH_WEST
-
-    def get_constant(variable):
-        return int(c_int.in_dll(_lib, variable).value)
-
-    GLOBAL_DATA_DOMAIN = get_constant("GLOBAL_DATA_DOMAIN")
-    BGRID_NE = get_constant("BGRID_NE")
-    CGRID_NE = get_constant("CGRID_NE")
-    DGRID_NE = get_constant("DGRID_NE")
-    AGRID = get_constant("AGRID")
-    FOLD_SOUTH_EDGE = get_constant("FOLD_SOUTH_EDGE")
-    FOLD_WEST_EDGE = get_constant("FOLD_WEST_EDGE")
-    FOLD_EAST_EDGE = get_constant("FOLD_EAST_EDGE")
-    CYCLIC_GLOBAL_DOMAIN = get_constant("CYCLIC_GLOBAL_DOMAIN")
-    NUPDATE = get_constant("NUPDATE")
-    EUPDATE = get_constant("EUPDATE")
-    XUPDATE = get_constant("XUPDATE")
-    YUPDATE = get_constant("YUPDATE")
-    NORTH = get_constant("NORTH")
-    NORTH_EAST = get_constant("NORTH_EAST")
-    EAST = get_constant("EAST")
-    SOUTH_EAST = get_constant("SOUTH_EAST")
-    CORNER = get_constant("CORNER")
-    CENTER = get_constant("CENTER")
-    SOUTH = get_constant("SOUTH")
-    SOUTH_WEST = get_constant("SOUTH_WEST")
-    WEST = get_constant("WEST")
-    NORTH_WEST = get_constant("NORTH_WEST")
+_cFMS_get_compute_domain = None
+_cFMS_get_data_domain = None
+_cFMS_define_domains = None
+_cFMS_define_io_domain = None
+_cFMS_define_layout = None
+_cFMS_define_nest_domains = None
+_cFMS_domain_is_initialized = None
+_cFMS_get_domain_name = None
+_cFMS_get_layout = None
+_cFMS_get_domain_pelist = None
+_cFMS_set_compute_domain = None
+_cFMS_set_current_domain = None
+_cFMS_set_data_domain = None
+_cFMS_set_global_domain = None
+_cFMS_update_domains_int_2d = None
+_cFMS_update_domains_float_2d = None
+_cFMS_update_domains_double_2d = None
+_cFMS_update_domains_int_3d = None
+_cFMS_update_domains_float_3d = None
+_cFMS_update_domains_double_3d = None
+_cFMS_update_domains_int_4d = None
+_cFMS_update_domains_float_4d = None
+_cFMS_update_domains_double_4d = None
+_cFMS_update_domains_int_5d = None
+_cFMS_update_domains_float_5d = None
+_cFMS_update_domains_double_5d = None
+_cFMS_update_domains = {}
 
 
 def get_compute_domain(
@@ -113,93 +86,37 @@ def get_compute_domain(
     to update the pyfms domain object.
     """
 
-    _cfms_get_compute_domain = _lib.cFMS_get_compute_domain
+    arglist = []
+    set_c_int(domain_id, arglist)
+    xbegin = set_c_int(0, arglist)
+    xend = set_c_int(0, arglist)
+    ybegin = set_c_int(0, arglist)
+    yend = set_c_int(0, arglist)
+    xsize = set_c_int(0, arglist)
+    xmax_size = set_c_int(0, arglist)
+    ysize = set_c_int(0, arglist)
+    ymax_size = set_c_int(0, arglist)
+    x_is_global = set_c_bool(False, arglist)
+    y_is_global = set_c_bool(False, arglist)
+    set_c_int(tile_count, arglist)
+    set_c_int(position, arglist)
+    set_c_int(whalo, arglist)
+    set_c_int(shalo, arglist)
 
-    default_i = 0
-    default_b = False
-
-    domain_id_t = c_int
-    xbegin_t = c_int
-    xend_t = c_int
-    ybegin_t = c_int
-    yend_t = c_int
-    xsize_t = c_int
-    xmax_size_t = c_int
-    ysize_t = c_int
-    ymax_size_t = c_int
-    x_is_global_t = c_bool
-    y_is_global_t = c_bool
-    tile_count_t = c_int
-    position_t = c_int
-    whalo_t = c_int
-    shalo_t = c_int
-
-    xbegin_c = xbegin_t(default_i)
-    xend_c = xend_t(default_i)
-    ybegin_c = ybegin_t(default_i)
-    yend_c = yend_t(default_i)
-    xsize_c = xsize_t(default_i)
-    xmax_size_c = xmax_size_t(default_i)
-    ysize_c = ysize_t(default_i)
-    ymax_size_c = ymax_size_t(default_i)
-    x_is_global_c = x_is_global_t(default_b)
-    y_is_global_c = y_is_global_t(default_b)
-    domain_id_c = domain_id_t(domain_id) if domain_id is not None else None
-    tile_count_c = tile_count_t(tile_count) if tile_count is not None else None
-    position_c = position_t(position) if position is not None else None
-    whalo_c = whalo_t(whalo) if whalo is not None else None
-    shalo_c = shalo_t(shalo) if shalo is not None else None
-
-    _cfms_get_compute_domain.argtypes = [
-        POINTER(domain_id_t),
-        POINTER(xbegin_t),
-        POINTER(xend_t),
-        POINTER(ybegin_t),
-        POINTER(yend_t),
-        POINTER(xsize_t),
-        POINTER(xmax_size_t),
-        POINTER(ysize_t),
-        POINTER(ymax_size_t),
-        POINTER(x_is_global_t),
-        POINTER(y_is_global_t),
-        POINTER(tile_count_t),
-        POINTER(position_t),
-        POINTER(whalo_t),
-        POINTER(shalo_t),
-    ]
-
-    _cfms_get_compute_domain.restype = None
-
-    _cfms_get_compute_domain(
-        domain_id_c,
-        xbegin_c,
-        xend_c,
-        ybegin_c,
-        yend_c,
-        xsize_c,
-        xmax_size_c,
-        ysize_c,
-        ymax_size_c,
-        x_is_global_c,
-        y_is_global_c,
-        tile_count_c,
-        position_c,
-        whalo_c,
-        shalo_c,
-    )
+    _cFMS_get_compute_domain(*arglist)
 
     return dict(
-        domain_id=domain_id_c.value,
-        isc=xbegin_c.value,
-        jsc=ybegin_c.value,
-        iec=xend_c.value,
-        jec=yend_c.value,
-        xsize_c=xsize_c.value,
-        ysize_c=ysize_c.value,
-        xmax_size_c=xmax_size_c.value,
-        ymax_size_c=ymax_size_c.value,
-        x_is_global_c=x_is_global_c.value,
-        y_is_global_c=y_is_global_c.value,
+        domain_id_c=domain_id,
+        isc=xbegin.value,
+        jsc=ybegin.value,
+        iec=xend.value,
+        jec=yend.value,
+        xsize_c=xsize.value,
+        ysize_c=ysize.value,
+        xmax_size_c=xmax_size.value,
+        ymax_size_c=ymax_size.value,
+        x_is_global_c=x_is_global.value,
+        y_is_global_c=y_is_global.value,
     )
 
 
@@ -218,93 +135,37 @@ def get_data_domain(
     to update the pyfms domain object.
     """
 
-    _cfms_get_data_domain = _lib.cFMS_get_data_domain
+    arglist = []
+    set_c_int(domain_id, arglist)
+    xbegin = set_c_int(0, arglist)
+    xend = set_c_int(0, arglist)
+    ybegin = set_c_int(0, arglist)
+    yend = set_c_int(0, arglist)
+    xsize = set_c_int(0, arglist)
+    xmax_size = set_c_int(0, arglist)
+    ysize = set_c_int(0, arglist)
+    ymax_size = set_c_int(0, arglist)
+    x_is_global = set_c_bool(False, arglist)
+    y_is_global = set_c_bool(False, arglist)
+    set_c_int(tile_count, arglist)
+    set_c_int(position, arglist)
+    set_c_int(whalo, arglist)
+    set_c_int(shalo, arglist)
 
-    default_i = 0
-    default_b = False
-
-    domain_id_t = c_int
-    xbegin_t = c_int
-    xend_t = c_int
-    ybegin_t = c_int
-    yend_t = c_int
-    xsize_t = c_int
-    xmax_size_t = c_int
-    ysize_t = c_int
-    ymax_size_t = c_int
-    x_is_global_t = c_bool
-    y_is_global_t = c_bool
-    tile_count_t = c_int
-    position_t = c_int
-    whalo_t = c_int
-    shalo_t = c_int
-
-    xbegin_c = xbegin_t(default_i)
-    xend_c = xend_t(default_i)
-    ybegin_c = ybegin_t(default_i)
-    yend_c = yend_t(default_i)
-    xsize_c = xsize_t(default_i)
-    xmax_size_c = xmax_size_t(default_i)
-    ysize_c = ysize_t(default_i)
-    ymax_size_c = ymax_size_t(default_i)
-    x_is_global_c = x_is_global_t(default_b)
-    y_is_global_c = y_is_global_t(default_b)
-    domain_id_c = domain_id_t(domain_id) if domain_id is not None else None
-    tile_count_c = tile_count_t(tile_count) if tile_count is not None else None
-    position_c = position_t(position) if position is not None else None
-    whalo_c = whalo_t(whalo) if whalo is not None else None
-    shalo_c = shalo_t(shalo) if shalo is not None else None
-
-    _cfms_get_data_domain.argtypes = [
-        POINTER(domain_id_t),
-        POINTER(xbegin_t),
-        POINTER(xend_t),
-        POINTER(ybegin_t),
-        POINTER(yend_t),
-        POINTER(xsize_t),
-        POINTER(xmax_size_t),
-        POINTER(ysize_t),
-        POINTER(ymax_size_t),
-        POINTER(x_is_global_t),
-        POINTER(y_is_global_t),
-        POINTER(tile_count_t),
-        POINTER(position_t),
-        POINTER(whalo_t),
-        POINTER(shalo_t),
-    ]
-
-    _cfms_get_data_domain.restype = None
-
-    _cfms_get_data_domain(
-        domain_id_c,
-        xbegin_c,
-        xend_c,
-        ybegin_c,
-        yend_c,
-        xsize_c,
-        xmax_size_c,
-        ysize_c,
-        ymax_size_c,
-        x_is_global_c,
-        y_is_global_c,
-        tile_count_c,
-        position_c,
-        whalo_c,
-        shalo_c,
-    )
+    _cFMS_get_data_domain(*arglist)
 
     return dict(
-        domain_id=domain_id_c.value,
-        isd=xbegin_c.value,
-        jsd=ybegin_c.value,
-        ied=xend_c.value,
-        jed=yend_c.value,
-        xsize_d=xsize_c.value,
-        ysize_d=ysize_c.value,
-        xmax_size_d=xmax_size_c.value,
-        ymax_size_d=ymax_size_c.value,
-        x_is_global_d=x_is_global_c.value,
-        y_is_global_d=y_is_global_c.value,
+        domain_id=domain_id,
+        isd=xbegin.value,
+        jsd=ybegin.value,
+        ied=xend.value,
+        jed=yend.value,
+        xsize_d=xsize.value,
+        ysize_d=ysize.value,
+        xmax_size_d=xmax_size.value,
+        ymax_size_d=ymax_size.value,
+        x_is_global_d=x_is_global.value,
+        y_is_global_d=y_is_global.value,
     )
 
 
@@ -341,104 +202,33 @@ def define_domains(
     corresponds to the saved FmsMppDomain2D derived type in cFMS
     """
 
-    _cfms_define_domains = _lib.cFMS_define_domains
+    arglist = []
+    set_list(global_indices, np.int32, arglist)
+    set_list(layout, np.int32, arglist)
+    set_c_int(1 if pelist is None else len(pelist), arglist)
+    set_list(pelist, np.int32, arglist)
+    set_c_int(xflags, arglist)
+    set_c_int(yflags, arglist)
+    set_c_int(xhalo, arglist)
+    set_c_int(yhalo, arglist)
+    set_list(xextent, np.int32, arglist)
+    set_list(yextent, np.int32, arglist)
+    set_list(maskmap, np.bool, arglist)
+    set_c_str(name, arglist)
+    set_c_bool(symmetry, arglist)
+    set_list(memory_size, np.int32, arglist)
+    set_c_int(whalo, arglist)
+    set_c_int(ehalo, arglist)
+    set_c_int(shalo, arglist)
+    set_c_int(nhalo, arglist)
+    set_c_bool(is_mosaic, arglist)
+    set_c_int(tile_count, arglist)
+    set_c_int(tile_id, arglist)
+    set_c_bool(complete, arglist)
+    set_c_int(x_cyclic_offset, arglist)
+    set_c_int(y_cyclic_offset, arglist)
 
-    global_indices_arr = np.array(global_indices, dtype=np.int32)
-    layout_arr = np.array(layout, dtype=np.int32)
-    xextent_arr = np.array(xextent, dtype=np.int32) if xextent is not None else None
-    yextent_arr = np.array(yextent, dtype=np.int32) if yextent is not None else None
-    maskmap_arr = np.array(maskmap, dtype=np.bool_) if maskmap is not None else None
-    memory_size_arr = (
-        np.array(memory_size, dtype=np.int32) if memory_size is not None else None
-    )
-
-    if pelist is not None:
-        pelist_arr = np.array(pelist, dtype=np.int32)
-        npelist = len(pelist)
-    else:
-        pelist_arr = None
-        npelist = 1
-
-    global_indices_p, global_indices_t = setarray_Cint32(global_indices_arr)
-    layout_p, layout_t = setarray_Cint32(layout_arr)
-    npelist_c, npelist_t = setscalar_Cint32(npelist)
-    pelist_p, pelist_t = setarray_Cint32(pelist_arr)
-    xflags_c, xflags_t = setscalar_Cint32(xflags)
-    yflags_c, yflags_t = setscalar_Cint32(yflags)
-    xhalo_c, xhalo_t = setscalar_Cint32(xhalo)
-    yhalo_c, yhalo_t = setscalar_Cint32(yhalo)
-    xextent_p, xextent_t = setarray_Cint32(xextent_arr)
-    yextent_p, yextent_t = setarray_Cint32(yextent_arr)
-    maskmap_p, maskmap_t = setarray_Cbool(maskmap_arr)
-    name_c, name_t = set_Cchar(name)
-    symmetry_c, symmetry_t = setscalar_Cbool(symmetry)
-    memory_size_p, memory_size_t = setarray_Cint32(memory_size_arr)
-    whalo_c, whalo_t = setscalar_Cint32(whalo)
-    ehalo_c, ehalo_t = setscalar_Cint32(ehalo)
-    shalo_c, shalo_t = setscalar_Cint32(shalo)
-    nhalo_c, nhalo_t = setscalar_Cint32(nhalo)
-    is_mosaic_c, is_mosaic_t = setscalar_Cbool(is_mosaic)
-    tile_count_c, tile_count_t = setscalar_Cint32(tile_count)
-    tile_id_c, tile_id_t = setscalar_Cint32(tile_id)
-    complete_c, complete_t = setscalar_Cbool(complete)
-    x_cyclic_offset_c, x_cyclic_offset_t = setscalar_Cint32(x_cyclic_offset)
-    y_cyclic_offset_c, y_cyclic_offset_t = setscalar_Cint32(y_cyclic_offset)
-
-    _cfms_define_domains.argtypes = [
-        global_indices_t,
-        layout_t,
-        npelist_t,
-        pelist_t,
-        xflags_t,
-        yflags_t,
-        xhalo_t,
-        yhalo_t,
-        xextent_t,
-        yextent_t,
-        maskmap_t,
-        name_t,
-        symmetry_t,
-        memory_size_t,
-        whalo_t,
-        ehalo_t,
-        shalo_t,
-        nhalo_t,
-        is_mosaic_t,
-        tile_count_t,
-        tile_id_t,
-        complete_t,
-        x_cyclic_offset_t,
-        y_cyclic_offset_t,
-    ]
-
-    _cfms_define_domains.restype = c_int
-
-    domain_id = _cfms_define_domains(
-        global_indices_p,
-        layout_p,
-        npelist_c,
-        pelist_p,
-        xflags_c,
-        yflags_c,
-        xhalo_c,
-        yhalo_c,
-        xextent_p,
-        yextent_p,
-        maskmap_p,
-        name_c,
-        symmetry_c,
-        memory_size_p,
-        whalo_c,
-        ehalo_c,
-        shalo_c,
-        nhalo_c,
-        is_mosaic_c,
-        tile_count_c,
-        tile_id_c,
-        complete_c,
-        x_cyclic_offset_c,
-        y_cyclic_offset_c,
-    )
+    domain_id = _cFMS_define_domains(*arglist)
 
     compute = get_compute_domain(
         domain_id=domain_id, tile_count=tile_count, whalo=whalo, shalo=shalo
@@ -447,11 +237,12 @@ def define_domains(
         domain_id=domain_id, tile_count=tile_count, whalo=whalo, shalo=shalo
     )
 
-    domain = Domain()
+    domain = Domain(domain_id=domain_id)
     for key in compute:
         setattr(domain, key, compute[key])
     for key in data:
         setattr(domain, key, data[key])
+
     return domain
 
 
@@ -461,17 +252,11 @@ def define_io_domain(io_layout: list[int], domain_id: int):
     Defines the io domain for domain with domain_id
     """
 
-    _cfms_define_io_domain = _lib.cFMS_define_io_domain
+    arglist = []
+    set_list(io_layout, np.int32, arglist)
+    set_c_int(domain_id, arglist)
 
-    io_layout_arr = np.array(io_layout, dtype=np.int32)
-
-    io_layout_p, io_layout_t = setarray_Cint32(io_layout_arr)
-    domain_id_c, domain_id_t = setscalar_Cint32(domain_id)
-
-    _cfms_define_io_domain.argtypes = [io_layout_t, domain_id_t]
-    _cfms_define_io_domain.restype = None
-
-    _cfms_define_io_domain(io_layout_p, domain_id_c)
+    _cFMS_define_io_domain(*arglist)
 
 
 def define_layout(global_indices: list[int], ndivs: int) -> list:
@@ -480,20 +265,12 @@ def define_layout(global_indices: list[int], ndivs: int) -> list:
     Defines the layout associated with a domain decomposition
     """
 
-    layout = np.empty(shape=2, dtype=np.int32, order="C")
+    arglist = []
+    set_list(global_indices, np.int32, arglist)
+    set_c_int(ndivs, arglist)
+    layout = set_list([0] * 2, np.int32, arglist)
 
-    global_indices_arr = np.array(global_indices, dtype=np.int32)
-
-    _cfms_define_layout = _lib.cFMS_define_layout
-
-    global_indices_p, global_indices_t = setarray_Cint32(global_indices_arr)
-    ndivs_c, ndivs_t = setscalar_Cint32(ndivs)
-    layout_p, layout_t = setarray_Cint32(layout)
-
-    _cfms_define_layout.argtypes = [global_indices_t, ndivs_t, layout_t]
-    _cfms_define_layout.restype = None
-
-    _cfms_define_layout(global_indices_p, ndivs_c, layout_p)
+    _cFMS_define_layout(*arglist)
 
     return layout.tolist()
 
@@ -522,71 +299,24 @@ def define_nest_domains(
     type saved in cFMS
     """
 
-    _cfms_define_nest_domain = _lib.cFMS_define_nest_domains
+    arglist = []
+    set_c_int(num_nest, arglist)
+    set_c_int(ntiles, arglist)
+    set_list(nest_level, np.int32, arglist)
+    set_list(tile_fine, np.int32, arglist)
+    set_list(tile_coarse, np.int32, arglist)
+    set_list(istart_coarse, np.int32, arglist)
+    set_list(icount_coarse, np.int32, arglist)
+    set_list(jstart_coarse, np.int32, arglist)
+    set_list(jcount_coarse, np.int32, arglist)
+    set_list(npes_nest_tile, np.int32, arglist)
+    set_list(x_refine, np.int32, arglist)
+    set_list(y_refine, np.int32, arglist)
+    set_c_int(domain_id, arglist)
+    set_c_int(extra_halo, arglist)
+    set_c_str(name, arglist)
 
-    nest_level_arr = np.array(nest_level, dtype=np.int32)
-    tile_fine_arr = np.array(tile_fine, dtype=np.int32)
-    tile_coarse_arr = np.array(tile_coarse, dtype=np.int32)
-    istart_coarse_arr = np.array(istart_coarse, dtype=np.int32)
-    jstart_coarse_arr = np.array(jstart_coarse, dtype=np.int32)
-    icount_coarse_arr = np.array(icount_coarse, dtype=np.int32)
-    jcount_coarse_arr = np.array(jcount_coarse, dtype=np.int32)
-    npes_nest_tile_arr = np.array(npes_nest_tile, dtype=np.int32)
-    x_refine_arr = np.array(x_refine, dtype=np.int32)
-    y_refine_arr = np.array(y_refine, dtype=np.int32)
-
-    num_nest_p, num_nest_t = setscalar_Cint32(num_nest)
-    ntiles_c, ntiles_t = setscalar_Cint32(ntiles)
-    nest_level_p, nest_level_t = setarray_Cint32(nest_level_arr)
-    tile_fine_p, tile_fine_t = setarray_Cint32(tile_fine_arr)
-    tile_coarse_p, tile_coarse_t = setarray_Cint32(tile_coarse_arr)
-    istart_coarse_p, istart_coarse_t = setarray_Cint32(istart_coarse_arr)
-    icount_coarse_p, icount_coarse_t = setarray_Cint32(icount_coarse_arr)
-    jstart_coarse_p, jstart_coarse_t = setarray_Cint32(jstart_coarse_arr)
-    jcount_coarse_p, jcount_coarse_t = setarray_Cint32(jcount_coarse_arr)
-    npes_nest_tile_p, npes_nest_tile_t = setarray_Cint32(npes_nest_tile_arr)
-    x_refine_p, x_refine_t = setarray_Cint32(x_refine_arr)
-    y_refine_p, y_refine_t = setarray_Cint32(y_refine_arr)
-    domain_id_c, domain_id_t = setscalar_Cint32(domain_id)
-    extra_halo_c, extra_halo_t = setscalar_Cint32(extra_halo)
-    name_p, name_t = set_Cchar(name)
-
-    _cfms_define_nest_domain.argtypes = [
-        num_nest_t,
-        ntiles_t,
-        nest_level_t,
-        tile_fine_t,
-        tile_coarse_t,
-        istart_coarse_t,
-        icount_coarse_t,
-        jstart_coarse_t,
-        jcount_coarse_t,
-        npes_nest_tile_t,
-        x_refine_t,
-        y_refine_t,
-        domain_id_t,
-        extra_halo_t,
-        name_t,
-    ]
-    _cfms_define_nest_domain.restype = c_int
-
-    return _cfms_define_nest_domain(
-        num_nest_p,
-        ntiles_c,
-        nest_level_p,
-        tile_fine_p,
-        tile_coarse_p,
-        istart_coarse_p,
-        icount_coarse_p,
-        jstart_coarse_p,
-        jcount_coarse_p,
-        npes_nest_tile_p,
-        x_refine_p,
-        y_refine_p,
-        domain_id_c,
-        extra_halo_c,
-        name_p,
-    )
+    return _cFMS_define_nest_domains(*arglist)
 
 
 def domain_is_initialized(domain_id: int) -> bool:
@@ -596,14 +326,10 @@ def domain_is_initialized(domain_id: int) -> bool:
     else, returns False
     """
 
-    _cfms_domain_is_initialized = _lib.cFMS_domain_is_initialized
+    arglist = []
+    set_c_int(domain_id, arglist)
 
-    domain_id_c, domain_id_t = setscalar_Cint32(domain_id)
-
-    _cfms_domain_is_initialized.argtypes = [domain_id_t]
-    _cfms_domain_is_initialized.restype = c_bool
-
-    return _cfms_domain_is_initialized(domain_id_c)
+    return _cFMS_domain_is_initialized(*arglist)
 
 
 def get_domain_name(domain_id: int) -> str:
@@ -612,19 +338,13 @@ def get_domain_name(domain_id: int) -> str:
     Returns the domain name associated with domain_id
     """
 
-    _cfms_get_domain_name = _lib.cFMS_get_domain_name
+    arglist = []
+    name = set_c_str(" ", arglist)
+    set_c_int(domain_id, arglist)
 
-    domain_name = ""
+    _cFMS_get_domain_name(*arglist)
 
-    domain_name_c, domain_name_t = set_Cchar(domain_name)
-    domain_id_c, domain_id_t = setscalar_Cint32(domain_id)
-
-    _cfms_get_domain_name.argtypes = [domain_name_t, domain_id_t]
-    _cfms_get_domain_name.restype = None
-
-    _cfms_get_domain_name(domain_name_c, domain_id_c)
-
-    return domain_name_c.value.decode("utf-8")
+    return name.value.decode("utf-8")
 
 
 def get_layout(domain_id: int) -> list[int]:
@@ -633,19 +353,13 @@ def get_layout(domain_id: int) -> list[int]:
     Returns the layout associated with domain_id
     """
 
-    layout = np.empty(shape=2, dtype=np.int32, order="C")
+    arglist = []
+    layout = set_list([0] * 2, np.int32, arglist)
+    set_c_int(domain_id, arglist)
 
-    _cfms_get_layout = _lib.cFMS_get_layout
+    _cFMS_get_layout(layout, domain_id)
 
-    layout_p, layout_t = setarray_Cint32(layout)
-    domain_id_c, domain_id_t = setscalar_Cint32(domain_id)
-
-    _cfms_get_layout.argtypes = [layout_t, domain_id_t]
-    _cfms_get_layout.restype = None
-
-    _cfms_get_layout(layout_p, domain_id_c)
-
-    return layout_p.tolist()
+    return layout.tolist()
 
 
 def get_domain_pelist(domain_id: int) -> list[int]:
@@ -654,20 +368,15 @@ def get_domain_pelist(domain_id: int) -> list[int]:
     Returns the pelist associated with domain_id
     """
 
-    npes = c_int.in_dll(_lib, "cFMS_pelist_npes")
-    pelist = np.empty(shape=npes.value, dtype=np.int32, order="C")
+    npes = get_constant_int(_lib, "cFMS_pelist_npes")
 
-    _cfms_get_domain_pelist = _lib.cFMS_get_domain_pelist
+    arglist = []
+    pelist = set_list([0] * npes, np.int32, arglist)
+    set_c_int(domain_id, arglist)
 
-    pelist_p, pelist_t = setarray_Cint32(pelist)
-    domain_id_c, domain_id_t = setscalar_Cint32(domain_id)
+    _cFMS_get_domain_pelist(*arglist)
 
-    _cfms_get_domain_pelist.argtypes = [pelist_t, domain_id_t]
-    _cfms_get_domain_pelist.restype = None
-
-    _cfms_get_domain_pelist(pelist_p, domain_id_c)
-
-    return pelist_p.tolist()
+    return pelist.tolist()
 
 
 def set_compute_domain(
@@ -694,51 +403,21 @@ def set_compute_domain(
     to update the pyDomain object
     """
 
-    _cfms_set_compute_domain = _lib.cFMS_set_compute_domain
+    arglist = []
+    set_c_int(domain_id, arglist)
+    set_c_int(xbegin, arglist)
+    set_c_int(xend, arglist)
+    set_c_int(ybegin, arglist)
+    set_c_int(yend, arglist)
+    set_c_int(xsize, arglist)
+    set_c_int(ysize, arglist)
+    set_c_bool(x_is_global, arglist)
+    set_c_bool(y_is_global, arglist)
+    set_c_int(tile_count, arglist)
+    set_c_int(whalo, arglist)
+    set_c_int(shalo, arglist)
 
-    domain_id_c, domain_id_t = setscalar_Cint32(domain_id)
-    xbegin_c, xbegin_t = setscalar_Cint32(xbegin)
-    xend_c, xend_t = setscalar_Cint32(xend)
-    ybegin_c, ybegin_t = setscalar_Cint32(ybegin)
-    yend_c, yend_t = setscalar_Cint32(yend)
-    xsize_c, xsize_t = setscalar_Cint32(xsize)
-    ysize_c, ysize_t = setscalar_Cint32(ysize)
-    x_is_global_c, x_is_global_t = setscalar_Cbool(x_is_global)
-    y_is_global_c, y_is_global_t = setscalar_Cbool(y_is_global)
-    tile_count_c, tile_count_t = setscalar_Cint32(tile_count)
-    whalo_c, whalo_t = setscalar_Cint32(whalo)
-    shalo_c, shalo_t = setscalar_Cint32(shalo)
-
-    _cfms_set_compute_domain.argtypes = [
-        domain_id_t,
-        xbegin_t,
-        xend_t,
-        ybegin_t,
-        yend_t,
-        xsize_t,
-        ysize_t,
-        x_is_global_t,
-        y_is_global_t,
-        tile_count_t,
-        whalo_t,
-        shalo_t,
-    ]
-    _cfms_set_compute_domain.restype = None
-
-    _cfms_set_compute_domain(
-        domain_id_c,
-        xbegin_c,
-        xend_c,
-        ybegin_c,
-        yend_c,
-        xsize_c,
-        ysize_c,
-        x_is_global_c,
-        y_is_global_c,
-        tile_count_c,
-        whalo_c,
-        shalo_c,
-    )
+    _cFMS_set_compute_domain(*arglist)
 
 
 def set_current_domain(domain_id: int):
@@ -748,31 +427,10 @@ def set_current_domain(domain_id: int):
     This function is to be used internally in pyFMS
     """
 
-    cfms_set_current_domain = _lib.cFMS_set_current_domain
+    arglist = []
+    set_c_int(domain_id, arglist)
 
-    domain_id_c, domain_id_t = setscalar_Cint32(domain_id)
-
-    cfms_set_current_domain.argtypes = [domain_id_t]
-    cfms_set_current_domain.restype = None
-
-    cfms_set_current_domain(domain_id_c)
-
-
-def set_current_nest_domain(nest_domain_id: int):
-
-    """
-    Sets current_nest_domain in cFMS to be the nest domain with nest_domain_id
-    This function is to be used internally in pyFMS
-    """
-
-    cfms_set_current_nest_domain = _lib.cFMS_set_current_nest_domain
-
-    nest_domain_id_c, nest_domain_id_t = setscalar_Cint32(nest_domain_id)
-
-    cfms_set_current_nest_domain.argtypes = [nest_domain_id_t]
-    cfms_set_current_nest_domain.restype = None
-
-    cfms_set_current_nest_domain(nest_domain_id_c)
+    _cFMS_set_current_domain(*arglist)
 
 
 def set_data_domain(
@@ -799,51 +457,21 @@ def set_data_domain(
     to update the pyDomain object
     """
 
-    _cfms_set_data_domain = _lib.cFMS_set_data_domain
+    arglist = []
+    set_c_int(domain_id, arglist)
+    set_c_int(xbegin, arglist)
+    set_c_int(xend, arglist)
+    set_c_int(ybegin, arglist)
+    set_c_int(yend, arglist)
+    set_c_int(xsize, arglist)
+    set_c_int(ysize, arglist)
+    set_c_bool(x_is_global, arglist)
+    set_c_bool(x_is_global, arglist)
+    set_c_int(tile_count, arglist)
+    set_c_int(whalo, arglist)
+    set_c_int(shalo, arglist)
 
-    domain_id_c, domain_id_t = setscalar_Cint32(domain_id)
-    xbegin_c, xbegin_t = setscalar_Cint32(xbegin)
-    xend_c, xend_t = setscalar_Cint32(xend)
-    ybegin_c, ybegin_t = setscalar_Cint32(ybegin)
-    yend_c, yend_t = setscalar_Cint32(yend)
-    xsize_c, xsize_t = setscalar_Cint32(xsize)
-    ysize_c, ysize_t = setscalar_Cint32(ysize)
-    x_is_global_c, x_is_global_t = setscalar_Cbool(x_is_global)
-    y_is_global_c, y_is_global_t = setscalar_Cbool(y_is_global)
-    tile_count_c, tile_count_t = setscalar_Cint32(tile_count)
-    whalo_c, whalo_t = setscalar_Cint32(whalo)
-    shalo_c, shalo_t = setscalar_Cint32(shalo)
-
-    _cfms_set_data_domain.argtypes = [
-        domain_id_t,
-        xbegin_t,
-        xend_t,
-        ybegin_t,
-        yend_t,
-        xsize_t,
-        ysize_t,
-        x_is_global_t,
-        y_is_global_t,
-        tile_count_t,
-        whalo_t,
-        shalo_t,
-    ]
-    _cfms_set_data_domain.restype = None
-
-    _cfms_set_data_domain(
-        domain_id_c,
-        xbegin_c,
-        xend_c,
-        ybegin_c,
-        yend_c,
-        xsize_c,
-        ysize_c,
-        x_is_global_c,
-        y_is_global_c,
-        tile_count_c,
-        whalo_c,
-        shalo_c,
-    )
+    _cFMS_set_data_domain(*arglist)
 
 
 def set_global_domain(
@@ -864,45 +492,19 @@ def set_global_domain(
     for domain_id
     """
 
-    _cfms_set_global_domain = _lib.cFMS_set_global_domain
+    arglist = []
+    set_c_int(domain_id, arglist)
+    set_c_int(xbegin, arglist)
+    set_c_int(xend, arglist)
+    set_c_int(ybegin, arglist)
+    set_c_int(yend, arglist)
+    set_c_int(xsize, arglist)
+    set_c_int(ysize, arglist)
+    set_c_int(tile_count, arglist)
+    set_c_int(whalo, arglist)
+    set_c_int(shalo, arglist)
 
-    domain_id_c, domain_id_t = setscalar_Cint32(domain_id)
-    xbegin_c, xbegin_t = setscalar_Cint32(xbegin)
-    xend_c, xend_t = setscalar_Cint32(xend)
-    ybegin_c, ybegin_t = setscalar_Cint32(ybegin)
-    yend_c, yend_t = setscalar_Cint32(yend)
-    xsize_c, xsize_t = setscalar_Cint32(xsize)
-    ysize_c, ysize_t = setscalar_Cint32(ysize)
-    tile_count_c, tile_count_t = setscalar_Cint32(tile_count)
-    whalo_c, whalo_t = setscalar_Cint32(whalo)
-    shalo_c, shalo_t = setscalar_Cint32(shalo)
-
-    _cfms_set_global_domain.argtypes = [
-        domain_id_t,
-        xbegin_t,
-        xend_t,
-        ybegin_t,
-        yend_t,
-        xsize_t,
-        ysize_t,
-        tile_count_t,
-        whalo_t,
-        shalo_t,
-    ]
-    _cfms_set_global_domain.restype = None
-
-    _cfms_set_global_domain(
-        domain_id_c,
-        xbegin_c,
-        xend_c,
-        ybegin_c,
-        yend_c,
-        xsize_c,
-        ysize_c,
-        tile_count_c,
-        whalo_c,
-        shalo_c,
-    )
+    _cFMS_set_global_domain(*arglist)
 
 
 def update_domains(
@@ -924,108 +526,168 @@ def update_domains(
     in the data domain associated with domain_id
     """
 
-    if name is not None:
-        name = name[:64]
+    try:
+        cFMS_update_this = _cFMS_update_domains[field.ndim][field.dtype.name]
+    except KeyError:
+        raise RuntimeError(
+            f"mpp_domains.update:"
+            "data of dimensions {field.ndim} and/or "
+            f"of type {field.dtype}"
+        )
 
-    if field.ndim == 2:
-        if field.dtype == np.float64:
-            _cfms_update_domains = _lib.cFMS_update_domains_double_2d
-            field_p, field_t = setarray_Cdouble(field)
-        elif field.dtype == np.float32:
-            _cfms_update_domains = _lib.cFMS_update_domains_float_2d
-            field_p, field_t = setarray_Cfloat(field)
-        elif field.dtype == np.int32:
-            _cfms_update_domains = _lib.cFMS_update_domains_int_2d
-            field_p, field_t = setarray_Cfloat(field)
-        else:
-            raise RuntimeError(
-                f"udate_domains input field datatype {field.dtype} unsupported"
-            )
-    elif field.ndim == 3:
-        if field.dtype == np.float64:
-            _cfms_update_domains = _lib.cFMS_update_domains_double_3d
-            field_p, field_t = setarray_Cdouble(field)
-        elif field.dtype == np.float32:
-            _cfms_update_domains = _lib.cFMS_update_domains_float_3d
-            field_p, field_t = setarray_Cfloat(field)
-        elif field.dtype == np.int32:
-            _cfms_update_domains = _lib.cFMS_update_domains_int_3d
-            field_p, field_t = setarray_Cfloat(field)
-        else:
-            raise RuntimeError(
-                f"udate_domains input field datatype {field.dtype} unsupported"
-            )
-    elif field.ndim == 4:
-        if field.dtype == np.float64:
-            _cfms_update_domains = _lib.cFMS_update_domains_double_4d
-            field_p, field_t = setarray_Cdouble(field)
-        elif field.dtype == np.float32:
-            _cfms_update_domains = _lib.cFMS_update_domains_float_4d
-            field_p, field_t = setarray_Cfloat(field)
-        elif field.dtype == np.int32:
-            _cfms_update_domains = _lib.cFMS_update_domains_int_4d
-            field_p, field_t = setarray_Cfloat(field)
-        else:
-            raise RuntimeError(
-                f"udate_domains input field datatype {field.dtype} unsupported"
-            )
-    elif field.ndim == 5:
-        if field.dtype == np.float64:
-            _cfms_update_domains = _lib.cFMS_update_domains_double_5d
-            field_p, field_t = setarray_Cdouble(field)
-        elif field.dtype == np.float32:
-            _cfms_update_domains = _lib.cFMS_update_domains_float_5d
-            field_p, field_t = setarray_Cfloat(field)
-        elif field.dtype == np.int32:
-            _cfms_update_domains = _lib.cFMS_update_domains_int_5d
-            field_p, field_t = setarray_Cfloat(field)
-        else:
-            raise RuntimeError(
-                f"udate_domains input field datatype {field.dtype} unsupported"
-            )
-    else:
-        raise RuntimeError(f"update_domains field dimension {field.ndim}d unsupported")
+    check_str(name, 64, "mpp_domains.update")
 
-    field_shape = np.array(field.shape, dtype=np.int32)
-    field_shape_p, field_shape_t = setarray_Cint32(field_shape)
-    domain_id_c, domain_id_t = setscalar_Cint32(domain_id)
-    flags_c, flags_t = setscalar_Cint32(flags)
-    complete_c, complete_t = setscalar_Cbool(complete)
-    position_c, position_t = setscalar_Cint32(position)
-    whalo_c, whalo_t = setscalar_Cint32(whalo)
-    ehalo_c, ehalo_t = setscalar_Cint32(ehalo)
-    shalo_c, shalo_t = setscalar_Cint32(shalo)
-    nhalo_c, nhalo_t = setscalar_Cint32(nhalo)
-    name_c, name_t = set_Cchar(name)
-    tile_count_c, tile_count_t = setscalar_Cint32(tile_count)
+    arglist = []
+    set_list(field.shape, np.int32, arglist)
+    set_array(field, arglist)
+    set_c_int(domain_id, arglist)
+    set_c_int(flags, arglist)
+    set_c_bool(complete, arglist)
+    set_c_int(position, arglist)
+    set_c_int(whalo, arglist)
+    set_c_int(ehalo, arglist)
+    set_c_int(shalo, arglist)
+    set_c_int(nhalo, arglist)
+    set_c_str(name, arglist)
+    set_c_int(tile_count, arglist)
 
-    _cfms_update_domains.argtypes = [
-        field_shape_t,
-        field_t,
-        domain_id_t,
-        flags_t,
-        complete_t,
-        position_t,
-        whalo_t,
-        ehalo_t,
-        shalo_t,
-        nhalo_t,
-        name_t,
-        tile_count_t,
-    ]
-    _cfms_update_domains.restype = None
+    cFMS_update_this(*arglist)
 
-    _cfms_update_domains(
-        field_shape_p,
-        field_p,
-        domain_id_c,
-        flags_c,
-        complete_c,
-        position_c,
-        whalo_c,
-        ehalo_c,
-        shalo_c,
-        nhalo_c,
-        name_c,
-        tile_count_c,
-    )
+
+def _init_constants():
+
+    """
+    Retrieves and assigns mpp_domain related parameters
+    from FMS
+    """
+
+    global GLOBAL_DATA_DOMAIN, BGRID_NE, CGRID_NE, DGRID_NE, AGRID
+    global FOLD_SOUTH_EDGE, FOLD_WEST_EDGE, FOLD_EAST_EDGE
+    global CYCLIC_GLOBAL_DOMAIN
+    global NUPDATE, EUPDATE, XUPDATE, YUPDATE
+    global NORTH, NORTH_EAST, EAST, SOUTH_EAST
+    global CORNER, CENTER, SOUTH, SOUTH_WEST
+
+    GLOBAL_DATA_DOMAIN = get_constant_int(_lib, "GLOBAL_DATA_DOMAIN")
+    BGRID_NE = get_constant_int(_lib, "BGRID_NE")
+    CGRID_NE = get_constant_int(_lib, "CGRID_NE")
+    DGRID_NE = get_constant_int(_lib, "DGRID_NE")
+    AGRID = get_constant_int(_lib, "AGRID")
+    FOLD_SOUTH_EDGE = get_constant_int(_lib, "FOLD_SOUTH_EDGE")
+    FOLD_WEST_EDGE = get_constant_int(_lib, "FOLD_WEST_EDGE")
+    FOLD_EAST_EDGE = get_constant_int(_lib, "FOLD_EAST_EDGE")
+    CYCLIC_GLOBAL_DOMAIN = get_constant_int(_lib, "CYCLIC_GLOBAL_DOMAIN")
+    NUPDATE = get_constant_int(_lib, "NUPDATE")
+    EUPDATE = get_constant_int(_lib, "EUPDATE")
+    XUPDATE = get_constant_int(_lib, "XUPDATE")
+    YUPDATE = get_constant_int(_lib, "YUPDATE")
+    NORTH = get_constant_int(_lib, "NORTH")
+    NORTH_EAST = get_constant_int(_lib, "NORTH_EAST")
+    EAST = get_constant_int(_lib, "EAST")
+    SOUTH_EAST = get_constant_int(_lib, "SOUTH_EAST")
+    CORNER = get_constant_int(_lib, "CORNER")
+    CENTER = get_constant_int(_lib, "CENTER")
+    SOUTH = get_constant_int(_lib, "SOUTH")
+    SOUTH_WEST = get_constant_int(_lib, "SOUTH_WEST")
+    WEST = get_constant_int(_lib, "WEST")
+    NORTH_WEST = get_constant_int(_lib, "NORTH_WEST")
+
+
+def _init_functions():
+
+    global _cFMS_get_compute_domain
+    global _cFMS_get_data_domain
+    global _cFMS_define_domains
+    global _cFMS_define_io_domain
+    global _cFMS_define_layout
+    global _cFMS_define_nest_domains
+    global _cFMS_domain_is_initialized
+    global _cFMS_get_domain_name
+    global _cFMS_get_layout
+    global _cFMS_get_domain_pelist
+    global _cFMS_set_compute_domain
+    global _cFMS_set_current_domain
+    global _cFMS_set_data_domain
+    global _cFMS_set_global_domain
+    global _cFMS_update_domains_int_2d
+    global _cFMS_update_domains_float_2d
+    global _cFMS_update_domains_double_2d
+    global _cFMS_update_domains_int_3d
+    global _cFMS_update_domains_float_3d
+    global _cFMS_update_domains_double_3d
+    global _cFMS_update_domains_int_4d
+    global _cFMS_update_domains_float_4d
+    global _cFMS_update_domains_double_4d
+    global _cFMS_update_domains_int_5d
+    global _cFMS_update_domains_float_5d
+    global _cFMS_update_domains_double_5d
+    global _cFMS_update_domains
+
+    _cFMS_get_compute_domain = _lib.cFMS_get_compute_domain
+    _cFMS_get_data_domain = _lib.cFMS_get_data_domain
+    _cFMS_define_domains = _lib.cFMS_define_domains
+    _cFMS_define_io_domain = _lib.cFMS_define_io_domain
+    _cFMS_define_layout = _lib.cFMS_define_layout
+    _cFMS_define_nest_domains = _lib.cFMS_define_nest_domains
+    _cFMS_domain_is_initialized = _lib.cFMS_domain_is_initialized
+    _cFMS_get_domain_name = _lib.cFMS_get_domain_name
+    _cFMS_get_layout = _lib.cFMS_get_layout
+    _cFMS_get_domain_pelist = _lib.cFMS_get_domain_pelist
+    _cFMS_set_compute_domain = _lib.cFMS_set_compute_domain
+    _cFMS_set_current_domain = _lib.cFMS_set_current_domain
+    _cFMS_set_data_domain = _lib.cFMS_set_data_domain
+    _cFMS_set_global_domain = _lib.cFMS_set_global_domain
+    _cFMS_update_domains_int_2d = _lib.cFMS_update_domains_int_2d
+    _cFMS_update_domains_float_2d = _lib.cFMS_update_domains_float_2d
+    _cFMS_update_domains_double_2d = _lib.cFMS_update_domains_double_2d
+    _cFMS_update_domains_int_3d = _lib.cFMS_update_domains_int_3d
+    _cFMS_update_domains_float_3d = _lib.cFMS_update_domains_float_3d
+    _cFMS_update_domains_double_3d = _lib.cFMS_update_domains_double_3d
+    _cFMS_update_domains_int_4d = _lib.cFMS_update_domains_int_4d
+    _cFMS_update_domains_float_4d = _lib.cFMS_update_domains_float_4d
+    _cFMS_update_domains_double_4d = _lib.cFMS_update_domains_double_4d
+    _cFMS_update_domains_int_5d = _lib.cFMS_update_domains_int_5d
+    _cFMS_update_domains_float_5d = _lib.cFMS_update_domains_float_5d
+    _cFMS_update_domains_double_5d = _lib.cFMS_update_domains_double_5d
+
+    _mpp_domains_functions.define(_lib)
+
+    _cFMS_update_domains = {
+        2: {
+            "int": _cFMS_update_domains_int_2d,
+            "float32": _cFMS_update_domains_float_2d,
+            "float64": _cFMS_update_domains_double_2d,
+        },
+        3: {
+            "int": _cFMS_update_domains_int_3d,
+            "float32": _cFMS_update_domains_float_3d,
+            "float64": _cFMS_update_domains_double_3d,
+        },
+        4: {
+            "int": _cFMS_update_domains_int_4d,
+            "float32": _cFMS_update_domains_float_4d,
+            "float64": _cFMS_update_domains_double_4d,
+        },
+        5: {
+            "int": _cFMS_update_domains_int_5d,
+            "float32": _cFMS_update_domains_float_5d,
+            "float64": _cFMS_update_domains_double_5d,
+        },
+    }
+
+
+def _init(libpath: str, lib: Any):
+
+    """
+    Sets _libpath and _lib module variables associated
+    with the loaded cFMS library.  This function is
+    to be used internally by the cfms module
+    """
+
+    global _libpath, _lib
+
+    _libpath = libpath
+    _lib = lib
+
+    _init_constants()
+    _init_functions()

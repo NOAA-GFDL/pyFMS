@@ -80,3 +80,7 @@ def test_create_xgrid():
 def test_remove_input_nml():
     os.remove("input.nml")
     assert not os.path.isfile("input.nml")
+
+
+if __name__ == "__main__":
+    test_create_xgrid()

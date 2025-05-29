@@ -1,25 +1,16 @@
-from ctypes import CDLL, POINTER, byref, c_int
+from typing import Any
 
 import numpy as np
 import numpy.typing as npt
 
+from pyfms.utils import _grid_utils_functions
+from pyfms.utils.ctypes_utils import set_array, set_c_int
 
-_libpath: str = None
-_lib: type[CDLL] = None
 
+_libpath = None
+_lib = None
 
-def setlib(libpath: str, lib: type[CDLL]):
-
-    """
-    Sets _libpath and _lib module variables associated
-    with the loaded cFMS library.  This function is
-    to be used internally by the cfms module
-    """
-
-    global _libpath, _lib
-
-    _libpath = libpath
-    _lib = lib
+_cFMS_get_grid_area = None
 
 
 def get_grid_area(
@@ -34,39 +25,38 @@ def get_grid_area(
     on lon and lat
     """
 
-    ncells = nlon * nlat
-    ngridpts = (nlon + 1) * (nlat + 1)
+    arglist = []
+    set_c_int(nlon, arglist)
+    set_c_int(nlat, arglist)
+    set_array(lon, arglist)
+    set_array(lat, arglist)
+    area = set_array(np.zeros(nlon * nlat, dtype=np.float64), arglist)
 
-    nlon_t = c_int
-    nlat_t = c_int
-    lon_ndp = np.ctypeslib.ndpointer(
-        dtype=np.float64, shape=(ngridpts), flags="C_CONTIGUOUS"
-    )
-    lat_ndp = np.ctypeslib.ndpointer(
-        dtype=np.float64, shape=(ngridpts), flags="C_CONTIGUOUS"
-    )
-    area_ndp = np.ctypeslib.ndpointer(
-        dtype=np.float64, shape=(ncells), flags="C_CONTIGUOUS"
-    )
-
-    nlon_c = nlon_t(nlon)
-    nlat_c = nlat_t(nlat)
-    area = np.zeros(ncells, dtype=np.float64)
-
-    _get_grid_area = _lib.cFMS_get_grid_area
-
-    _get_grid_area.restype = None
-    _get_grid_area.argtypes = [
-        POINTER(nlon_t),
-        POINTER(nlat_t),
-        lon_ndp,
-        lat_ndp,
-        area_ndp,
-    ]
-
-    nlon_c = nlon_t(nlon)
-    nlat_c = nlat_t(nlat)
-
-    _get_grid_area(byref(nlon_c), byref(nlat_c), lon, lat, area)
+    _cFMS_get_grid_area(*arglist)
 
     return area
+
+
+def _init_functions():
+
+    global _cFMS_get_grid_area
+
+    _grid_utils_functions.define(_lib)
+
+    _cFMS_get_grid_area = _lib.cFMS_get_grid_area
+
+
+def _init(libpath: str, lib: Any):
+
+    """
+    Sets _libpath and _lib module variables associated
+    with the loaded cFMS library.  This function is
+    to be used internally by the cfms module
+    """
+
+    global _libpath, _lib
+
+    _libpath = libpath
+    _lib = lib
+
+    _init_functions()
