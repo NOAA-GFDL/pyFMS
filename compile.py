@@ -11,7 +11,7 @@ netcdf = "/opt/netcdf/4.9.3/GNU/14.2.0/"
 FC = "mpif90"
 
 #C compiler
-CC  ="mpicc"
+CC = "mpicc"
 
 #default Fortran compiler flags
 FMS_FCFLAGS = f"-I{yaml}/include -I{netcdf}/include -fPIC"
