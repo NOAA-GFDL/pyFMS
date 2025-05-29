@@ -3,7 +3,7 @@
 ## **Installation**
 pyFMS requires a compiled `cFMS` library and the pyFMS repository contains
 cFMS as a submodule.  If `cFMS` is not installed on the user's
-local system, the library can be installed by 
+local system, the library can be installed with
 
 ```
 1.  git clone --recursive https://github.com/NOAA-GFDL/pyFMS.git
