@@ -7,17 +7,18 @@ local system, the library can be installed by
 ```
 1.  git clone --recursive https://github.com/NOAA-GFDL/pyFMS.git
 2.  cd pyFMS
-3.  modify ./compile.py as instructed in Section compile.py
+3.  emacs ./compile.py (see Section compile.py)
 4.  python ./compile.py
 ``` 
 
-The script `compile.py` will first compile the FMS library within the cFMS submodule
-directory.  Then, `compile.py` will compile the cFMS library linking to the just
-compiled FMS library.  By default, installations are located in `pyFMS/lib` directory.
+The script `compile.py` will first compile and install the FMS library within the
+cFMS submodule directory to `pyfms/lib/FMS`.   Then, compile.py will compile the cFMS library
+linking to FMS in `pyfms/lib/FMS`.  cFMS will be installed to `pyfms/lib/cFMS`.
 
-Upon `import pyfms` in your program, pyFMS will automatically load the cFMS library
-in `pyFMS/lib`.  If the cFMS library does not exist, or if you want to load your own
-installation of cFMS, the following should be set before invoking any pyFMS methods:
+Upon `import pyfms`, pyFMS will automatically load the cFMS library
+in `pyfms/lib/cFMS`.  If the cFMS library does not exist, or if users want to load a 
+diferent instance of cFMS, the following should be set in the program before invoking
+any pyFMS methods:
 
 ```
 import pyfms
