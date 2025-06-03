@@ -136,6 +136,18 @@ def define(lib):
         c_char_p,  # name
     ]
 
+    # cFMS_define_cubic_mosaic
+    lib.cFMS_define_cubic_mosaic.restype = c_int
+    lib.cFMS_define_cubic_mosaic.argtypes = [
+        npptr(np.int32, shape=(6), flags=C),  # ni
+        npptr(np.int32, shape=(6), flags=C),  # nj
+        npptr(np.int32, shape=(4), flags=C),  # global_indices
+        npptr(np.int32, shape=(2), flags=C),  # layout
+        POINTER(c_int),  # ntiles
+        POINTER(c_int),  # halo
+        POINTER(c_bool),  # use_memsize
+    ]
+
     # cFMS_domain_is_initialized
     lib.cFMS_domain_is_initialized.restype = c_bool
     lib.cFMS_domain_is_initialized.argtypes = [POINTER(c_int)]  # domain_id
