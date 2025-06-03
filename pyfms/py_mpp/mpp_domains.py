@@ -329,20 +329,21 @@ def define_nest_domains(
 
     return _cFMS_define_nest_domains(*arglist)
 
+
 def define_cubic_mosaic(
-        ni: list[int],
-        nj: list[int],
-        global_indices: list[int],
-        layout: list[int],
-        ntiles: int,
-        halo: int=None,
-        use_memsize: bool=None,
+    ni: list[int],
+    nj: list[int],
+    global_indices: list[int],
+    layout: list[int],
+    ntiles: int,
+    halo: int = None,
+    use_memsize: bool = None,
 ) -> int:
-    
+
     """
     Defines a cubic mosaic domain based on the
     given global indices and layout.
-    Returns a domain id corresponding to the 
+    Returns a domain id corresponding to the
     FmsMPPDomain2D type saved in cFMS.
     """
 
