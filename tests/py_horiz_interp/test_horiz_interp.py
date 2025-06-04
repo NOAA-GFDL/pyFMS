@@ -3,6 +3,7 @@ import os
 import numpy as np
 
 import pyfms
+from pyfms.utils.constants import DEG_TO_RAD
 
 
 def test_create_input_nml():
@@ -76,6 +77,116 @@ def test_create_xgrid():
     assert np.array_equal(xgrid["j_src"], xgrid["j_tgt"])
     assert np.array_equal(xgrid["xarea"], area)
 
+def test_horiz_interp_conservative():
+    pyfms.fms.init()
+    horiz_interp_double_2d = pyfms.horiz_interp.horiz_interp_2d_cdouble
+
+    # set up our domain decomposition
+    ni_src = 360
+    nj_src = 180
+    ni_dst = 144
+    nj_dst = 72
+    halo = 2
+    pes=pyfms.mpp.npes()
+
+    domain = pyfms.mpp_domains.define_domains(
+        global_indices= [0, ni_src - 1, 0, nj_src - 1],
+        layout= pyfms.mpp_domains.define_layout(
+            global_indices=[0, ni_src - 1, 0, nj_src - 1],
+            ndivs=pes,
+            ),
+        pelist=pyfms.mpp.get_current_pelist(npes=pes),
+        name="horiz_interp_conservative_test",
+        whalo=halo,
+        ehalo=halo,
+        shalo=halo,
+        nhalo=halo,
+        xflags=pyfms.mpp_domains.CYCLIC_GLOBAL_DOMAIN,
+        yflags=pyfms.mpp_domains.CYCLIC_GLOBAL_DOMAIN,
+    )
+
+    # set up src/dst grids 
+    lon_bnds = (0.0, 360.0) # same start/end value for src and dst
+    lat_bnds = (-90.0, 90.0)
+    dlon_src = (lon_bnds[1] - lon_bnds[0]) / ni_src
+    dlat_src = (lat_bnds[1] - lat_bnds[0]) / nj_src
+    dlon_dst = (lon_bnds[1] - lon_bnds[0]) / ni_dst
+    dlat_dst = (lat_bnds[1] - lat_bnds[0]) / nj_dst
+
+    compute_indices = pyfms.mpp_domains.get_compute_domain(domain.domain_id)
+
+    isc = compute_indices["isc"]
+    iec = compute_indices["iec"]
+    jsc = compute_indices["jsc"]
+    jec = compute_indices["jec"]
+
+    lon_in_size = ni_src + 1 
+    lat_in_size = nj_src + 1
+    lon_out_size = iec+1-isc 
+    lat_out_size = jec+1-jsc 
+
+    lon_src = np.array(
+        [
+            lon_bnds[0] + (dlon_src * i)
+            for i in range(lon_in_size)
+            for j in range(lat_in_size)
+        ],
+        dtype=np.float64,
+    )
+    lat_src = np.array(
+        [
+            lat_bnds[0] + (dlat_src * i)
+            for i in range(lon_in_size)
+            for j in range(lat_in_size)
+        ],
+        dtype=np.float64,
+    )
+    lon_dst = np.array(
+        [
+            lon_bnds[0] + (dlon_dst * i)
+            for i in range(lon_out_size)
+            for i in range(lat_out_size)
+        ],
+        dtype=np.float64,
+    )
+    lat_dst = np.array(
+        [
+            lat_bnds[0] + (dlat_dst * i)
+            for i in range(lon_out_size)
+            for j in range(lat_out_size)
+        ],
+        dtype=np.float64,
+    )
+    lat_src = lat_src * DEG_TO_RAD
+    lon_src = lon_src * DEG_TO_RAD
+    lat_dst = lat_dst * DEG_TO_RAD
+    lon_dst = lon_dst * DEG_TO_RAD
+
+    # init and set a horiz_interp type (required for all horiz_interp calls!)
+    pyfms.horiz_interp.init()
+    pyfms.horiz_interp.set_current_interp(0)
+
+    # actually perform the interpolation via C binding
+    interp_id = horiz_interp_double_2d(
+        lon_in_ptr=lon_src,
+        lon_in_shape= [lon_in_size, lat_in_size],
+        lat_in_ptr=lat_src,
+        lat_in_shape=[lon_in_size, lat_in_size],
+        lon_out_ptr=lon_dst,
+        lon_out_shape=[lon_out_size, lat_out_size],
+        lat_out_ptr=lat_dst,
+        lat_out_shape=[lon_out_size, lat_out_size],
+        interp_method="conservative",
+        verbose=1,
+        max_dist=None,
+        src_modulo=None,
+        mask_in_ptr=None,
+        mask_out_ptr=None,
+        is_latlon_in=None,
+        is_latlon_out=None
+    )
+
+    pyfms.fms.end()
 
 def test_remove_input_nml():
     os.remove("input.nml")
@@ -84,3 +195,4 @@ def test_remove_input_nml():
 
 if __name__ == "__main__":
     test_create_xgrid()
+    test_horiz_interp_conservative()
