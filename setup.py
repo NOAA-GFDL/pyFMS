@@ -8,7 +8,7 @@ from setuptools.command.build import build
 class CustomBuild(build):
     def run(self):
         with open("install.log", "w") as f:
-            subprocess.run(["./compile_c_libs.sh"], stdout=f)
+            subprocess.run(["./compile_c_libs.sh"], stdout=f, check=True)
         build.run(self)
 
 

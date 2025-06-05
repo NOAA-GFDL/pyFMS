@@ -12,7 +12,11 @@ function remove_input() {
 
 function run_test() {
     eval $1
-    if [ $? -ne 0 ] ; then exit 1 ; fi                                                                                           }
+    if [ $? -ne 0 ] ; then exit 1 ; fi
+}
+
+# set flag for oversubscription if we have less than 8 cores
+mpirun -n 8 echo foo || OS_FLAG="--oversubscribe"
 
 run_test "python -m pytest tests/test_build.py"
 
@@ -23,28 +27,28 @@ remove_input $test
 
 test="tests/py_mpp/test_define_domains.py"
 create_input $test
-run_test "mpirun -n 8 --oversubscribe python -m pytest -m 'parallel' $test"
+run_test "mpirun -n 8 ${OS_FLAG} python -m pytest -m 'parallel' $test"
 remove_input $test
 
 test="tests/py_mpp/test_getset_domains.py"
 create_input $test
-run_test "mpirun -n 4 --oversubscribe python -m pytest -m 'parallel' tests/py_mpp/test_getset_domains.py"
+run_test "mpirun -n 4 ${OS_FLAG} python -m pytest -m 'parallel' tests/py_mpp/test_getset_domains.py"
 remove_input $test
 
 test="tests/py_mpp/test_update_domains.py"
 create_input $test
-run_test "mpirun -n 4 --oversubscribe python -m pytest -m 'parallel' tests/py_mpp/test_update_domains.py"
+run_test "mpirun -n 4 ${OS_FLAG} python -m pytest -m 'parallel' tests/py_mpp/test_update_domains.py"
 remove_input $test
 
 test="tests/py_mpp/test_vector_update_domains.py"
 create_input $test
-run_test "mpirun -n 2 --oversubscribe python -m pytest -m 'parallel' tests/py_mpp/test_vector_update_domains.py"
+run_test "mpirun -n 2 ${OS_FLAG} python -m pytest -m 'parallel' tests/py_mpp/test_vector_update_domains.py"
 remove_input $test
 
 run_test "python -m pytest tests/py_horiz_interp"
 
 run_test "python -m pytest tests/py_data_override/test_generate_files.py"
-run_test "mpirun -n 6 --oversubscribe python -m pytest -m 'parallel' tests/py_data_override/test_data_override.py"
+run_test "mpirun -n 6 ${OS_FLAG} python -m pytest -m 'parallel' tests/py_data_override/test_data_override.py"
 remove_input "tests/py_data_override/test_data_override.py"
 
 run_test "python -m pytest tests/py_diag_manager/test_generate_files.py"
