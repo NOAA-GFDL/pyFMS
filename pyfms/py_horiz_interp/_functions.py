@@ -71,19 +71,19 @@ def define(lib):
 
     lib.cFMS_horiz_interp_2d_cfloat.restype = c_int 
     lib.cFMS_horiz_interp_2d_cfloat.argtypes = [ npptr(np.float32, ndim=1, flags=C), # lon_in_ptr
-                                                  POINTER(c_int), # lon_in_shape
+                                                  npptr(np.int32, ndim=1, flags=C),  # lon_in_shape 
                                                   npptr(np.float32, ndim=1, flags=C), # lat_in_ptr
-                                                  POINTER(c_int), # lat_in_shape
+                                                  npptr(np.int32, ndim=1, flags=C),  # lat_in_shape 
                                                   npptr(np.float32, ndim=1, flags=C), # lon_out_ptr
-                                                  POINTER(c_int), # lon_out_shape
+                                                  npptr(np.int32, ndim=1, flags=C),  # lon_out_shape 
                                                   npptr(np.float32, ndim=1, flags=C), # lat_out_ptr
-                                                  POINTER(c_int), # lat_out_shape
+                                                  npptr(np.int32, ndim=1, flags=C),  # lat_out_shape 
                                                   POINTER(c_char), # interp_method
                                                   POINTER(c_int), # verbose
-                                                  npptr(np.float32, ndim=1, flags=C), # max_dist
+                                                  NDPOINTERd(npptr(np.float32, ndim=1, flags=C)), # max_dist
                                                   POINTER(c_bool), # src_modulo
-                                                  npptr(np.float32, ndim=1, flags=C), # mask_in_ptr
-                                                  npptr(np.float32, ndim=1, flags=C), # mask_out_ptr
+                                                  NDPOINTERd(npptr(np.float32, ndim=1, flags=C)), # mask_in_ptr
+                                                  NDPOINTERd(npptr(np.float32, ndim=1, flags=C)), # mask_out_ptr
                                                   POINTER(c_bool), # is_latlon_in
                                                   POINTER(c_bool)  # is_latlon_out
                                                 ]

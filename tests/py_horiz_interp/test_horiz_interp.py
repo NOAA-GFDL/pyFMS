@@ -79,7 +79,8 @@ def test_create_xgrid():
 
 def test_horiz_interp_conservative():
     pyfms.fms.init()
-    horiz_interp_double_2d = pyfms.horiz_interp.horiz_interp_2d_cdouble
+    horiz_interp_double_2d = pyfms.horiz_interp.horiz_interp_2d_double
+    horiz_interp_float_2d = pyfms.horiz_interp.horiz_interp_2d_float
 
     # set up our domain decomposition
     ni_src = 360
@@ -163,7 +164,7 @@ def test_horiz_interp_conservative():
     lon_dst = lon_dst * DEG_TO_RAD
 
     # init and set a horiz_interp type (required for all horiz_interp calls!)
-    pyfms.horiz_interp.init()
+    pyfms.horiz_interp.init(2)
     pyfms.horiz_interp.set_current_interp(0)
 
     # actually perform the interpolation via C binding
@@ -175,6 +176,28 @@ def test_horiz_interp_conservative():
         lon_out_ptr=lon_dst,
         lon_out_shape=[lon_out_size, lat_out_size],
         lat_out_ptr=lat_dst,
+        lat_out_shape=[lon_out_size, lat_out_size],
+        interp_method="conservative",
+        verbose=1,
+        max_dist=None,
+        src_modulo=None,
+        mask_in_ptr=None,
+        mask_out_ptr=None,
+        is_latlon_in=None,
+        is_latlon_out=None
+    )
+
+    pyfms.horiz_interp.set_current_interp(1)
+
+    # one more time with floats
+    interp_id = horiz_interp_float_2d(
+        lon_in_ptr=lon_src.astype(np.float32),
+        lon_in_shape= [lon_in_size, lat_in_size],
+        lat_in_ptr=lat_src.astype(np.float32),
+        lat_in_shape=[lon_in_size, lat_in_size],
+        lon_out_ptr=lon_dst.astype(np.float32),
+        lon_out_shape=[lon_out_size, lat_out_size],
+        lat_out_ptr=lat_dst.astype(np.float32),
         lat_out_shape=[lon_out_size, lat_out_size],
         interp_method="conservative",
         verbose=1,

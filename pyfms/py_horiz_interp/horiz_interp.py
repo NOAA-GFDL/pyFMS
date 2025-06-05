@@ -96,7 +96,7 @@ def set_current_interp(interp_id: int = None):
 
     
 # TODO shape arguments are not really needed
-def horiz_interp_2d_cdouble(
+def horiz_interp_2d_double(
     lon_in_ptr: npt.NDArray[np.float64],
     lon_in_shape: list[int],
     lat_in_ptr: npt.NDArray[np.float64],
@@ -142,6 +142,53 @@ def horiz_interp_2d_cdouble(
     set_c_bool(is_latlon_out, arglist)
 
     ret_val = _cFMS_horiz_interp_2d_cdouble(*arglist)
+
+def horiz_interp_2d_float(
+    lon_in_ptr: npt.NDArray[np.float32],
+    lon_in_shape: list[int],
+    lat_in_ptr: npt.NDArray[np.float32],
+    lat_in_shape: list[int],
+    lon_out_ptr: npt.NDArray[np.float32],
+    lon_out_shape: list[int],
+    lat_out_ptr: npt.NDArray[np.float32],
+    lat_out_shape: list[int],
+    interp_method: str,
+    verbose: int = 0,
+    max_dist: npt.NDArray[np.float32] = None,
+    src_modulo: bool = False,
+    mask_in_ptr: npt.NDArray[np.float32] = None,
+    mask_out_ptr: npt.NDArray[np.float32] = None,
+    is_latlon_in: bool = False,
+    is_latlon_out: bool = False,
+) -> int:
+    """
+    Performs horizontal interpolation for 2D data
+    using double precision floating point numbers.
+    """
+
+    npptr = np.ctypeslib.ndpointer
+    C = "C_CONTIGUOUS"
+
+    arglist = []
+    set_array(lon_in_ptr, arglist)
+    set_list( lon_in_shape, np.int32, arglist)
+    set_array(lat_in_ptr, arglist)
+    set_list( lat_in_shape, np.int32, arglist)
+    set_array(lon_out_ptr, arglist)
+    set_list( lon_out_shape, np.int32, arglist)
+    set_array(lat_out_ptr, arglist)
+    set_list( lat_out_shape, np.int32, arglist)
+    interp_method = interp_method.encode('utf-8')
+    set_array(interp_method, arglist)
+    set_c_int(verbose, arglist)
+    set_array(max_dist, arglist)
+    set_c_bool(src_modulo, arglist)
+    set_array(mask_in_ptr, arglist)
+    set_array(mask_out_ptr, arglist)
+    set_c_bool(is_latlon_in, arglist)
+    set_c_bool(is_latlon_out, arglist)
+
+    ret_val = _cFMS_horiz_interp_2d_cfloat(*arglist)
 
 
 def _init_functions():
