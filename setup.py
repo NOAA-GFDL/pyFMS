@@ -1,5 +1,4 @@
 import subprocess
-from typing import List
 
 from setuptools import find_namespace_packages, setup
 from setuptools.command.build import build
