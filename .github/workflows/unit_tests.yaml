@@ -25,4 +25,4 @@ jobs:
           run: |
             pip install .[test]
         - name: run tests
-          run: tests/run_tests.sh -o
+          run: cd tests && tests/run_tests.sh -o
