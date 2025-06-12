@@ -77,6 +77,7 @@ def test_create_xgrid():
     assert np.array_equal(xgrid["j_src"], xgrid["j_tgt"])
     assert np.array_equal(xgrid["xarea"], area)
 
+# same as the test in cFMS, but using the Python interface 
 def test_horiz_interp_conservative():
     pyfms.fms.init()
     horiz_interp_double_2d = pyfms.horiz_interp.horiz_interp_2d_double
@@ -126,42 +127,35 @@ def test_horiz_interp_conservative():
     lon_out_size = iec+1-isc 
     lat_out_size = jec+1-jsc 
 
-    lon_src = np.array(
-        [
-            lon_bnds[0] + (dlon_src * i)
-            for i in range(lon_in_size)
-            for j in range(lat_in_size)
-        ],
-        dtype=np.float64,
-    )
-    lat_src = np.array(
-        [
-            lat_bnds[0] + (dlat_src * i)
-            for i in range(lon_in_size)
-            for j in range(lat_in_size)
-        ],
-        dtype=np.float64,
-    )
-    lon_dst = np.array(
-        [
-            lon_bnds[0] + (dlon_dst * i)
-            for i in range(lon_out_size)
-            for i in range(lat_out_size)
-        ],
-        dtype=np.float64,
-    )
-    lat_dst = np.array(
-        [
-            lat_bnds[0] + (dlat_dst * i)
-            for i in range(lon_out_size)
-            for j in range(lat_out_size)
-        ],
-        dtype=np.float64,
-    )
-    lat_src = lat_src * DEG_TO_RAD
-    lon_src = lon_src * DEG_TO_RAD
-    lat_dst = lat_dst * DEG_TO_RAD
-    lon_dst = lon_dst * DEG_TO_RAD
+    # TODO theres probably a better way to do this
+    lon_in_1d = []
+    lat_in_1d = []
+    lon_out_1d = []
+    lat_out_1d = []
+    for i in range(lon_in_size):
+        lon_in_1d.append((lon_bnds[0] + float(dlon_src * i)) * float(DEG_TO_RAD))
+    for i in range(lat_in_size):
+        lat_in_1d.append((lat_bnds[0] + float(dlat_src * i)) * float(DEG_TO_RAD))
+    for i in range(lon_out_size):  
+        lon_out_1d.append((lon_bnds[0] + float(dlon_dst * i)) * float(DEG_TO_RAD))
+    for i in range(lat_out_size):
+        lat_out_1d.append((lat_bnds[0] + float(dlat_dst * i)) * float(DEG_TO_RAD))
+    lon_src = []
+    lat_src = []
+    lon_dst = []
+    lat_dst = []
+    for i in range(lon_in_size):
+        for j in range(lat_in_size):
+            lon_src.append(lon_in_1d[i])
+            lat_src.append(lat_in_1d[j])
+    for i in range(lon_out_size):
+        for j in range(lat_out_size):
+            lon_dst.append(lon_out_1d[i])
+            lat_dst.append(lat_out_1d[j])
+    lon_src = np.array(lon_src, dtype=np.float64)
+    lat_src = np.array(lat_src, dtype=np.float64)
+    lon_dst = np.array(lon_dst, dtype=np.float64)
+    lat_dst = np.array(lat_dst, dtype=np.float64)
 
     # init and set a horiz_interp type (required for all horiz_interp calls!)
     pyfms.horiz_interp.init(2)
@@ -187,9 +181,32 @@ def test_horiz_interp_conservative():
         is_latlon_out=None
     )
 
-    pyfms.horiz_interp.set_current_interp(1)
+    # get the interpolation results from the type in the form of a dictionary
+    interp_type_vals_double = pyfms.horiz_interp.horiz_interp_get_interp_double(interp_id)
+    print(interp_type_vals_double)
+    
+    # check our interpolation results
+    if( pyfms.mpp.npes() == 1 ):
+        nxgrid = 232632 
+    elif( pyfms.mpp.npes() == 4 ):
+        nxgrid = 115992
+    assert interp_type_vals_double["interp_id"] == interp_id
+    assert interp_type_vals_double["nxgrid"] == (nxgrid)
+    assert interp_type_vals_double["i_src"].shape == (nxgrid,)
+    assert interp_type_vals_double["j_src"].shape == (nxgrid,)
+    assert interp_type_vals_double["i_dst"].shape == (nxgrid,)
+    assert interp_type_vals_double["j_dst"].shape == (nxgrid,)
+    assert interp_type_vals_double["is_allocated"] is True
+    assert interp_type_vals_double["interp_method"] == 1 # conservative 
+    assert interp_type_vals_double["version"] == 2
+    assert interp_type_vals_double["nlon_src"] == ni_src
+    assert interp_type_vals_double["nlat_src"] == nj_src
+    assert interp_type_vals_double["nlon_dst"] == iec-isc
+    assert interp_type_vals_double["nlat_dst"] == jec-jsc
 
     # one more time with floats
+    pyfms.horiz_interp.set_current_interp(1)
+
     interp_id = horiz_interp_float_2d(
         lon_in_ptr=lon_src.astype(np.float32),
         lon_in_shape= [lon_in_size, lat_in_size],
@@ -208,6 +225,27 @@ def test_horiz_interp_conservative():
         is_latlon_in=None,
         is_latlon_out=None
     )
+
+    interp_type_vals_float = pyfms.horiz_interp.horiz_interp_get_interp_float(interp_id)
+    print(interp_type_vals_float)
+    
+    if( pyfms.mpp.npes() == 1 ):
+        nxgrid = 254880 
+    elif( pyfms.mpp.npes() == 4 ):
+        nxgrid = 119448
+    assert interp_type_vals_float["interp_id"] == interp_id
+    assert interp_type_vals_float["nxgrid"] == (nxgrid)
+    assert interp_type_vals_float["i_src"].shape == (nxgrid,)
+    assert interp_type_vals_float["j_src"].shape == (nxgrid,)
+    assert interp_type_vals_float["i_dst"].shape == (nxgrid,)
+    assert interp_type_vals_float["j_dst"].shape == (nxgrid,)
+    assert interp_type_vals_float["is_allocated"] is True
+    assert interp_type_vals_float["interp_method"] == 1 # conservative 
+    assert interp_type_vals_float["version"] == 2
+    assert interp_type_vals_float["nlon_src"] == ni_src
+    assert interp_type_vals_float["nlat_src"] == nj_src
+    assert interp_type_vals_float["nlon_dst"] == iec-isc
+    assert interp_type_vals_float["nlat_dst"] == jec-jsc
 
     pyfms.fms.end()
 

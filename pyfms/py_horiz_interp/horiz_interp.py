@@ -1,11 +1,11 @@
 from ctypes import POINTER, c_int32
-from typing import Any
+from typing import Any, Optional
 
 import numpy as np
 import numpy.typing as npt
 
 from pyfms.py_horiz_interp import _functions
-from pyfms.utils.ctypes_utils import NDPOINTERi32, set_array, set_c_int, set_c_bool, set_list
+from pyfms.utils.ctypes_utils import NDPOINTERi32, set_array, set_c_int, set_c_bool, set_c_str, set_list, setNone
 
 
 _libpath = None
@@ -15,6 +15,10 @@ _cFMS_create_xgrid_2dx2d_order1 = None
 _get_maxxgrid = None
 _cFMS_horiz_interp_init = None
 _cFMS_set_current_interp = None
+_cFMS_get_interp_cdouble = None
+_cFMS_get_interp_cfloat = None
+_cFMS_horiz_interp_2d_cdouble = None
+_cFMS_horiz_interp_2d_cfloat = None
 
 
 def get_maxxgrid() -> np.int32:
@@ -190,6 +194,144 @@ def horiz_interp_2d_float(
 
     ret_val = _cFMS_horiz_interp_2d_cfloat(*arglist)
 
+def horiz_interp_get_interp_double(
+        interp_id: int = None
+) -> dict:
+    """
+    Returns the values of the fields in a horiz_interp_type instance as a dictionary 
+    Will return values corresponding to the given interp_id, regardless of the current interp
+    """
+
+    # get nxgrid first so we know how big our output variables will be
+    arglist = []
+    if interp_id is None:
+        setNone(arglist)
+    else:
+        set_c_int(interp_id, arglist)
+    setNone(arglist) # i_src
+    setNone(arglist) # j_src
+    setNone(arglist) # i_dst
+    setNone(arglist) # j_dst
+    setNone(arglist) # area_frac_dst
+    setNone(arglist) # version
+    nxgrid = set_c_int(-1, arglist) # nxgrid
+    setNone(arglist) # nlon_src
+    setNone(arglist) # nlat_src
+    setNone(arglist) # nlon_dst
+    setNone(arglist) # nlat_dst
+    setNone(arglist) # is_allocated
+    setNone(arglist) # interp_method
+    
+    ret_val = _cFMS_get_interp_cdouble(*arglist)
+
+    print(f"nxgrid from first call: {nxgrid}")
+
+    arglist = []
+    if interp_id is None:
+        setNone(arglist)
+    else:
+        set_c_int(interp_id, arglist)
+    i_src = set_array(np.zeros(nxgrid.value, dtype=np.int32), arglist)
+    j_src = set_array(np.zeros(nxgrid.value, dtype=np.int32), arglist)
+    i_dst = set_array(np.zeros(nxgrid.value, dtype=np.int32), arglist)
+    j_dst = set_array(np.zeros(nxgrid.value, dtype=np.int32), arglist)
+    area_frac_dst = set_array(np.zeros(nxgrid.value, dtype=np.float64), arglist)
+    version = set_c_int(0, arglist)
+    nxgrid = set_c_int(0, arglist)
+    nlon_src = set_c_int(0, arglist)
+    nlat_src = set_c_int(0, arglist)
+    nlon_dst = set_c_int(0, arglist)
+    nlat_dst = set_c_int(0, arglist)
+    is_allocated = set_c_bool(False, arglist)
+    interp_method = set_c_int(0, arglist)
+
+    ret_val = _cFMS_get_interp_cdouble(*arglist)
+
+    return dict(
+        interp_id=interp_id,
+        i_src=i_src,
+        j_src=j_src,
+        i_dst=i_dst,
+        j_dst=j_dst,
+        area_frac_dst=area_frac_dst,
+        nxgrid=nxgrid.value,
+        version=version.value,
+        nlon_src=nlon_src.value,
+        nlat_src=nlat_src.value,
+        nlon_dst=nlon_dst.value,
+        nlat_dst=nlat_dst.value,
+        is_allocated=is_allocated.value,
+        interp_method=interp_method.value,
+    )
+
+def horiz_interp_get_interp_float(
+        interp_id: int = None
+) -> dict:
+    """
+    Returns the values of the fields in a horiz_interp_type instance as a dictionary 
+    Will return values corresponding to the given interp_id, regardless of the current interp
+    """
+
+    # get nxgrid first so we know how big our output variables will be
+    arglist = []
+    if interp_id is None:
+        setNone(arglist)
+    else:
+        set_c_int(interp_id, arglist)
+    setNone(arglist) # i_src
+    setNone(arglist) # j_src
+    setNone(arglist) # i_dst
+    setNone(arglist) # j_dst
+    setNone(arglist) # area_frac_dst
+    setNone(arglist) # version
+    nxgrid = set_c_int(-1, arglist) # nxgrid
+    setNone(arglist) # nlon_src
+    setNone(arglist) # nlat_src
+    setNone(arglist) # nlon_dst
+    setNone(arglist) # nlat_dst
+    setNone(arglist) # is_allocated
+    setNone(arglist) # interp_method
+    
+    ret_val = _cFMS_get_interp_cfloat(*arglist)
+
+    arglist = []
+    if interp_id is None:
+        setNone(arglist)
+    else:
+        set_c_int(interp_id, arglist)
+    i_src = set_array(np.zeros(nxgrid.value, dtype=np.int32), arglist)
+    j_src = set_array(np.zeros(nxgrid.value, dtype=np.int32), arglist)
+    i_dst = set_array(np.zeros(nxgrid.value, dtype=np.int32), arglist)
+    j_dst = set_array(np.zeros(nxgrid.value, dtype=np.int32), arglist)
+    area_frac_dst = set_array(np.zeros(nxgrid.value, dtype=np.float32), arglist)
+    version = set_c_int(0, arglist)
+    nxgrid = set_c_int(0, arglist)
+    nlon_src = set_c_int(0, arglist)
+    nlat_src = set_c_int(0, arglist)
+    nlon_dst = set_c_int(0, arglist)
+    nlat_dst = set_c_int(0, arglist)
+    is_allocated = set_c_bool(False, arglist)
+    interp_method = set_c_int(0, arglist)
+
+    ret_val = _cFMS_get_interp_cfloat(*arglist)
+
+    return dict(
+        interp_id=interp_id,
+        i_src=i_src,
+        j_src=j_src,
+        i_dst=i_dst,
+        j_dst=j_dst,
+        area_frac_dst=area_frac_dst,
+        nxgrid=nxgrid.value,
+        version=version.value,
+        nlon_src=nlon_src.value,
+        nlat_src=nlat_src.value,
+        nlon_dst=nlon_dst.value,
+        nlat_dst=nlat_dst.value,
+        is_allocated=is_allocated.value,
+        interp_method=interp_method.value,
+    )
+
 
 def _init_functions():
 
@@ -199,6 +341,8 @@ def _init_functions():
     global _cFMS_set_current_interp
     global _cFMS_horiz_interp_2d_cdouble
     global _cFMS_horiz_interp_2d_cfloat
+    global _cFMS_get_interp_cdouble
+    global _cFMS_get_interp_cfloat
 
     _cFMS_create_xgrid_2dx2d_order1 = _lib.cFMS_create_xgrid_2dx2d_order1
     _get_maxxgrid = _lib.get_maxxgrid
@@ -206,6 +350,8 @@ def _init_functions():
     _cFMS_set_current_interp = _lib.cFMS_set_current_interp
     _cFMS_horiz_interp_2d_cdouble = _lib.cFMS_horiz_interp_2d_cdouble
     _cFMS_horiz_interp_2d_cfloat = _lib.cFMS_horiz_interp_2d_cfloat
+    _cFMS_get_interp_cdouble = _lib.cFMS_get_interp_cdouble
+    _cFMS_get_interp_cfloat = _lib.cFMS_get_interp_cfloat
 
     _functions.define(_lib)
 
