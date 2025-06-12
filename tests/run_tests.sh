@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -ex
 
 oversubscribe=""
 while getopts ":o" flag; do
@@ -49,7 +49,12 @@ create_input $test
 run_test "mpirun -n 2 $oversubscribe python -m pytest -m 'parallel' py_mpp/test_vector_update_domains.py"
 remove_input $test
 
-run_test "python -m pytest py_horiz_interp"
+test="py_horiz_interp/test_horiz_interp.py"
+create_input $test
+run_test "python -m pytest -s -k test_create_xgrid $test"
+run_test "python -m pytest -s -k test_horiz_interp_conservative $test"
+run_test "mpirun -n 4 $oversubscribe python -m pytest -s -k test_horiz_interp_conservative $test"
+remove_input $test
 
 run_test "python -m pytest py_data_override/test_generate_files.py"
 run_test "mpirun -n 6 $oversubscribe python -m pytest -m 'parallel' py_data_override/test_data_override.py"

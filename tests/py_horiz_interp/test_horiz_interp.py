@@ -1,16 +1,17 @@
 import os
 
 import numpy as np
+import pytest
 
 import pyfms
 from pyfms.utils.constants import DEG_TO_RAD
 
 
+@pytest.mark.create
 def test_create_input_nml():
     inputnml = open("input.nml", "w")
     inputnml.close()
     assert os.path.isfile("input.nml")
-
 
 def test_create_xgrid():
 
@@ -249,6 +250,7 @@ def test_horiz_interp_conservative():
 
     pyfms.fms.end()
 
+@pytest.mark.remove
 def test_remove_input_nml():
     os.remove("input.nml")
     assert not os.path.isfile("input.nml")

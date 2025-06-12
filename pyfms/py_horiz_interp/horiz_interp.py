@@ -343,6 +343,10 @@ def _init_functions():
     global _cFMS_horiz_interp_2d_cfloat
     global _cFMS_get_interp_cdouble
     global _cFMS_get_interp_cfloat
+    global _cFMS_get_wti_cfloat
+    global _cFMS_get_wti_cdouble
+    global _cFMS_get_wtj_cfloat
+    global _cFMS_get_wtj_cdouble
 
     _cFMS_create_xgrid_2dx2d_order1 = _lib.cFMS_create_xgrid_2dx2d_order1
     _get_maxxgrid = _lib.get_maxxgrid
@@ -352,6 +356,10 @@ def _init_functions():
     _cFMS_horiz_interp_2d_cfloat = _lib.cFMS_horiz_interp_2d_cfloat
     _cFMS_get_interp_cdouble = _lib.cFMS_get_interp_cdouble
     _cFMS_get_interp_cfloat = _lib.cFMS_get_interp_cfloat
+    _cFMS_get_wti_cfloat = _lib.cFMS_get_wti_cfloat
+    _cFMS_get_wti_cdouble = _lib.cFMS_get_wti_cdouble
+    _cFMS_get_wtj_cfloat = _lib.cFMS_get_wtj_cfloat
+    _cFMS_get_wtj_cdouble = _lib.cFMS_get_wtj_cdouble
 
     _functions.define(_lib)
 

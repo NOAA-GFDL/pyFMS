@@ -123,41 +123,11 @@ def define(lib):
                                             ]
 
     ## getter routines for individual fields
-    lib.cFMS_get_i_src.restype = None 
-    lib.cFMS_get_i_src.argtypes = [ POINTER(c_int), POINTER(c_int)]
-    lib.cFMS_get_j_src.restype = None 
-    lib.cFMS_get_j_src.argtypes = [ POINTER(c_int), POINTER(c_int)]
-    lib.cFMS_get_i_dst.restype = None 
-    lib.cFMS_get_i_dst.argtypes = [ POINTER(c_int), POINTER(c_int)]
-    lib.cFMS_get_j_dst.restype = None 
-    lib.cFMS_get_j_dst.argtypes = [ POINTER(c_int), POINTER(c_int)]
-
-    lib.cFMS_get_area_frac_dst_cfloat.restype = None
-    lib.cFMS_get_area_frac_dst_cfloat.argtypes = [ POINTER(c_int), POINTER(c_float)]
-    lib.cFMS_get_area_frac_dst_cdouble.restype = None
-    lib.cFMS_get_area_frac_dst_cdouble.argtypes = [ POINTER(c_int), POINTER(c_double)]
     lib.cFMS_get_wti_cfloat.restype = None
     lib.cFMS_get_wti_cfloat.argtypes = [ POINTER(c_int), POINTER(c_float)]
+    lib.cFMS_get_wti_cdouble.restype = None
+    lib.cFMS_get_wti_cdouble.argtypes = [ POINTER(c_int), POINTER(c_double)]
+    lib.cFMS_get_wtj_cfloat.restype = None
+    lib.cFMS_get_wtj_cfloat.argtypes = [ POINTER(c_int), POINTER(c_float)]
     lib.cFMS_get_wtj_cdouble.restype = None
     lib.cFMS_get_wtj_cdouble.argtypes = [ POINTER(c_int), POINTER(c_double)]
-    lib.cFMS_get_is_allocated_cdouble.restype = None
-    lib.cFMS_get_is_allocated_cdouble.argtypes = [ POINTER(c_int), POINTER(c_double)]
-    lib.cFMS_get_is_allocated_cfloat.restype = None
-    lib.cFMS_get_is_allocated_cfloat.argtypes = [ POINTER(c_int), POINTER(c_bool)]
-    lib.cFMS_get_is_allocated_cdouble.restype = None
-    lib.cFMS_get_is_allocated_cdouble.argtypes = [ POINTER(c_int), POINTER(c_bool)]
-
-    lib.cFMS_get_version.restypes = None
-    lib.cFMS_get_version_argtypes = [ POINTER(c_int), POINTER(c_int)]
-    lib.cFMS_get_nxgrid.restypes = None
-    lib.cFMS_get_nxgrid.argtypes = [ POINTER(c_int), POINTER(c_int)]
-    lib.cFMS_get_nlon_src.restypes = None
-    lib.cFMS_get_nlon_src.argtypes = [ POINTER(c_int), POINTER(c_int)]
-    lib.cFMS_get_nlat_src.restypes = None
-    lib.cFMS_get_nlat_src.argtypes = [ POINTER(c_int), POINTER(c_int)]
-    lib.cFMS_get_nlon_dst.restypes = None
-    lib.cFMS_get_nlon_dst.argtypes = [ POINTER(c_int), POINTER(c_int)]
-    lib.cFMS_get_nlat_dst.restypes = None
-    lib.cFMS_get_nlat_dst.argtypes = [ POINTER(c_int), POINTER(c_int)]
-    lib.cFMS_get_interp_method.restypes = None
-    lib.cFMS_get_interp_method.argtypes = [ POINTER(c_int), POINTER(c_int)]
