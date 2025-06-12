@@ -34,7 +34,7 @@ create_input $test
 run_test "mpirun -n 8 $oversubscribe python -m pytest -m 'parallel' $test"
 remove_input $test
 
-test="tests/py_mpp/test_define_cubic_mosaic.py"
+test="py_mpp/test_define_cubic_mosaic.py"
 create_input $testAdd commentMore actions
 run_test "mpirun -n 30 $oversubscribe python -m pytest -m 'parallel' $test"
 remove_input $test
