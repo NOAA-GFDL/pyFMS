@@ -1,28 +1,78 @@
 #!/bin/bash
 
-set -xe
+set -ex
+#set -o posix
 
-pyfms_dir=$PWD/pyfms
-cfms_dir=$PWD/cFMS
-install_fms=$cfms_dir/FMS/LIBFMS
+#yaml includes
+YAML_FLAGS=""
 
-export FC=mpif90
-export CC=mpicc
+#yaml libraries
+YAML_LDFLAGS=""
 
-cd $cfms_dir/FMS
+#fortran netcdf includes
+NF_FLAGS=$(nf-config --fflags)
+
+#c netcdf includes
+NC_FLAGS=$(nc-config --cflags)
+
+#netcdf libraries
+NC_LDFLAGS=$(nc-config --libs | nf-config --flibs)
+
+#fortran and c compiler
+FC=mpif90
+CC=mpicc
+
+#fms fortran, c, library compiler flags
+FMS_FCFLAGS="$NF_FLAGS -fPIC"
+FMS_CFLAGS="$NC_FLAGS $YAML_FLAGS -fPIC"
+FMS_LDFLAGS="$NC_LDFLAGS $YAML_LDFLAGS"
+
+#cfms fortran, c, library compiler flags
+#cfms does not need the netcdf flags.
+#these will be removed once cfms configure.ac is updated
+cFMS_FCFLAGS="-fPIC $NF_FLAGS"
+cFMS_CFLAGS="-fPIC $NC_FLAGS"
+cFMS_LDFLAGS=""
+
+curr_dir=$PWD
+
+#fms installation path
+fms_install=$curr_dir/pyfms/lib/FMS
+
+#cfms installation path
+cfms_install=$curr_dir/pyfms/lib/cFMS
+
+#cfms to compile
+cfms_dir=$curr_dir/cFMS
+
+#fms to compile
+fms_dir=$cfms_dir/FMS
+
+#compile fms with autotools
+cd $fms_dir
 autoreconf -iv
-export FCFLAGS="$FCFLAGS `nf-config --fflags` -fPIC"
-export CFLAGS="$CFLAGS `nc-config --cflags` -fPIC"
-./configure --enable-portable-kinds --with-yaml --prefix=$install_fms
+./configure --enable-portable-kinds \
+            --with-yaml \
+            --prefix=$fms_install \
+            FC=$FC \
+            CC=$CC \
+            FCFLAGS="$FMS_FCFLAGS" \
+            CFLAGS="$FMS_CFLAGS" \
+            LDFLAGS="$FMS_LDFLAGS"
 make install
 
-cd ..
+cd $currdir
 
-export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$install_fms/lib"
-export FCFLAGS="$FCFLAGS -I$install_fms/include"
-export CFLAGS="$CFLAGS -I$install_fms/include"
-export LDFLAGS="$LDFLAGS -lFMS -L$install_fms/lib"
-
+#compile cFMS with autotools
+cd $cfms_dir
 autoreconf -iv
-./configure --with-fms=$install_fms --prefix=$pyfms_dir/cLIBFMS
+./configure --with-fms=$fms_install \
+            --prefix=$cfms_install \
+            FC=$FC \
+            CC=$CC \
+            FCFLAGS="$cFMS_FCFLAGS" \
+            CFLAGS="$cFMS_CFLAGS" \
+            LDFLAGS="$cFMS_LDFLAGS"
 make install
+
+cd $currdir
