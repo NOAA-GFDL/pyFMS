@@ -50,15 +50,15 @@ def define(lib):
     lib.cFMS_set_current_interp.argtypes = [POINTER(c_int)]
 
     # cFMS_horiz_interp_2d (for floats and doubles)
-    lib.cFMS_horiz_interp_2d_cdouble.restype = c_int 
+    lib.cFMS_horiz_interp_2d_cdouble.restype = c_int
     lib.cFMS_horiz_interp_2d_cdouble.argtypes = [ npptr(np.float64, ndim=1, flags=C), # lon_in_ptr
-                                                  npptr(np.int32, ndim=1, flags=C),  # lon_in_shape 
+                                                  npptr(np.int32, ndim=1, flags=C),  # lon_in_shape
                                                   npptr(np.float64, ndim=1, flags=C), # lat_in_ptr
-                                                  npptr(np.int32, ndim=1, flags=C),  # lat_in_shape 
+                                                  npptr(np.int32, ndim=1, flags=C),  # lat_in_shape
                                                   npptr(np.float64, ndim=1, flags=C), # lon_out_ptr
-                                                  npptr(np.int32, ndim=1, flags=C),  # lon_out_shape 
+                                                  npptr(np.int32, ndim=1, flags=C),  # lon_out_shape
                                                   npptr(np.float64, ndim=1, flags=C), # lat_out_ptr
-                                                  npptr(np.int32, ndim=1, flags=C),  # lat_out_shape 
+                                                  npptr(np.int32, ndim=1, flags=C),  # lat_out_shape
                                                   POINTER(c_char), # interp_method
                                                   POINTER(c_int), # verbose
                                                   NDPOINTERd(npptr(np.float64, ndim=1, flags=C)), # max_dist
@@ -69,15 +69,15 @@ def define(lib):
                                                   POINTER(c_bool)  # is_latlon_out
                                                 ]
 
-    lib.cFMS_horiz_interp_2d_cfloat.restype = c_int 
+    lib.cFMS_horiz_interp_2d_cfloat.restype = c_int
     lib.cFMS_horiz_interp_2d_cfloat.argtypes = [  npptr(np.float32, ndim=1, flags=C), # lon_in_ptr
-                                                  npptr(np.int32, ndim=1, flags=C),  # lon_in_shape 
+                                                  npptr(np.int32, ndim=1, flags=C),  # lon_in_shape
                                                   npptr(np.float32, ndim=1, flags=C), # lat_in_ptr
-                                                  npptr(np.int32, ndim=1, flags=C),  # lat_in_shape 
+                                                  npptr(np.int32, ndim=1, flags=C),  # lat_in_shape
                                                   npptr(np.float32, ndim=1, flags=C), # lon_out_ptr
-                                                  npptr(np.int32, ndim=1, flags=C),  # lon_out_shape 
+                                                  npptr(np.int32, ndim=1, flags=C),  # lon_out_shape
                                                   npptr(np.float32, ndim=1, flags=C), # lat_out_ptr
-                                                  npptr(np.int32, ndim=1, flags=C),  # lat_out_shape 
+                                                  npptr(np.int32, ndim=1, flags=C),  # lat_out_shape
                                                   POINTER(c_char), # interp_method
                                                   POINTER(c_int), # verbose
                                                   NDPOINTERd(npptr(np.float32, ndim=1, flags=C)), # max_dist
@@ -98,10 +98,10 @@ def define(lib):
                                             NDPOINTERf(npptr(np.float32, ndim=1, flags=C)), # area_frac_dst,
                                             POINTER(c_int), # version
                                             POINTER(c_int), # nxgrid
-                                            POINTER(c_int), # nlon_src 
-                                            POINTER(c_int), # nlat_src 
-                                            POINTER(c_int), # nlon_dst 
-                                            POINTER(c_int), # nlat_dst 
+                                            POINTER(c_int), # nlon_src
+                                            POINTER(c_int), # nlat_src
+                                            POINTER(c_int), # nlon_dst
+                                            POINTER(c_int), # nlat_dst
                                             POINTER(c_bool), # is_allocated
                                             POINTER(c_int) #interp method
                                             ]
@@ -114,10 +114,10 @@ def define(lib):
                                              NDPOINTERf(npptr(np.float64, ndim=1, flags=C)), # area_frac_dst,
                                              POINTER(c_int), # version
                                              POINTER(c_int), # nxgrid
-                                             POINTER(c_int), # nlon_src 
-                                             POINTER(c_int), # nlat_src 
-                                             POINTER(c_int), # nlon_dst 
-                                             POINTER(c_int), #nlat_dst 
+                                             POINTER(c_int), # nlon_src
+                                             POINTER(c_int), # nlat_src
+                                             POINTER(c_int), # nlon_dst
+                                             POINTER(c_int), #nlat_dst
                                              POINTER(c_bool), # is_allocated
                                              POINTER(c_int) #interp method
                                             ]

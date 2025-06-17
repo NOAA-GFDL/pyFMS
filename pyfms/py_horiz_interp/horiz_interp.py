@@ -103,7 +103,7 @@ def set_current_interp(interp_id: int = None):
 
     _cFMS_set_current_interp(*arglist)
 
-    
+
 # TODO shape arguments are not really needed
 def horiz_interp_2d_double(
     lon_in_ptr: npt.NDArray[np.float64],
@@ -203,7 +203,7 @@ def horiz_interp_get_interp_double(
         interp_id: int = None
 ) -> dict:
     """
-    Returns the values of the fields in a horiz_interp_type instance as a dictionary 
+    Returns the values of the fields in a horiz_interp_type instance as a dictionary
     Will return values corresponding to the given interp_id, regardless of the current interp
     """
 
@@ -226,7 +226,7 @@ def horiz_interp_get_interp_double(
     setNone(arglist) # nlat_dst
     setNone(arglist) # is_allocated
     interp_method = set_c_int(0, arglist) # interp_method
-    
+
     ret_val = _cFMS_get_interp_cdouble(*arglist)
 
     arglist = []
@@ -260,14 +260,14 @@ def horiz_interp_get_interp_double(
 
     _cFMS_get_interp_cdouble(*arglist)
 
-    if(interp_method.value == _BILINEAR): 
+    if(interp_method.value == _BILINEAR):
         arglist = []
         if interp_id is None:
             setNone(arglist)
         else:
             set_c_int(interp_id, arglist)
         wti = set_array(np.zeros( (nlon_dst.value, nlat_dst.value, 2), dtype=np.float64), arglist)
-        _cFMS_get_wti_cdouble(*arglist) 
+        _cFMS_get_wti_cdouble(*arglist)
 
         arglist = []
         if interp_id is None:
@@ -275,8 +275,8 @@ def horiz_interp_get_interp_double(
         else:
             set_c_int(interp_id, arglist)
         wtj = set_array(np.zeros( (nlon_dst.value, nlat_dst.value, 2), dtype=np.float64), arglist)
-        _cFMS_get_wtj_cdouble(*arglist) 
-    
+        _cFMS_get_wtj_cdouble(*arglist)
+
 
     return dict(
         interp_id=interp_id,
@@ -301,7 +301,7 @@ def horiz_interp_get_interp_float(
         interp_id: int = None
 ) -> dict:
     """
-    Returns the values of the fields in a horiz_interp_type instance as a dictionary 
+    Returns the values of the fields in a horiz_interp_type instance as a dictionary
     Will return values corresponding to the given interp_id, regardless of the current interp
     """
     # get nxgrid first so we know how big our output variables will be
@@ -323,7 +323,7 @@ def horiz_interp_get_interp_float(
     setNone(arglist) # nlat_dst
     setNone(arglist) # is_allocated
     interp_method = set_c_int(0, arglist) # interp_method
-    
+
     ret_val = _cFMS_get_interp_cfloat(*arglist)
 
     arglist = []
@@ -357,14 +357,14 @@ def horiz_interp_get_interp_float(
 
     _cFMS_get_interp_cfloat(*arglist)
 
-    if(interp_method.value == _BILINEAR): 
+    if(interp_method.value == _BILINEAR):
         arglist = []
         if interp_id is None:
             setNone(arglist)
         else:
             set_c_int(interp_id, arglist)
         wti = set_array(np.zeros( (nlon_dst.value, nlat_dst.value, 2), dtype=np.float32), arglist)
-        _cFMS_get_wti_cfloat(*arglist) 
+        _cFMS_get_wti_cfloat(*arglist)
 
         arglist = []
         if interp_id is None:
@@ -372,8 +372,8 @@ def horiz_interp_get_interp_float(
         else:
             set_c_int(interp_id, arglist)
         wtj = set_array(np.zeros( (nlon_dst.value, nlat_dst.value, 2), dtype=np.float32), arglist)
-        _cFMS_get_wtj_cfloat(*arglist) 
-    
+        _cFMS_get_wtj_cfloat(*arglist)
+
 
     return dict(
         interp_id=interp_id,
