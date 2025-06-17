@@ -427,6 +427,7 @@ def test_horiz_interp_bilinear():
 
     pyfms.fms.end()
 
+
 @pytest.mark.remove
 def test_remove_input_nml():
     os.remove("input.nml")
