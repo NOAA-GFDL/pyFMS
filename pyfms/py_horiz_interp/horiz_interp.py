@@ -4,9 +4,14 @@ from typing import Any, Optional
 import numpy as np
 import numpy.typing as npt
 
+from pyfms.py_mpp.mpp import error
+from pyfms.py_fms.fms import FATAL
 from pyfms.py_horiz_interp import _functions
 from pyfms.utils.ctypes_utils import NDPOINTERi32, set_array, set_c_int, set_c_bool, set_c_str, set_list, setNone
 
+# enumerations used by horiz_interp_types.F90 (FMS)
+_CONSERVATIVE = 1
+_BILINEAR = 2
 
 _libpath = None
 _lib = None
@@ -220,22 +225,30 @@ def horiz_interp_get_interp_double(
     setNone(arglist) # nlon_dst
     setNone(arglist) # nlat_dst
     setNone(arglist) # is_allocated
-    setNone(arglist) # interp_method
+    interp_method = set_c_int(0, arglist) # interp_method
     
     ret_val = _cFMS_get_interp_cdouble(*arglist)
-
-    print(f"nxgrid from first call: {nxgrid}")
 
     arglist = []
     if interp_id is None:
         setNone(arglist)
     else:
         set_c_int(interp_id, arglist)
-    i_src = set_array(np.zeros(nxgrid.value, dtype=np.int32), arglist)
-    j_src = set_array(np.zeros(nxgrid.value, dtype=np.int32), arglist)
-    i_dst = set_array(np.zeros(nxgrid.value, dtype=np.int32), arglist)
-    j_dst = set_array(np.zeros(nxgrid.value, dtype=np.int32), arglist)
-    area_frac_dst = set_array(np.zeros(nxgrid.value, dtype=np.float64), arglist)
+    # certain fields are only allocated by either the bilinear or conservative
+    if interp_method.value == _CONSERVATIVE:
+        i_src = set_array(np.zeros(nxgrid.value, dtype=np.int32), arglist)
+        j_src = set_array(np.zeros(nxgrid.value, dtype=np.int32), arglist)
+        i_dst = set_array(np.zeros(nxgrid.value, dtype=np.int32), arglist)
+        j_dst = set_array(np.zeros(nxgrid.value, dtype=np.int32), arglist)
+        area_frac_dst = set_array(np.zeros(nxgrid.value, dtype=np.float64), arglist)
+    elif interp_method.value == _BILINEAR:
+        i_src = setNone(arglist)
+        j_src = setNone(arglist)
+        i_dst = setNone(arglist)
+        j_dst = setNone(arglist)
+        area_frac_dst = setNone(arglist)
+    else:
+        error(FATAL, f"invalid interp_method value: {interp_method.value}")
     version = set_c_int(0, arglist)
     nxgrid = set_c_int(0, arglist)
     nlon_src = set_c_int(0, arglist)
@@ -245,7 +258,25 @@ def horiz_interp_get_interp_double(
     is_allocated = set_c_bool(False, arglist)
     interp_method = set_c_int(0, arglist)
 
-    ret_val = _cFMS_get_interp_cdouble(*arglist)
+    _cFMS_get_interp_cdouble(*arglist)
+
+    if(interp_method.value == _BILINEAR): 
+        arglist = []
+        if interp_id is None:
+            setNone(arglist)
+        else:
+            set_c_int(interp_id, arglist)
+        wti = set_array(np.zeros( (nlon_dst.value, nlat_dst.value, 2), dtype=np.float64), arglist)
+        _cFMS_get_wti_cdouble(*arglist) 
+
+        arglist = []
+        if interp_id is None:
+            setNone(arglist)
+        else:
+            set_c_int(interp_id, arglist)
+        wtj = set_array(np.zeros( (nlon_dst.value, nlat_dst.value, 2), dtype=np.float64), arglist)
+        _cFMS_get_wtj_cdouble(*arglist) 
+    
 
     return dict(
         interp_id=interp_id,
@@ -262,6 +293,8 @@ def horiz_interp_get_interp_double(
         nlat_dst=nlat_dst.value,
         is_allocated=is_allocated.value,
         interp_method=interp_method.value,
+        wti=wti if interp_method.value == _BILINEAR else None,
+        wtj=wtj if interp_method.value == _BILINEAR else None,
     )
 
 def horiz_interp_get_interp_float(
@@ -271,7 +304,6 @@ def horiz_interp_get_interp_float(
     Returns the values of the fields in a horiz_interp_type instance as a dictionary 
     Will return values corresponding to the given interp_id, regardless of the current interp
     """
-
     # get nxgrid first so we know how big our output variables will be
     arglist = []
     if interp_id is None:
@@ -290,7 +322,7 @@ def horiz_interp_get_interp_float(
     setNone(arglist) # nlon_dst
     setNone(arglist) # nlat_dst
     setNone(arglist) # is_allocated
-    setNone(arglist) # interp_method
+    interp_method = set_c_int(0, arglist) # interp_method
     
     ret_val = _cFMS_get_interp_cfloat(*arglist)
 
@@ -299,11 +331,21 @@ def horiz_interp_get_interp_float(
         setNone(arglist)
     else:
         set_c_int(interp_id, arglist)
-    i_src = set_array(np.zeros(nxgrid.value, dtype=np.int32), arglist)
-    j_src = set_array(np.zeros(nxgrid.value, dtype=np.int32), arglist)
-    i_dst = set_array(np.zeros(nxgrid.value, dtype=np.int32), arglist)
-    j_dst = set_array(np.zeros(nxgrid.value, dtype=np.int32), arglist)
-    area_frac_dst = set_array(np.zeros(nxgrid.value, dtype=np.float32), arglist)
+    # certain fields are only allocated by either the bilinear or conservative
+    if interp_method.value == _CONSERVATIVE:
+        i_src = set_array(np.zeros(nxgrid.value, dtype=np.int32), arglist)
+        j_src = set_array(np.zeros(nxgrid.value, dtype=np.int32), arglist)
+        i_dst = set_array(np.zeros(nxgrid.value, dtype=np.int32), arglist)
+        j_dst = set_array(np.zeros(nxgrid.value, dtype=np.int32), arglist)
+        area_frac_dst = set_array(np.zeros(nxgrid.value, dtype=np.float32), arglist)
+    elif interp_method.value == _BILINEAR:
+        i_src = setNone(arglist)
+        j_src = setNone(arglist)
+        i_dst = setNone(arglist)
+        j_dst = setNone(arglist)
+        area_frac_dst = setNone(arglist)
+    else:
+        error(FATAL, f"invalid interp_method value: {interp_method.value}")
     version = set_c_int(0, arglist)
     nxgrid = set_c_int(0, arglist)
     nlon_src = set_c_int(0, arglist)
@@ -313,7 +355,25 @@ def horiz_interp_get_interp_float(
     is_allocated = set_c_bool(False, arglist)
     interp_method = set_c_int(0, arglist)
 
-    ret_val = _cFMS_get_interp_cfloat(*arglist)
+    _cFMS_get_interp_cfloat(*arglist)
+
+    if(interp_method.value == _BILINEAR): 
+        arglist = []
+        if interp_id is None:
+            setNone(arglist)
+        else:
+            set_c_int(interp_id, arglist)
+        wti = set_array(np.zeros( (nlon_dst.value, nlat_dst.value, 2), dtype=np.float32), arglist)
+        _cFMS_get_wti_cfloat(*arglist) 
+
+        arglist = []
+        if interp_id is None:
+            setNone(arglist)
+        else:
+            set_c_int(interp_id, arglist)
+        wtj = set_array(np.zeros( (nlon_dst.value, nlat_dst.value, 2), dtype=np.float32), arglist)
+        _cFMS_get_wtj_cfloat(*arglist) 
+    
 
     return dict(
         interp_id=interp_id,
@@ -330,6 +390,8 @@ def horiz_interp_get_interp_float(
         nlat_dst=nlat_dst.value,
         is_allocated=is_allocated.value,
         interp_method=interp_method.value,
+        wti=wti if interp_method.value == _BILINEAR else None,
+        wtj=wtj if interp_method.value == _BILINEAR else None,
     )
 
 

@@ -124,10 +124,10 @@ def define(lib):
 
     ## getter routines for individual fields
     lib.cFMS_get_wti_cfloat.restype = None
-    lib.cFMS_get_wti_cfloat.argtypes = [ POINTER(c_int), POINTER(c_float)]
+    lib.cFMS_get_wti_cfloat.argtypes = [ POINTER(c_int), npptr(np.float32, ndim=3, flags=C)]
     lib.cFMS_get_wti_cdouble.restype = None
-    lib.cFMS_get_wti_cdouble.argtypes = [ POINTER(c_int), POINTER(c_double)]
+    lib.cFMS_get_wti_cdouble.argtypes = [ POINTER(c_int), npptr(np.float64, ndim=3, flags=C)]
     lib.cFMS_get_wtj_cfloat.restype = None
-    lib.cFMS_get_wtj_cfloat.argtypes = [ POINTER(c_int), POINTER(c_float)]
+    lib.cFMS_get_wtj_cfloat.argtypes = [ POINTER(c_int), npptr(np.float32, ndim=3, flags=C)]
     lib.cFMS_get_wtj_cdouble.restype = None
-    lib.cFMS_get_wtj_cdouble.argtypes = [ POINTER(c_int), POINTER(c_double)]
+    lib.cFMS_get_wtj_cdouble.argtypes = [ POINTER(c_int), npptr(np.float64, ndim=3, flags=C)]
