@@ -1,5 +1,4 @@
-from ctypes import POINTER, c_int32
-from typing import Any, Optional
+from typing import Any
 
 import numpy as np
 import numpy.typing as npt
@@ -7,7 +6,7 @@ import numpy.typing as npt
 from pyfms.py_mpp.mpp import error
 from pyfms.py_fms.fms import FATAL
 from pyfms.py_horiz_interp import _functions
-from pyfms.utils.ctypes_utils import NDPOINTERi32, set_array, set_c_int, set_c_bool, set_c_str, set_list, setNone
+from pyfms.utils.ctypes_utils import set_array, set_c_int, set_c_bool, set_list, setNone
 
 # enumerations used by horiz_interp_types.F90 (FMS)
 _CONSERVATIVE = 1

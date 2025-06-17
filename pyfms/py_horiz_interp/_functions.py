@@ -1,4 +1,4 @@
-from ctypes import POINTER, c_int, c_char, c_bool, c_float, c_double
+from ctypes import POINTER, c_int, c_char, c_bool
 
 import numpy as np
 from pyfms.utils.ctypes_utils import NDPOINTERd, NDPOINTERf, NDPOINTERi32
@@ -88,7 +88,7 @@ def define(lib):
                                                   POINTER(c_bool)  # is_latlon_out
                                                 ]
 
-    ## getter routine for most of the fields used by conservative
+    # getter routine for most of the fields used by conservative
     lib.cFMS_get_interp_cfloat.restype = None
     lib.cFMS_get_interp_cfloat.argtypes = [ POINTER(c_int), # interp_id
                                             NDPOINTERi32(npptr(np.int32, ndim=1, flags=C)), # i_src
@@ -122,7 +122,7 @@ def define(lib):
                                              POINTER(c_int) #interp method
                                             ]
 
-    ## getter routines for individual fields
+    # getter routines for individual fields
     lib.cFMS_get_wti_cfloat.restype = None
     lib.cFMS_get_wti_cfloat.argtypes = [ POINTER(c_int), npptr(np.float32, ndim=3, flags=C)]
     lib.cFMS_get_wti_cdouble.restype = None

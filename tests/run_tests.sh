@@ -54,6 +54,8 @@ create_input $test
 run_test "python -m pytest -s -k test_create_xgrid $test"
 run_test "python -m pytest -s -k test_horiz_interp_conservative $test"
 run_test "mpirun -n 4 $oversubscribe python -m pytest -s -k test_horiz_interp_conservative $test"
+run_test "python -m pytest -s -k test_horiz_interp_bilinear $test"
+run_test "mpirun -n 2 $oversubscribe python -m pytest -s -k test_horiz_interp_bilinear $test"
 remove_input $test
 
 run_test "python -m pytest py_data_override/test_generate_files.py"
