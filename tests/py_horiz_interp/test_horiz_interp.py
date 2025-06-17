@@ -425,6 +425,7 @@ def test_horiz_interp_bilinear():
     assert np.allclose(interp_type_vals_float["wti"], 0.5, atol=0.1, rtol=0.1)
     assert np.allclose(interp_type_vals_float["wtj"], 0.5, atol=0.1, rtol=0.1)
 
+    pyfms.fms.end()
 
 @pytest.mark.remove
 def test_remove_input_nml():
