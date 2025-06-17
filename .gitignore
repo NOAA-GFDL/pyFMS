@@ -158,3 +158,11 @@ _dacegraphs
 
 # VSCode
 .devcontainer/
+
+# build/test files
+*.nml
+*.yaml
+*.yaml.*
+*.out
+*.mod
+pyfms/cLIBFMS/
