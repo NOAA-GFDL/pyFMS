@@ -3,10 +3,11 @@ from typing import Any
 import numpy as np
 import numpy.typing as npt
 
-from pyfms.py_mpp.mpp import error
 from pyfms.py_fms.fms import FATAL
 from pyfms.py_horiz_interp import _functions
-from pyfms.utils.ctypes_utils import set_array, set_c_int, set_c_bool, set_list, setNone
+from pyfms.py_mpp.mpp import error
+from pyfms.utils.ctypes_utils import set_array, set_c_bool, set_c_int, set_list, setNone
+
 
 # enumerations used by horiz_interp_types.F90 (FMS)
 _CONSERVATIVE = 1
@@ -132,14 +133,14 @@ def horiz_interp_2d_double(
 
     arglist = []
     set_array(lon_in_ptr, arglist)
-    set_list( lon_in_shape, np.int32, arglist)
+    set_list(lon_in_shape, np.int32, arglist)
     set_array(lat_in_ptr, arglist)
-    set_list( lat_in_shape, np.int32, arglist)
+    set_list(lat_in_shape, np.int32, arglist)
     set_array(lon_out_ptr, arglist)
-    set_list( lon_out_shape, np.int32, arglist)
+    set_list(lon_out_shape, np.int32, arglist)
     set_array(lat_out_ptr, arglist)
-    set_list( lat_out_shape, np.int32, arglist)
-    interp_method = interp_method.encode('utf-8')
+    set_list(lat_out_shape, np.int32, arglist)
+    interp_method = interp_method.encode("utf-8")
     set_array(interp_method, arglist)
     set_c_int(verbose, arglist)
     set_array(max_dist, arglist)
@@ -150,6 +151,7 @@ def horiz_interp_2d_double(
     set_c_bool(is_latlon_out, arglist)
 
     ret_val = _cFMS_horiz_interp_2d_cdouble(*arglist)
+
 
 def horiz_interp_2d_float(
     lon_in_ptr: npt.NDArray[np.float32],
@@ -179,14 +181,14 @@ def horiz_interp_2d_float(
 
     arglist = []
     set_array(lon_in_ptr, arglist)
-    set_list( lon_in_shape, np.int32, arglist)
+    set_list(lon_in_shape, np.int32, arglist)
     set_array(lat_in_ptr, arglist)
-    set_list( lat_in_shape, np.int32, arglist)
+    set_list(lat_in_shape, np.int32, arglist)
     set_array(lon_out_ptr, arglist)
-    set_list( lon_out_shape, np.int32, arglist)
+    set_list(lon_out_shape, np.int32, arglist)
     set_array(lat_out_ptr, arglist)
-    set_list( lat_out_shape, np.int32, arglist)
-    interp_method = interp_method.encode('utf-8')
+    set_list(lat_out_shape, np.int32, arglist)
+    interp_method = interp_method.encode("utf-8")
     set_array(interp_method, arglist)
     set_c_int(verbose, arglist)
     set_array(max_dist, arglist)
@@ -198,9 +200,8 @@ def horiz_interp_2d_float(
 
     ret_val = _cFMS_horiz_interp_2d_cfloat(*arglist)
 
-def horiz_interp_get_interp_double(
-        interp_id: int = None
-) -> dict:
+
+def horiz_interp_get_interp_double(interp_id: int = None) -> dict:
     """
     Returns the values of the fields in a horiz_interp_type instance as a dictionary
     Will return values corresponding to the given interp_id, regardless of the current interp
@@ -212,19 +213,19 @@ def horiz_interp_get_interp_double(
         setNone(arglist)
     else:
         set_c_int(interp_id, arglist)
-    setNone(arglist) # i_src
-    setNone(arglist) # j_src
-    setNone(arglist) # i_dst
-    setNone(arglist) # j_dst
-    setNone(arglist) # area_frac_dst
-    setNone(arglist) # version
-    nxgrid = set_c_int(-1, arglist) # nxgrid
-    setNone(arglist) # nlon_src
-    setNone(arglist) # nlat_src
-    setNone(arglist) # nlon_dst
-    setNone(arglist) # nlat_dst
-    setNone(arglist) # is_allocated
-    interp_method = set_c_int(0, arglist) # interp_method
+    setNone(arglist)  # i_src
+    setNone(arglist)  # j_src
+    setNone(arglist)  # i_dst
+    setNone(arglist)  # j_dst
+    setNone(arglist)  # area_frac_dst
+    setNone(arglist)  # version
+    nxgrid = set_c_int(-1, arglist)  # nxgrid
+    setNone(arglist)  # nlon_src
+    setNone(arglist)  # nlat_src
+    setNone(arglist)  # nlon_dst
+    setNone(arglist)  # nlat_dst
+    setNone(arglist)  # is_allocated
+    interp_method = set_c_int(0, arglist)  # interp_method
 
     ret_val = _cFMS_get_interp_cdouble(*arglist)
 
@@ -259,13 +260,15 @@ def horiz_interp_get_interp_double(
 
     _cFMS_get_interp_cdouble(*arglist)
 
-    if(interp_method.value == _BILINEAR):
+    if interp_method.value == _BILINEAR:
         arglist = []
         if interp_id is None:
             setNone(arglist)
         else:
             set_c_int(interp_id, arglist)
-        wti = set_array(np.zeros( (nlon_dst.value, nlat_dst.value, 2), dtype=np.float64), arglist)
+        wti = set_array(
+            np.zeros((nlon_dst.value, nlat_dst.value, 2), dtype=np.float64), arglist
+        )
         _cFMS_get_wti_cdouble(*arglist)
 
         arglist = []
@@ -273,9 +276,10 @@ def horiz_interp_get_interp_double(
             setNone(arglist)
         else:
             set_c_int(interp_id, arglist)
-        wtj = set_array(np.zeros( (nlon_dst.value, nlat_dst.value, 2), dtype=np.float64), arglist)
+        wtj = set_array(
+            np.zeros((nlon_dst.value, nlat_dst.value, 2), dtype=np.float64), arglist
+        )
         _cFMS_get_wtj_cdouble(*arglist)
-
 
     return dict(
         interp_id=interp_id,
@@ -296,9 +300,8 @@ def horiz_interp_get_interp_double(
         wtj=wtj if interp_method.value == _BILINEAR else None,
     )
 
-def horiz_interp_get_interp_float(
-        interp_id: int = None
-) -> dict:
+
+def horiz_interp_get_interp_float(interp_id: int = None) -> dict:
     """
     Returns the values of the fields in a horiz_interp_type instance as a dictionary
     Will return values corresponding to the given interp_id, regardless of the current interp
@@ -309,19 +312,19 @@ def horiz_interp_get_interp_float(
         setNone(arglist)
     else:
         set_c_int(interp_id, arglist)
-    setNone(arglist) # i_src
-    setNone(arglist) # j_src
-    setNone(arglist) # i_dst
-    setNone(arglist) # j_dst
-    setNone(arglist) # area_frac_dst
-    setNone(arglist) # version
-    nxgrid = set_c_int(-1, arglist) # nxgrid
-    setNone(arglist) # nlon_src
-    setNone(arglist) # nlat_src
-    setNone(arglist) # nlon_dst
-    setNone(arglist) # nlat_dst
-    setNone(arglist) # is_allocated
-    interp_method = set_c_int(0, arglist) # interp_method
+    setNone(arglist)  # i_src
+    setNone(arglist)  # j_src
+    setNone(arglist)  # i_dst
+    setNone(arglist)  # j_dst
+    setNone(arglist)  # area_frac_dst
+    setNone(arglist)  # version
+    nxgrid = set_c_int(-1, arglist)  # nxgrid
+    setNone(arglist)  # nlon_src
+    setNone(arglist)  # nlat_src
+    setNone(arglist)  # nlon_dst
+    setNone(arglist)  # nlat_dst
+    setNone(arglist)  # is_allocated
+    interp_method = set_c_int(0, arglist)  # interp_method
 
     ret_val = _cFMS_get_interp_cfloat(*arglist)
 
@@ -356,13 +359,15 @@ def horiz_interp_get_interp_float(
 
     _cFMS_get_interp_cfloat(*arglist)
 
-    if(interp_method.value == _BILINEAR):
+    if interp_method.value == _BILINEAR:
         arglist = []
         if interp_id is None:
             setNone(arglist)
         else:
             set_c_int(interp_id, arglist)
-        wti = set_array(np.zeros( (nlon_dst.value, nlat_dst.value, 2), dtype=np.float32), arglist)
+        wti = set_array(
+            np.zeros((nlon_dst.value, nlat_dst.value, 2), dtype=np.float32), arglist
+        )
         _cFMS_get_wti_cfloat(*arglist)
 
         arglist = []
@@ -370,9 +375,10 @@ def horiz_interp_get_interp_float(
             setNone(arglist)
         else:
             set_c_int(interp_id, arglist)
-        wtj = set_array(np.zeros( (nlon_dst.value, nlat_dst.value, 2), dtype=np.float32), arglist)
+        wtj = set_array(
+            np.zeros((nlon_dst.value, nlat_dst.value, 2), dtype=np.float32), arglist
+        )
         _cFMS_get_wtj_cfloat(*arglist)
-
 
     return dict(
         interp_id=interp_id,
