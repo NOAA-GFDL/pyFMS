@@ -49,6 +49,7 @@ _cFMS_define_domains = None
 _cFMS_define_io_domain = None
 _cFMS_define_layout = None
 _cFMS_define_nest_domains = None
+_cFMS_define_cubic_mosaic = None
 _cFMS_domain_is_initialized = None
 _cFMS_get_domain_name = None
 _cFMS_get_layout = None
@@ -327,6 +328,35 @@ def define_nest_domains(
     set_c_str(name, arglist)
 
     return _cFMS_define_nest_domains(*arglist)
+
+
+def define_cubic_mosaic(
+    ni: list[int],
+    nj: list[int],
+    global_indices: list[int],
+    layout: list[int],
+    ntiles: int,
+    halo: int = None,
+    use_memsize: bool = None,
+) -> int:
+
+    """
+    Defines a cubic mosaic domain based on the
+    given global indices and layout.
+    Returns a domain id corresponding to the
+    FmsMPPDomain2D type saved in cFMS.
+    """
+
+    arglist = []
+    set_list(ni, np.int32, arglist)
+    set_list(nj, np.int32, arglist)
+    set_list(global_indices, np.int32, arglist)
+    set_list(layout, np.int32, arglist)
+    set_c_int(ntiles, arglist)
+    set_c_int(halo, arglist)
+    set_c_bool(use_memsize, arglist)
+
+    return _cFMS_define_cubic_mosaic(*arglist)
 
 
 def domain_is_initialized(domain_id: int) -> bool:
@@ -656,6 +686,7 @@ def _init_functions():
     global _cFMS_define_io_domain
     global _cFMS_define_layout
     global _cFMS_define_nest_domains
+    global _cFMS_define_cubic_mosaic
     global _cFMS_domain_is_initialized
     global _cFMS_get_domain_name
     global _cFMS_get_layout
@@ -693,6 +724,7 @@ def _init_functions():
     _cFMS_define_io_domain = _lib.cFMS_define_io_domain
     _cFMS_define_layout = _lib.cFMS_define_layout
     _cFMS_define_nest_domains = _lib.cFMS_define_nest_domains
+    _cFMS_define_cubic_mosaic = _lib.cFMS_define_cubic_mosaic
     _cFMS_domain_is_initialized = _lib.cFMS_domain_is_initialized
     _cFMS_get_domain_name = _lib.cFMS_get_domain_name
     _cFMS_get_layout = _lib.cFMS_get_layout
