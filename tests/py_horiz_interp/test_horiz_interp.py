@@ -421,9 +421,8 @@ def test_horiz_interp_bilinear():
     assert interp_type_vals_float["nlat_src"] == lat_in_size
     assert interp_type_vals_float["nlon_dst"] == lon_out_size
     assert interp_type_vals_float["nlat_dst"] == lat_out_size
-    # tolerance seems too big maybe from converting the data first?
-    assert np.allclose(interp_type_vals_float["wti"], 0.5, atol=0.1, rtol=0.1)
-    assert np.allclose(interp_type_vals_float["wtj"], 0.5, atol=0.1, rtol=0.1)
+    assert np.allclose(interp_type_vals_float["wti"], 0.5, atol=1e-4)
+    assert np.allclose(interp_type_vals_float["wtj"], 0.5, atol=1e-4)
 
     pyfms.fms.end()
 
