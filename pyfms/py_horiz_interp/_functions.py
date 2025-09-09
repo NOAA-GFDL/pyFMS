@@ -46,50 +46,44 @@ def define(lib):
     lib.cFMS_horiz_interp_init.restype = None
     lib.cFMS_horiz_interp_init.argtypes = [POINTER(c_int)]
 
-    # cFMS_set_current_interp
-    lib.cFMS_set_current_interp.restype = None
-    lib.cFMS_set_current_interp.argtypes = [POINTER(c_int)]
-
     # cFMS_horiz_interp_2d (for floats and doubles)
-    lib.cFMS_horiz_interp_2d_cdouble.restype = c_int
-    lib.cFMS_horiz_interp_2d_cdouble.argtypes = [
-        npptr(np.float64, ndim=1, flags=C),  # lon_in_ptr
-        npptr(np.int32, ndim=1, flags=C),  # lon_in_shape
-        npptr(np.float64, ndim=1, flags=C),  # lat_in_ptr
-        npptr(np.int32, ndim=1, flags=C),  # lat_in_shape
-        npptr(np.float64, ndim=1, flags=C),  # lon_out_ptr
-        npptr(np.int32, ndim=1, flags=C),  # lon_out_shape
-        npptr(np.float64, ndim=1, flags=C),  # lat_out_ptr
-        npptr(np.int32, ndim=1, flags=C),  # lat_out_shape
+    lib.cFMS_horiz_interp_get_weights_2d_cdouble.restype = c_int
+    lib.cFMS_horiz_interp_get_weights_2d_cdouble.argtypes = [
+        npptr(np.float64, ndim=2, flags=C),  # lon_in_ptr
+        npptr(np.float64, ndim=2, flags=C),  # lat_in_ptr
+        npptr(np.int32, ndim=1, flags=C),  # lonlat_in_shape
+        npptr(np.float64, ndim=2, flags=C),  # lon_out_ptr
+        npptr(np.float64, ndim=2, flags=C),  # lat_out_ptr
+        npptr(np.int32, ndim=1, flags=C),  # lonlat_out_shape
+        NDPOINTERd(npptr(np.float64, ndim=2, flags=C)),  # mask_in_ptr
+        NDPOINTERd(npptr(np.float64, ndim=2, flags=C)),  # mask_out_ptr
         POINTER(c_char),  # interp_method
         POINTER(c_int),  # verbose
         NDPOINTERd(npptr(np.float64, ndim=1, flags=C)),  # max_dist
         POINTER(c_bool),  # src_modulo
-        NDPOINTERd(npptr(np.float64, ndim=1, flags=C)),  # mask_in_ptr
-        NDPOINTERd(npptr(np.float64, ndim=1, flags=C)),  # mask_out_ptr
         POINTER(c_bool),  # is_latlon_in
         POINTER(c_bool),  # is_latlon_out
     ]
 
-    lib.cFMS_horiz_interp_2d_cfloat.restype = c_int
-    lib.cFMS_horiz_interp_2d_cfloat.argtypes = [
-        npptr(np.float32, ndim=1, flags=C),  # lon_in_ptr
-        npptr(np.int32, ndim=1, flags=C),  # lon_in_shape
-        npptr(np.float32, ndim=1, flags=C),  # lat_in_ptr
-        npptr(np.int32, ndim=1, flags=C),  # lat_in_shape
-        npptr(np.float32, ndim=1, flags=C),  # lon_out_ptr
-        npptr(np.int32, ndim=1, flags=C),  # lon_out_shape
-        npptr(np.float32, ndim=1, flags=C),  # lat_out_ptr
-        npptr(np.int32, ndim=1, flags=C),  # lat_out_shape
+    # cFMS_horiz_interp_2d (for floats and doubles)
+    lib.cFMS_horiz_interp_get_weights_2d_cfloat.restype = c_int
+    lib.cFMS_horiz_interp_get_weights_2d_cfloat.argtypes = [
+        npptr(np.float32, ndim=2, flags=C),  # lon_in_ptr
+        npptr(np.float32, ndim=2, flags=C),  # lat_in_ptr
+        npptr(np.int32, ndim=1, flags=C),  # lonlat_in_shape
+        npptr(np.float32, ndim=2, flags=C),  # lon_out_ptr
+        npptr(np.float32, ndim=2, flags=C),  # lat_out_ptr
+        npptr(np.int32, ndim=1, flags=C),  # lonlat_out_shape
+        NDPOINTERd(npptr(np.float32, ndim=2, flags=C)),  # mask_in_ptr
+        NDPOINTERd(npptr(np.float32, ndim=2, flags=C)),  # mask_out_ptr
         POINTER(c_char),  # interp_method
         POINTER(c_int),  # verbose
         NDPOINTERd(npptr(np.float32, ndim=1, flags=C)),  # max_dist
         POINTER(c_bool),  # src_modulo
-        NDPOINTERd(npptr(np.float32, ndim=1, flags=C)),  # mask_in_ptr
-        NDPOINTERd(npptr(np.float32, ndim=1, flags=C)),  # mask_out_ptr
         POINTER(c_bool),  # is_latlon_in
         POINTER(c_bool),  # is_latlon_out
     ]
+
 
     # getter routine for most of the fields used by conservative
     lib.cFMS_get_interp_cfloat.restype = None

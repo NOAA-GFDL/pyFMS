@@ -6,7 +6,7 @@ import numpy.typing as npt
 from pyfms.py_fms.fms import FATAL
 from pyfms.py_horiz_interp import _functions
 from pyfms.py_mpp.mpp import error
-from pyfms.utils.ctypes_utils import set_array, set_c_bool, set_c_int, set_list, setNone
+from pyfms.utils.ctypes_utils import set_array, set_c_bool, set_c_int, set_list, set_c_str, setNone
 
 
 # enumerations used by horiz_interp_types.F90 (FMS)
@@ -19,11 +19,12 @@ _lib = None
 _cFMS_create_xgrid_2dx2d_order1 = None
 _get_maxxgrid = None
 _cFMS_horiz_interp_init = None
-_cFMS_set_current_interp = None
 _cFMS_get_interp_cdouble = None
 _cFMS_get_interp_cfloat = None
-_cFMS_horiz_interp_2d_cdouble = None
-_cFMS_horiz_interp_2d_cfloat = None
+_cFMS_horiz_interp_2d_get_weights_cdouble = None
+_cFMS_horiz_interp_2d_get_weights_cfloat = None
+
+_cFMS_horiz_interp_get_weights = {}
 
 
 def get_maxxgrid() -> np.int32:
@@ -96,30 +97,17 @@ def init(ninterp: int = None):
     _cFMS_horiz_interp_init(*arglist)
 
 
-def set_current_interp(interp_id: int = None):
-
-    arglist = []
-    set_c_int(interp_id, arglist)
-
-    _cFMS_set_current_interp(*arglist)
-
-
-# TODO shape arguments are not really needed
-def horiz_interp_2d_double(
-    lon_in_ptr: npt.NDArray[np.float64],
-    lon_in_shape: list[int],
-    lat_in_ptr: npt.NDArray[np.float64],
-    lat_in_shape: list[int],
-    lon_out_ptr: npt.NDArray[np.float64],
-    lon_out_shape: list[int],
-    lat_out_ptr: npt.NDArray[np.float64],
-    lat_out_shape: list[int],
-    interp_method: str,
+def get_weights(
+    lon_in: npt.NDArray[np.float32|np.float64],
+    lat_in: npt.NDArray[np.float32|np.float64],
+    lon_out: npt.NDArray[np.float32|np.float64],
+    lat_out: npt.NDArray[np.float32|np.float64],
+    mask_in: npt.NDArray[np.float32|np.float64] = None,
+    mask_out: npt.NDArray[np.float32|np.float64] = None,
+    interp_method: str = None,
     verbose: int = 0,
-    max_dist: npt.NDArray[np.float64] = None,
+    max_dist: np.float32|np.float64 = None,
     src_modulo: bool = False,
-    mask_in_ptr: npt.NDArray[np.float64] = None,
-    mask_out_ptr: npt.NDArray[np.float64] = None,
     is_latlon_in: bool = False,
     is_latlon_out: bool = False,
 ) -> int:
@@ -128,77 +116,28 @@ def horiz_interp_2d_double(
     using double precision floating point numbers.
     """
 
-    npptr = np.ctypeslib.ndpointer
-    C = "C_CONTIGUOUS"
+    try:
+        _cfms_horiz_interp_get_weights = _cFMS_horiz_interp_get_weights[lon_in.dtype.name]
+    except:
+        raise RuntimeError(f"horiz_interp.get_weights: grid of type {lon_in.dtype} not supported")
 
     arglist = []
-    set_array(lon_in_ptr, arglist)
-    set_list(lon_in_shape, np.int32, arglist)
-    set_array(lat_in_ptr, arglist)
-    set_list(lat_in_shape, np.int32, arglist)
-    set_array(lon_out_ptr, arglist)
-    set_list(lon_out_shape, np.int32, arglist)
-    set_array(lat_out_ptr, arglist)
-    set_list(lat_out_shape, np.int32, arglist)
-    interp_method = interp_method.encode("utf-8")
-    set_array(interp_method, arglist)
+    set_array(lon_in, arglist)
+    set_array(lat_in, arglist)
+    set_list(lat_in.shape, np.int32, arglist)
+    set_array(lon_out, arglist)
+    set_array(lat_out, arglist)
+    set_list(lat_out.shape, np.int32, arglist)
+    set_array(mask_in, arglist)
+    set_array(mask_out, arglist)
+    set_c_str(interp_method, arglist)
     set_c_int(verbose, arglist)
     set_array(max_dist, arglist)
     set_c_bool(src_modulo, arglist)
-    set_array(mask_in_ptr, arglist)
-    set_array(mask_out_ptr, arglist)
     set_c_bool(is_latlon_in, arglist)
     set_c_bool(is_latlon_out, arglist)
 
-    ret_val = _cFMS_horiz_interp_2d_cdouble(*arglist)
-
-
-def horiz_interp_2d_float(
-    lon_in_ptr: npt.NDArray[np.float32],
-    lon_in_shape: list[int],
-    lat_in_ptr: npt.NDArray[np.float32],
-    lat_in_shape: list[int],
-    lon_out_ptr: npt.NDArray[np.float32],
-    lon_out_shape: list[int],
-    lat_out_ptr: npt.NDArray[np.float32],
-    lat_out_shape: list[int],
-    interp_method: str,
-    verbose: int = 0,
-    max_dist: npt.NDArray[np.float32] = None,
-    src_modulo: bool = False,
-    mask_in_ptr: npt.NDArray[np.float32] = None,
-    mask_out_ptr: npt.NDArray[np.float32] = None,
-    is_latlon_in: bool = False,
-    is_latlon_out: bool = False,
-) -> int:
-    """
-    Performs horizontal interpolation for 2D data
-    using double precision floating point numbers.
-    """
-
-    npptr = np.ctypeslib.ndpointer
-    C = "C_CONTIGUOUS"
-
-    arglist = []
-    set_array(lon_in_ptr, arglist)
-    set_list(lon_in_shape, np.int32, arglist)
-    set_array(lat_in_ptr, arglist)
-    set_list(lat_in_shape, np.int32, arglist)
-    set_array(lon_out_ptr, arglist)
-    set_list(lon_out_shape, np.int32, arglist)
-    set_array(lat_out_ptr, arglist)
-    set_list(lat_out_shape, np.int32, arglist)
-    interp_method = interp_method.encode("utf-8")
-    set_array(interp_method, arglist)
-    set_c_int(verbose, arglist)
-    set_array(max_dist, arglist)
-    set_c_bool(src_modulo, arglist)
-    set_array(mask_in_ptr, arglist)
-    set_array(mask_out_ptr, arglist)
-    set_c_bool(is_latlon_in, arglist)
-    set_c_bool(is_latlon_out, arglist)
-
-    ret_val = _cFMS_horiz_interp_2d_cfloat(*arglist)
+    return _cfms_horiz_interp_get_weights(*arglist)
 
 
 def horiz_interp_get_interp_double(interp_id: int = None) -> dict:
@@ -405,9 +344,9 @@ def _init_functions():
     global _cFMS_create_xgrid_2dx2d_order1
     global _get_maxxgrid
     global _cFMS_horiz_interp_init
-    global _cFMS_set_current_interp
-    global _cFMS_horiz_interp_2d_cdouble
-    global _cFMS_horiz_interp_2d_cfloat
+    global _cFMS_horiz_interp_get_weights
+    global _cFMS_horiz_interp_get_weights_2d_cdouble
+    global _cFMS_horiz_interp_get_weights_2d_cfloat
     global _cFMS_get_interp_cdouble
     global _cFMS_get_interp_cfloat
     global _cFMS_get_wti_cfloat
@@ -418,9 +357,8 @@ def _init_functions():
     _cFMS_create_xgrid_2dx2d_order1 = _lib.cFMS_create_xgrid_2dx2d_order1
     _get_maxxgrid = _lib.get_maxxgrid
     _cFMS_horiz_interp_init = _lib.cFMS_horiz_interp_init
-    _cFMS_set_current_interp = _lib.cFMS_set_current_interp
-    _cFMS_horiz_interp_2d_cdouble = _lib.cFMS_horiz_interp_2d_cdouble
-    _cFMS_horiz_interp_2d_cfloat = _lib.cFMS_horiz_interp_2d_cfloat
+    _cFMS_horiz_interp_2d_get_weights_cdouble = _lib.cFMS_horiz_interp_get_weights_2d_cdouble
+    _cFMS_horiz_interp_2d_get_weights_cfloat = _lib.cFMS_horiz_interp_get_weights_2d_cfloat
     _cFMS_get_interp_cdouble = _lib.cFMS_get_interp_cdouble
     _cFMS_get_interp_cfloat = _lib.cFMS_get_interp_cfloat
     _cFMS_get_wti_cfloat = _lib.cFMS_get_wti_cfloat
@@ -428,6 +366,10 @@ def _init_functions():
     _cFMS_get_wtj_cfloat = _lib.cFMS_get_wtj_cfloat
     _cFMS_get_wtj_cdouble = _lib.cFMS_get_wtj_cdouble
 
+    _cFMS_horiz_interp_get_weights = {"float32": _cFMS_horiz_interp_2d_get_weights_cfloat,
+                                      "float64": _cFMS_horiz_interp_2d_get_weights_cdouble
+    }
+                                          
     _functions.define(_lib)
 
 

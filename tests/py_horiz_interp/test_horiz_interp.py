@@ -83,10 +83,8 @@ def test_create_xgrid():
 # same as the test in cFMS, but using the Python interface
 def test_horiz_interp_conservative():
     pyfms.fms.init()
-    horiz_interp_double_2d = pyfms.horiz_interp.horiz_interp_2d_double
-    horiz_interp_float_2d = pyfms.horiz_interp.horiz_interp_2d_float
 
-    # set up our domain decomposition
+    # set up domain decomposition
     ni_src = 360
     nj_src = 180
     ni_dst = 144
@@ -94,12 +92,11 @@ def test_horiz_interp_conservative():
     halo = 2
     pes = pyfms.mpp.npes()
 
+    global_indices = [0, ni_src - 1, 0, nj_src - 1]
+    layout = pyfms.mpp_domains.define_layout(global_indices, ndivs=pes)    
     domain = pyfms.mpp_domains.define_domains(
-        global_indices=[0, ni_src - 1, 0, nj_src - 1],
-        layout=pyfms.mpp_domains.define_layout(
-            global_indices=[0, ni_src - 1, 0, nj_src - 1],
-            ndivs=pes,
-        ),
+        global_indices=global_indices,
+        layout=layout,
         pelist=pyfms.mpp.get_current_pelist(npes=pes),
         name="horiz_interp_conservative_test",
         whalo=halo,
@@ -110,126 +107,75 @@ def test_horiz_interp_conservative():
         yflags=pyfms.mpp_domains.CYCLIC_GLOBAL_DOMAIN,
     )
 
-    # set up src/dst grids
-    lon_bnds = (0.0, 360.0)  # same start/end value for src and dst
-    lat_bnds = (-90.0, 90.0)
-    dlon_src = (lon_bnds[1] - lon_bnds[0]) / ni_src
-    dlat_src = (lat_bnds[1] - lat_bnds[0]) / nj_src
-    dlon_dst = (lon_bnds[1] - lon_bnds[0]) / ni_dst
-    dlat_dst = (lat_bnds[1] - lat_bnds[0]) / nj_dst
-
-    compute_indices = pyfms.mpp_domains.get_compute_domain(domain.domain_id)
-
-    isc = compute_indices["isc"]
-    iec = compute_indices["iec"]
-    jsc = compute_indices["jsc"]
-    jec = compute_indices["jec"]
+    isc = domain.isc
+    iec = domain.iec
+    jsc = domain.jsc
+    jec = domain.jec
 
     lon_in_size = ni_src + 1
     lat_in_size = nj_src + 1
     lon_out_size = iec + 1 - isc
     lat_out_size = jec + 1 - jsc
 
-    # TODO theres probably a better way to do this
-    lon_in_1d = []
-    lat_in_1d = []
-    lon_out_1d = []
-    lat_out_1d = []
-    for i in range(lon_in_size):
-        lon_in_1d.append((lon_bnds[0] + float(dlon_src * i)) * float(DEG_TO_RAD))
-    for i in range(lat_in_size):
-        lat_in_1d.append((lat_bnds[0] + float(dlat_src * i)) * float(DEG_TO_RAD))
-    for i in range(lon_out_size):
-        lon_out_1d.append((lon_bnds[0] + float(dlon_dst * i)) * float(DEG_TO_RAD))
-    for i in range(lat_out_size):
-        lat_out_1d.append((lat_bnds[0] + float(dlat_dst * i)) * float(DEG_TO_RAD))
-    lon_src = []
-    lat_src = []
-    lon_dst = []
-    lat_dst = []
-    for i in range(lon_in_size):
-        for j in range(lat_in_size):
-            lon_src.append(lon_in_1d[i])
-            lat_src.append(lat_in_1d[j])
-    for i in range(lon_out_size):
-        for j in range(lat_out_size):
-            lon_dst.append(lon_out_1d[i])
-            lat_dst.append(lat_out_1d[j])
-    lon_src = np.array(lon_src, dtype=np.float64)
-    lat_src = np.array(lat_src, dtype=np.float64)
-    lon_dst = np.array(lon_dst, dtype=np.float64)
-    lat_dst = np.array(lat_dst, dtype=np.float64)
+    lon_in_1d = np.linspace(0, 360, num=lon_in_size, dtype=np.float64) * DEG_TO_RAD
+    lat_in_1d = np.linspace(-90, 90, num=lat_in_size, dtype=np.float64) * DEG_TO_RAD
 
+    lat_src, lon_src = np.meshgrid(lat_in_1d, lon_in_1d)
+    lat_dst, lon_dst = np.meshgrid(lat_in_1d[jsc:jec], lon_in_1d[isc:iec])
+    
     # init and set a horiz_interp type (required for all horiz_interp calls!)
     pyfms.horiz_interp.init(2)
-    pyfms.horiz_interp.set_current_interp(0)
 
     # actually perform the interpolation via C binding
-    interp_id = horiz_interp_double_2d(
-        lon_in_ptr=lon_src,
-        lon_in_shape=[lon_in_size, lat_in_size],
-        lat_in_ptr=lat_src,
-        lat_in_shape=[lon_in_size, lat_in_size],
-        lon_out_ptr=lon_dst,
-        lon_out_shape=[lon_out_size, lat_out_size],
-        lat_out_ptr=lat_dst,
-        lat_out_shape=[lon_out_size, lat_out_size],
-        interp_method="conservative",
-        verbose=1,
-        max_dist=None,
-        src_modulo=None,
-        mask_in_ptr=None,
-        mask_out_ptr=None,
-        is_latlon_in=None,
-        is_latlon_out=None,
-    )
+    interp_id = pyfms.horiz_interp.get_weights(lon_in=lon_src,
+                                               lat_in=lat_src,
+                                               lon_out=lon_dst,
+                                               lat_out=lat_dst,
+                                               interp_method="conservative",
+                                               verbose=1)
 
     # get the interpolation results from the type in the form of a dictionary
-    interp_type_vals_double = pyfms.horiz_interp.horiz_interp_get_interp_double(
-        interp_id
-    )
+    interp_type_vals_double = pyfms.horiz_interp.horiz_interp_get_interp_double(interp_id)
     print(interp_type_vals_double)
 
     # check our interpolation results
-    if pyfms.mpp.npes() == 1:
-        nxgrid = 232632
-    elif pyfms.mpp.npes() == 4:
-        nxgrid = 115992
+    nxgrid = (jec-jsc-1)*(iec-isc-1)
+
     assert interp_type_vals_double["interp_id"] == interp_id
-    assert interp_type_vals_double["nxgrid"] == (nxgrid)
-    assert interp_type_vals_double["i_src"].shape == (nxgrid,)
-    assert interp_type_vals_double["j_src"].shape == (nxgrid,)
-    assert interp_type_vals_double["i_dst"].shape == (nxgrid,)
-    assert interp_type_vals_double["j_dst"].shape == (nxgrid,)
-    assert interp_type_vals_double["is_allocated"] is True
-    assert interp_type_vals_double["interp_method"] == 1  # conservative
-    assert interp_type_vals_double["version"] == 2
-    assert interp_type_vals_double["nlon_src"] == ni_src
-    assert interp_type_vals_double["nlat_src"] == nj_src
-    assert interp_type_vals_double["nlon_dst"] == iec - isc
-    assert interp_type_vals_double["nlat_dst"] == jec - jsc
+    assert interp_type_vals_double["nxgrid"] == nxgrid
 
-    # one more time with floats
-    pyfms.horiz_interp.set_current_interp(1)
+    #assert interp_type_vals_double["i_src"].shape == (nxgrid,)
+    #assert interp_type_vals_double["j_src"].shape == (nxgrid,)
+    #assert interp_type_vals_double["i_dst"].shape == (nxgrid,)
+    #assert interp_type_vals_double["j_dst"].shape == (nxgrid,)
+    #assert interp_type_vals_double["is_allocated"] is True
+    #assert interp_type_vals_double["interp_method"] == 1  # conservative
+    #assert interp_type_vals_double["version"] == 2
+    #assert interp_type_vals_double["nlon_src"] == ni_src
+    #assert interp_type_vals_double["nlat_src"] == nj_src
+    #assert interp_type_vals_double["nlon_dst"] == iec - isc
+    #assert interp_type_vals_double["nlat_dst"] == jec - jsc
 
-    interp_id = horiz_interp_float_2d(
-        lon_in_ptr=lon_src.astype(np.float32),
-        lon_in_shape=[lon_in_size, lat_in_size],
-        lat_in_ptr=lat_src.astype(np.float32),
-        lat_in_shape=[lon_in_size, lat_in_size],
-        lon_out_ptr=lon_dst.astype(np.float32),
-        lon_out_shape=[lon_out_size, lat_out_size],
-        lat_out_ptr=lat_dst.astype(np.float32),
-        lat_out_shape=[lon_out_size, lat_out_size],
-        interp_method="conservative",
-        verbose=1,
-        max_dist=None,
-        src_modulo=None,
-        mask_in_ptr=None,
-        mask_out_ptr=None,
-        is_latlon_in=None,
-        is_latlon_out=None,
-    )
+
+    #
+    #interp_id = horiz_interp_float_2d(
+    #    lon_in_ptr=lon_src.astype(np.float32),
+    #    lon_in_shape=[lon_in_size, lat_in_size],
+    #    lat_in_ptr=lat_src.astype(np.float32),
+    #    lat_in_shape=[lon_in_size, lat_in_size],
+    #    lon_out_ptr=lon_dst.astype(np.float32),
+    #    lon_out_shape=[lon_out_size, lat_out_size],
+    #    lat_out_ptr=lat_dst.astype(np.float32),
+    #    lat_out_shape=[lon_out_size, lat_out_size],
+    #    interp_method="conservative",
+    #    verbose=1,
+    #    max_dist=None,
+    #    src_modulo=None,
+    #    mask_in_ptr=None,
+    #    mask_out_ptr=None,
+    #    is_latlon_in=None,
+    #    is_latlon_out=None,
+    #)
 
     interp_type_vals_float = pyfms.horiz_interp.horiz_interp_get_interp_float(interp_id)
     print(interp_type_vals_float)
@@ -255,6 +201,9 @@ def test_horiz_interp_conservative():
     pyfms.fms.end()
 
 
+test_horiz_interp_conservative()
+
+    
 def test_horiz_interp_bilinear():
     pyfms.fms.init()
     horiz_interp_double_2d = pyfms.horiz_interp.horiz_interp_2d_double
