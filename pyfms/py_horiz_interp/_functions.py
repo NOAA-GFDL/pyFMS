@@ -47,8 +47,8 @@ def define(lib):
     lib.cFMS_horiz_interp_init.argtypes = [POINTER(c_int)]
 
     # cFMS_horiz_interp_2d (for floats and doubles)
-    lib.cFMS_horiz_interp_get_weights_2d_cdouble.restype = c_int
-    lib.cFMS_horiz_interp_get_weights_2d_cdouble.argtypes = [
+    lib.cFMS_horiz_interp_new_2d_cdouble.restype = c_int
+    lib.cFMS_horiz_interp_new_2d_cdouble.argtypes = [
         npptr(np.float64, ndim=2, flags=C),  # lon_in_ptr
         npptr(np.float64, ndim=2, flags=C),  # lat_in_ptr
         npptr(np.int32, ndim=1, flags=C),  # lonlat_in_shape
@@ -66,8 +66,8 @@ def define(lib):
     ]
 
     # cFMS_horiz_interp_2d (for floats and doubles)
-    lib.cFMS_horiz_interp_get_weights_2d_cfloat.restype = c_int
-    lib.cFMS_horiz_interp_get_weights_2d_cfloat.argtypes = [
+    lib.cFMS_horiz_interp_new_2d_cfloat.restype = c_int
+    lib.cFMS_horiz_interp_new_2d_cfloat.argtypes = [
         npptr(np.float32, ndim=2, flags=C),  # lon_in_ptr
         npptr(np.float32, ndim=2, flags=C),  # lat_in_ptr
         npptr(np.int32, ndim=1, flags=C),  # lonlat_in_shape
@@ -82,43 +82,6 @@ def define(lib):
         POINTER(c_bool),  # src_modulo
         POINTER(c_bool),  # is_latlon_in
         POINTER(c_bool),  # is_latlon_out
-    ]
-
-
-    # getter routine for most of the fields used by conservative
-    lib.cFMS_get_interp_cfloat.restype = None
-    lib.cFMS_get_interp_cfloat.argtypes = [
-        POINTER(c_int),  # interp_id
-        NDPOINTERi32(npptr(np.int32, ndim=1, flags=C)),  # i_src
-        NDPOINTERi32(npptr(np.int32, ndim=1, flags=C)),  # j_src
-        NDPOINTERi32(npptr(np.int32, ndim=1, flags=C)),  # i_dst
-        NDPOINTERi32(npptr(np.int32, ndim=1, flags=C)),  # j_dst
-        NDPOINTERf(npptr(np.float32, ndim=1, flags=C)),  # area_frac_dst,
-        POINTER(c_int),  # version
-        POINTER(c_int),  # nxgrid
-        POINTER(c_int),  # nlon_src
-        POINTER(c_int),  # nlat_src
-        POINTER(c_int),  # nlon_dst
-        POINTER(c_int),  # nlat_dst
-        POINTER(c_bool),  # is_allocated
-        POINTER(c_int),  # interp method
-    ]
-    lib.cFMS_get_interp_cdouble.restype = None
-    lib.cFMS_get_interp_cdouble.argtypes = [
-        POINTER(c_int),  # interp_id
-        NDPOINTERi32(npptr(np.int32, ndim=1, flags=C)),  # i_src
-        NDPOINTERi32(npptr(np.int32, ndim=1, flags=C)),  # j_src
-        NDPOINTERi32(npptr(np.int32, ndim=1, flags=C)),  # i_dst
-        NDPOINTERi32(npptr(np.int32, ndim=1, flags=C)),  # j_dst
-        NDPOINTERf(npptr(np.float64, ndim=1, flags=C)),  # area_frac_dst,
-        POINTER(c_int),  # version
-        POINTER(c_int),  # nxgrid
-        POINTER(c_int),  # nlon_src
-        POINTER(c_int),  # nlat_src
-        POINTER(c_int),  # nlon_dst
-        POINTER(c_int),  # nlat_dst
-        POINTER(c_bool),  # is_allocated
-        POINTER(c_int),  # interp method
     ]
 
     # getter routines for individual fields
@@ -142,3 +105,62 @@ def define(lib):
         POINTER(c_int),
         npptr(np.float64, ndim=3, flags=C),
     ]
+
+    #cFMS_get_interp_method
+    lib.cFMS_get_interp_method.restype = None
+    lib.cFMS_get_interp_method.argtypes = [POINTER(c_int), POINTER(c_int)]
+    
+    #cFMS_get_i_src
+    lib.cFMS_get_i_src.restype = None
+    lib.cFMS_get_i_src.argtypes = [
+        POINTER(c_int),
+        npptr(np.int32, ndim=1, flags=C)
+    ]
+
+    #cFMS_get_j_src
+    lib.cFMS_get_j_src.restype = None
+    lib.cFMS_get_j_src.argtypes = [
+        POINTER(c_int),
+        npptr(np.int32, ndim=1, flags=C)
+    ]
+
+    #cFMS_get_i_dst
+    lib.cFMS_get_i_dst.restype = None
+    lib.cFMS_get_i_dst.argtypes = [
+        POINTER(c_int),
+        npptr(np.int32, ndim=1, flags=C)
+    ]
+
+    #cFMS_get_j_dst
+    lib.cFMS_get_j_dst.restype = None
+    lib.cFMS_get_j_dst.argtypes = [
+        POINTER(c_int),
+        npptr(np.int32, ndim=1, flags=C)
+    ]
+
+    #cFMS_get_area_frac_dst
+    lib.cFMS_get_area_frac_dst_cdouble.restype = None
+    lib.cFMS_get_area_frac_dst_cdouble.argtypes = [
+        POINTER(c_int),
+        npptr(np.float64, ndim=1, flags=C)
+    ]
+
+    #cFMS_get_nlon_src
+    lib.cFMS_get_nlon_src.restype = None
+    lib.cFMS_get_nlon_src.argtypes = [POINTER(c_int), POINTER(c_int)]
+
+    #cFMS_get_nlat_src
+    lib.cFMS_get_nlat_src.restype = None
+    lib.cFMS_get_nlat_src.argtypes = [POINTER(c_int), POINTER(c_int)]
+
+    #cFMS_get_nlon_dst
+    lib.cFMS_get_nlon_dst.restype = None
+    lib.cFMS_get_nlon_dst.argtypes = [POINTER(c_int), POINTER(c_int)]
+
+    #cFMS_get_nlat_dst
+    lib.cFMS_get_nlat_dst.restype = None
+    lib.cFMS_get_nlat_dst.argtypes = [POINTER(c_int), POINTER(c_int)]
+
+    #cFMS_get_nxgrid
+    lib.cFMS_get_nxgrid.restype = None
+    lib.cFMS_get_nxgrid.argtypes = [POINTER(c_int), POINTER(c_int)]

@@ -19,12 +19,20 @@ _lib = None
 _cFMS_create_xgrid_2dx2d_order1 = None
 _get_maxxgrid = None
 _cFMS_horiz_interp_init = None
-_cFMS_get_interp_cdouble = None
-_cFMS_get_interp_cfloat = None
-_cFMS_horiz_interp_2d_get_weights_cdouble = None
-_cFMS_horiz_interp_2d_get_weights_cfloat = None
-
-_cFMS_horiz_interp_get_weights = {}
+_cFMS_horiz_interp_2d_new_cdouble = None
+_cFMS_horiz_interp_2d_new_cfloat = None
+_cFMS_get_i_src = None
+_cFMS_get_j_src = None
+_cFMS_get_i_dst = None
+_cFMS_get_j_dst = None
+_cFMS_get_nlon_src = None
+_cFMS_get_nlat_src = None
+_cFMS_get_nlon_dst = None
+_cFMS_get_nlat_dst = None
+_cFMS_get_interp_method = None
+_cFMS_get_area_frac_dst_double = None
+_cFMS_get_nxgrid = None
+_cFMS_horiz_interp_news = {}
 
 
 def get_maxxgrid() -> np.int32:
@@ -97,6 +105,8 @@ def init(ninterp: int = None):
     _cFMS_horiz_interp_init(*arglist)
 
 
+#TODO names should be consistent between in/src and out/dst
+#this problem is in part to inconsistency in FMS
 def get_weights(
     lon_in: npt.NDArray[np.float32|np.float64],
     lat_in: npt.NDArray[np.float32|np.float64],
@@ -117,7 +127,7 @@ def get_weights(
     """
 
     try:
-        _cfms_horiz_interp_get_weights = _cFMS_horiz_interp_get_weights[lon_in.dtype.name]
+        _cFMS_horiz_interp_new = _cFMS_horiz_interp_news[lon_in.dtype.name]
     except:
         raise RuntimeError(f"horiz_interp.get_weights: grid of type {lon_in.dtype} not supported")
 
@@ -137,206 +147,135 @@ def get_weights(
     set_c_bool(is_latlon_in, arglist)
     set_c_bool(is_latlon_out, arglist)
 
-    return _cfms_horiz_interp_get_weights(*arglist)
+    return _cFMS_horiz_interp_new(*arglist)
 
 
-def horiz_interp_get_interp_double(interp_id: int = None) -> dict:
-    """
-    Returns the values of the fields in a horiz_interp_type instance as a dictionary
-    Will return values corresponding to the given interp_id, regardless of the current interp
-    """
-
-    # get nxgrid first so we know how big our output variables will be
-    arglist = []
-    if interp_id is None:
-        setNone(arglist)
-    else:
-        set_c_int(interp_id, arglist)
-    setNone(arglist)  # i_src
-    setNone(arglist)  # j_src
-    setNone(arglist)  # i_dst
-    setNone(arglist)  # j_dst
-    setNone(arglist)  # area_frac_dst
-    setNone(arglist)  # version
-    nxgrid = set_c_int(-1, arglist)  # nxgrid
-    setNone(arglist)  # nlon_src
-    setNone(arglist)  # nlat_src
-    setNone(arglist)  # nlon_dst
-    setNone(arglist)  # nlat_dst
-    setNone(arglist)  # is_allocated
-    interp_method = set_c_int(0, arglist)  # interp_method
-
-    ret_val = _cFMS_get_interp_cdouble(*arglist)
+def get_nxgrid(interp_id: int):
 
     arglist = []
-    if interp_id is None:
-        setNone(arglist)
-    else:
-        set_c_int(interp_id, arglist)
-    # certain fields are only allocated by either the bilinear or conservative
-    if interp_method.value == _CONSERVATIVE:
-        i_src = set_array(np.zeros(nxgrid.value, dtype=np.int32), arglist)
-        j_src = set_array(np.zeros(nxgrid.value, dtype=np.int32), arglist)
-        i_dst = set_array(np.zeros(nxgrid.value, dtype=np.int32), arglist)
-        j_dst = set_array(np.zeros(nxgrid.value, dtype=np.int32), arglist)
-        area_frac_dst = set_array(np.zeros(nxgrid.value, dtype=np.float64), arglist)
-    elif interp_method.value == _BILINEAR:
-        i_src = setNone(arglist)
-        j_src = setNone(arglist)
-        i_dst = setNone(arglist)
-        j_dst = setNone(arglist)
-        area_frac_dst = setNone(arglist)
-    else:
-        error(FATAL, f"invalid interp_method value: {interp_method.value}")
-    version = set_c_int(0, arglist)
+    set_c_int(interp_id, arglist)
     nxgrid = set_c_int(0, arglist)
+
+    _cFMS_get_nxgrid(*arglist)
+    return nxgrid.value
+
+
+def get_nlon_src(interp_id: int):
+
+    arglist = []
+    set_c_int(interp_id, arglist)
     nlon_src = set_c_int(0, arglist)
+
+    _cFMS_get_nlon_src(*arglist)
+    return nlon_src.value
+
+
+def get_nlat_src(interp_id: int):
+
+    arglist = []
+    set_c_int(interp_id, arglist)
     nlat_src = set_c_int(0, arglist)
+
+    _cFMS_get_nlat_src(*arglist)
+    return nlat_src.value
+
+
+def get_nlon_dst(interp_id: int):
+
+    arglist = []
+    set_c_int(interp_id, arglist)
     nlon_dst = set_c_int(0, arglist)
+
+    _cFMS_get_nlon_dst(*arglist)
+    return nlon_dst.value
+
+
+def get_nlat_dst(interp_id: int):
+
+    arglist = []
+    set_c_int(interp_id, arglist)
     nlat_dst = set_c_int(0, arglist)
-    is_allocated = set_c_bool(False, arglist)
+
+    _cFMS_get_nlat_dst(*arglist)
+    return nlat_dst.value
+
+
+def get_i_src(interp_id: int):
+
+    nxgrid = get_nxgrid(interp_id)
+
+    arglist = []
+    set_c_int(interp_id, arglist)
+    i_src = set_array(np.zeros(nxgrid, dtype=np.int32), arglist)
+
+    _cFMS_get_i_src(*arglist)
+
+    return i_src
+
+    
+def get_j_src(interp_id: int):
+
+    nxgrid = get_nxgrid(interp_id)
+
+    arglist = []
+    set_c_int(interp_id, arglist)
+    j_src = set_array(np.zeros(nxgrid, dtype=np.int32), arglist)
+
+    _cFMS_get_j_src(*arglist)
+    return j_src
+    
+
+def get_i_dst(interp_id: int):
+
+    nxgrid = get_nxgrid(interp_id)
+    
+    arglist = []
+    set_c_int(interp_id, arglist)
+    i_dst = set_array(np.zeros(nxgrid, dtype=np.int32), arglist)
+
+    _cFMS_get_i_dst(*arglist)
+    return i_dst
+
+
+def get_j_dst(interp_id: int):
+
+    nxgrid = get_nxgrid(interp_id)
+    
+    arglist = []
+    set_c_int(interp_id, arglist)
+    j_dst = set_array(np.zeros(nxgrid, dtype=np.int32), arglist)
+
+    _cFMS_get_j_dst(*arglist)
+    return j_dst
+
+
+def get_area_frac_dst(interp_id: int):
+
+    nxgrid = get_nxgrid(interp_id)
+    
+    arglist = []
+    set_c_int(interp_id, arglist)
+    area_frac_dst = set_array(np.zeros(nxgrid, dtype=np.float64), arglist)
+    
+    _cFMS_get_area_frac_dst_double(*arglist)
+    return area_frac_dst
+
+
+def get_interp_method(interp_id: int):
+
+    interp_method_dict = {1: "conservative",
+                          2: "bilinear",
+                          3: "spherical",
+                          4: "bicubic"
+    }
+    
+    arglist = []
+    set_c_int(interp_id, arglist)
     interp_method = set_c_int(0, arglist)
 
-    _cFMS_get_interp_cdouble(*arglist)
+    _cFMS_get_interp_method(*arglist)
 
-    if interp_method.value == _BILINEAR:
-        arglist = []
-        if interp_id is None:
-            setNone(arglist)
-        else:
-            set_c_int(interp_id, arglist)
-        wti = set_array(
-            np.zeros((nlon_dst.value, nlat_dst.value, 2), dtype=np.float64), arglist
-        )
-        _cFMS_get_wti_cdouble(*arglist)
-
-        arglist = []
-        if interp_id is None:
-            setNone(arglist)
-        else:
-            set_c_int(interp_id, arglist)
-        wtj = set_array(
-            np.zeros((nlon_dst.value, nlat_dst.value, 2), dtype=np.float64), arglist
-        )
-        _cFMS_get_wtj_cdouble(*arglist)
-
-    return dict(
-        interp_id=interp_id,
-        i_src=i_src,
-        j_src=j_src,
-        i_dst=i_dst,
-        j_dst=j_dst,
-        area_frac_dst=area_frac_dst,
-        nxgrid=nxgrid.value,
-        version=version.value,
-        nlon_src=nlon_src.value,
-        nlat_src=nlat_src.value,
-        nlon_dst=nlon_dst.value,
-        nlat_dst=nlat_dst.value,
-        is_allocated=is_allocated.value,
-        interp_method=interp_method.value,
-        wti=wti if interp_method.value == _BILINEAR else None,
-        wtj=wtj if interp_method.value == _BILINEAR else None,
-    )
-
-
-def horiz_interp_get_interp_float(interp_id: int = None) -> dict:
-    """
-    Returns the values of the fields in a horiz_interp_type instance as a dictionary
-    Will return values corresponding to the given interp_id, regardless of the current interp
-    """
-    # get nxgrid first so we know how big our output variables will be
-    arglist = []
-    if interp_id is None:
-        setNone(arglist)
-    else:
-        set_c_int(interp_id, arglist)
-    setNone(arglist)  # i_src
-    setNone(arglist)  # j_src
-    setNone(arglist)  # i_dst
-    setNone(arglist)  # j_dst
-    setNone(arglist)  # area_frac_dst
-    setNone(arglist)  # version
-    nxgrid = set_c_int(-1, arglist)  # nxgrid
-    setNone(arglist)  # nlon_src
-    setNone(arglist)  # nlat_src
-    setNone(arglist)  # nlon_dst
-    setNone(arglist)  # nlat_dst
-    setNone(arglist)  # is_allocated
-    interp_method = set_c_int(0, arglist)  # interp_method
-
-    ret_val = _cFMS_get_interp_cfloat(*arglist)
-
-    arglist = []
-    if interp_id is None:
-        setNone(arglist)
-    else:
-        set_c_int(interp_id, arglist)
-    # certain fields are only allocated by either the bilinear or conservative
-    if interp_method.value == _CONSERVATIVE:
-        i_src = set_array(np.zeros(nxgrid.value, dtype=np.int32), arglist)
-        j_src = set_array(np.zeros(nxgrid.value, dtype=np.int32), arglist)
-        i_dst = set_array(np.zeros(nxgrid.value, dtype=np.int32), arglist)
-        j_dst = set_array(np.zeros(nxgrid.value, dtype=np.int32), arglist)
-        area_frac_dst = set_array(np.zeros(nxgrid.value, dtype=np.float32), arglist)
-    elif interp_method.value == _BILINEAR:
-        i_src = setNone(arglist)
-        j_src = setNone(arglist)
-        i_dst = setNone(arglist)
-        j_dst = setNone(arglist)
-        area_frac_dst = setNone(arglist)
-    else:
-        error(FATAL, f"invalid interp_method value: {interp_method.value}")
-    version = set_c_int(0, arglist)
-    nxgrid = set_c_int(0, arglist)
-    nlon_src = set_c_int(0, arglist)
-    nlat_src = set_c_int(0, arglist)
-    nlon_dst = set_c_int(0, arglist)
-    nlat_dst = set_c_int(0, arglist)
-    is_allocated = set_c_bool(False, arglist)
-    interp_method = set_c_int(0, arglist)
-
-    _cFMS_get_interp_cfloat(*arglist)
-
-    if interp_method.value == _BILINEAR:
-        arglist = []
-        if interp_id is None:
-            setNone(arglist)
-        else:
-            set_c_int(interp_id, arglist)
-        wti = set_array(
-            np.zeros((nlon_dst.value, nlat_dst.value, 2), dtype=np.float32), arglist
-        )
-        _cFMS_get_wti_cfloat(*arglist)
-
-        arglist = []
-        if interp_id is None:
-            setNone(arglist)
-        else:
-            set_c_int(interp_id, arglist)
-        wtj = set_array(
-            np.zeros((nlon_dst.value, nlat_dst.value, 2), dtype=np.float32), arglist
-        )
-        _cFMS_get_wtj_cfloat(*arglist)
-
-    return dict(
-        interp_id=interp_id,
-        i_src=i_src,
-        j_src=j_src,
-        i_dst=i_dst,
-        j_dst=j_dst,
-        area_frac_dst=area_frac_dst,
-        nxgrid=nxgrid.value,
-        version=version.value,
-        nlon_src=nlon_src.value,
-        nlat_src=nlat_src.value,
-        nlon_dst=nlon_dst.value,
-        nlat_dst=nlat_dst.value,
-        is_allocated=is_allocated.value,
-        interp_method=interp_method.value,
-        wti=wti if interp_method.value == _BILINEAR else None,
-        wtj=wtj if interp_method.value == _BILINEAR else None,
-    )
+    return interp_method_dict[interp_method.value]
 
 
 def _init_functions():
@@ -344,30 +283,51 @@ def _init_functions():
     global _cFMS_create_xgrid_2dx2d_order1
     global _get_maxxgrid
     global _cFMS_horiz_interp_init
-    global _cFMS_horiz_interp_get_weights
-    global _cFMS_horiz_interp_get_weights_2d_cdouble
-    global _cFMS_horiz_interp_get_weights_2d_cfloat
-    global _cFMS_get_interp_cdouble
-    global _cFMS_get_interp_cfloat
+    global _cFMS_horiz_interp_news
+    global _cFMS_horiz_interp_new_2d_cdouble
+    global _cFMS_horiz_interp_new_2d_cfloat
     global _cFMS_get_wti_cfloat
     global _cFMS_get_wti_cdouble
     global _cFMS_get_wtj_cfloat
     global _cFMS_get_wtj_cdouble
+    global _cFMS_get_i_src
+    global _cFMS_get_j_src
+    global _cFMS_get_i_dst
+    global _cFMS_get_j_dst
+    global _cFMS_get_nlon_src
+    global _cFMS_get_nlat_src
+    global _cFMS_get_nlon_dst
+    global _cFMS_get_nlat_dst
+    global _cFMS_get_interp_method
+    global _cFMS_get_area_frac_dst_double
+    global _cFMS_get_nxgrid
+        
 
     _cFMS_create_xgrid_2dx2d_order1 = _lib.cFMS_create_xgrid_2dx2d_order1
     _get_maxxgrid = _lib.get_maxxgrid
     _cFMS_horiz_interp_init = _lib.cFMS_horiz_interp_init
-    _cFMS_horiz_interp_2d_get_weights_cdouble = _lib.cFMS_horiz_interp_get_weights_2d_cdouble
-    _cFMS_horiz_interp_2d_get_weights_cfloat = _lib.cFMS_horiz_interp_get_weights_2d_cfloat
-    _cFMS_get_interp_cdouble = _lib.cFMS_get_interp_cdouble
-    _cFMS_get_interp_cfloat = _lib.cFMS_get_interp_cfloat
+    _cFMS_horiz_interp_new_2d_cdouble = _lib.cFMS_horiz_interp_new_2d_cdouble
+    _cFMS_horiz_interp_new_2d_cfloat = _lib.cFMS_horiz_interp_new_2d_cfloat
+
     _cFMS_get_wti_cfloat = _lib.cFMS_get_wti_cfloat
     _cFMS_get_wti_cdouble = _lib.cFMS_get_wti_cdouble
     _cFMS_get_wtj_cfloat = _lib.cFMS_get_wtj_cfloat
     _cFMS_get_wtj_cdouble = _lib.cFMS_get_wtj_cdouble
 
-    _cFMS_horiz_interp_get_weights = {"float32": _cFMS_horiz_interp_2d_get_weights_cfloat,
-                                      "float64": _cFMS_horiz_interp_2d_get_weights_cdouble
+    _cFMS_get_i_src = _lib.cFMS_get_i_src
+    _cFMS_get_j_src = _lib.cFMS_get_j_src
+    _cFMS_get_i_dst = _lib.cFMS_get_i_dst
+    _cFMS_get_j_dst = _lib.cFMS_get_j_dst
+    _cFMS_get_nlon_src = _lib.cFMS_get_nlon_src
+    _cFMS_get_nlat_src = _lib.cFMS_get_nlat_src
+    _cFMS_get_nlon_dst = _lib.cFMS_get_nlon_dst
+    _cFMS_get_nlat_dst = _lib.cFMS_get_nlat_dst
+    _cFMS_get_nxgrid = _lib.cFMS_get_nxgrid
+    _cFMS_get_interp_method = _lib.cFMS_get_interp_method
+    _cFMS_get_area_frac_dst_double = _lib.cFMS_get_area_frac_dst_cdouble
+    
+    _cFMS_horiz_interp_news = {"float32": _cFMS_horiz_interp_new_2d_cfloat,
+                               "float64": _cFMS_horiz_interp_new_2d_cdouble
     }
                                           
     _functions.define(_lib)
