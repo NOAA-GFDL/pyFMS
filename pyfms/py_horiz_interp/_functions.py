@@ -2,7 +2,7 @@ from ctypes import POINTER, c_bool, c_char, c_int
 
 import numpy as np
 
-from pyfms.utils.ctypes_utils import NDPOINTERd, NDPOINTERf, NDPOINTERi32
+from pyfms.utils.ctypes_utils import NDPOINTERd, NDPOINTERf
 
 
 npptr = np.ctypeslib.ndpointer
@@ -74,11 +74,11 @@ def define(lib):
         npptr(np.float32, ndim=2, flags=C),  # lon_out_ptr
         npptr(np.float32, ndim=2, flags=C),  # lat_out_ptr
         npptr(np.int32, ndim=1, flags=C),  # lonlat_out_shape
-        NDPOINTERd(npptr(np.float32, ndim=2, flags=C)),  # mask_in_ptr
-        NDPOINTERd(npptr(np.float32, ndim=2, flags=C)),  # mask_out_ptr
+        NDPOINTERf(npptr(np.float32, ndim=2, flags=C)),  # mask_in_ptr
+        NDPOINTERf(npptr(np.float32, ndim=2, flags=C)),  # mask_out_ptr
         POINTER(c_char),  # interp_method
         POINTER(c_int),  # verbose
-        NDPOINTERd(npptr(np.float32, ndim=1, flags=C)),  # max_dist
+        NDPOINTERf(npptr(np.float32, ndim=1, flags=C)),  # max_dist
         POINTER(c_bool),  # src_modulo
         POINTER(c_bool),  # is_latlon_in
         POINTER(c_bool),  # is_latlon_out
@@ -106,61 +106,49 @@ def define(lib):
         npptr(np.float64, ndim=3, flags=C),
     ]
 
-    #cFMS_get_interp_method
+    # cFMS_get_interp_method
     lib.cFMS_get_interp_method.restype = None
     lib.cFMS_get_interp_method.argtypes = [POINTER(c_int), POINTER(c_int)]
-    
-    #cFMS_get_i_src
+
+    # cFMS_get_i_src
     lib.cFMS_get_i_src.restype = None
-    lib.cFMS_get_i_src.argtypes = [
-        POINTER(c_int),
-        npptr(np.int32, ndim=1, flags=C)
-    ]
+    lib.cFMS_get_i_src.argtypes = [POINTER(c_int), npptr(np.int32, ndim=1, flags=C)]
 
-    #cFMS_get_j_src
+    # cFMS_get_j_src
     lib.cFMS_get_j_src.restype = None
-    lib.cFMS_get_j_src.argtypes = [
-        POINTER(c_int),
-        npptr(np.int32, ndim=1, flags=C)
-    ]
+    lib.cFMS_get_j_src.argtypes = [POINTER(c_int), npptr(np.int32, ndim=1, flags=C)]
 
-    #cFMS_get_i_dst
+    # cFMS_get_i_dst
     lib.cFMS_get_i_dst.restype = None
-    lib.cFMS_get_i_dst.argtypes = [
-        POINTER(c_int),
-        npptr(np.int32, ndim=1, flags=C)
-    ]
+    lib.cFMS_get_i_dst.argtypes = [POINTER(c_int), npptr(np.int32, ndim=1, flags=C)]
 
-    #cFMS_get_j_dst
+    # cFMS_get_j_dst
     lib.cFMS_get_j_dst.restype = None
-    lib.cFMS_get_j_dst.argtypes = [
-        POINTER(c_int),
-        npptr(np.int32, ndim=1, flags=C)
-    ]
+    lib.cFMS_get_j_dst.argtypes = [POINTER(c_int), npptr(np.int32, ndim=1, flags=C)]
 
-    #cFMS_get_area_frac_dst
+    # cFMS_get_area_frac_dst
     lib.cFMS_get_area_frac_dst_cdouble.restype = None
     lib.cFMS_get_area_frac_dst_cdouble.argtypes = [
         POINTER(c_int),
-        npptr(np.float64, ndim=1, flags=C)
+        npptr(np.float64, ndim=1, flags=C),
     ]
 
-    #cFMS_get_nlon_src
+    # cFMS_get_nlon_src
     lib.cFMS_get_nlon_src.restype = None
     lib.cFMS_get_nlon_src.argtypes = [POINTER(c_int), POINTER(c_int)]
 
-    #cFMS_get_nlat_src
+    # cFMS_get_nlat_src
     lib.cFMS_get_nlat_src.restype = None
     lib.cFMS_get_nlat_src.argtypes = [POINTER(c_int), POINTER(c_int)]
 
-    #cFMS_get_nlon_dst
+    # cFMS_get_nlon_dst
     lib.cFMS_get_nlon_dst.restype = None
     lib.cFMS_get_nlon_dst.argtypes = [POINTER(c_int), POINTER(c_int)]
 
-    #cFMS_get_nlat_dst
+    # cFMS_get_nlat_dst
     lib.cFMS_get_nlat_dst.restype = None
     lib.cFMS_get_nlat_dst.argtypes = [POINTER(c_int), POINTER(c_int)]
 
-    #cFMS_get_nxgrid
+    # cFMS_get_nxgrid
     lib.cFMS_get_nxgrid.restype = None
     lib.cFMS_get_nxgrid.argtypes = [POINTER(c_int), POINTER(c_int)]

@@ -1,9 +1,9 @@
 from pyfms.py_horiz_interp import horiz_interp
 
-class Interp():
 
+class Interp:
     def __init__(self, interp_id: int):
-        # set only for conservative 
+        # set only for conservative
         self.interp_id = interp_id
         self.nxgrid = horiz_interp.get_nxgrid(interp_id)
         self.i_src = horiz_interp.get_i_src(interp_id)

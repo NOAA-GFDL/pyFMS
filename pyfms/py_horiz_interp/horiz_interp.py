@@ -3,10 +3,14 @@ from typing import Any
 import numpy as np
 import numpy.typing as npt
 
-from pyfms.py_fms.fms import FATAL
 from pyfms.py_horiz_interp import _functions
-from pyfms.py_mpp.mpp import error
-from pyfms.utils.ctypes_utils import set_array, set_c_bool, set_c_int, set_list, set_c_str, setNone
+from pyfms.utils.ctypes_utils import (
+    set_array,
+    set_c_bool,
+    set_c_int,
+    set_c_str,
+    set_list,
+)
 
 
 # enumerations used by horiz_interp_types.F90 (FMS)
@@ -32,7 +36,7 @@ _cFMS_get_nlat_dst = None
 _cFMS_get_interp_method = None
 _cFMS_get_area_frac_dst_double = None
 _cFMS_get_nxgrid = None
-_cFMS_horiz_interp_news = {}
+_cFMS_horiz_interp_new_dict = {}
 
 
 def get_maxxgrid() -> np.int32:
@@ -105,18 +109,18 @@ def init(ninterp: int = None):
     _cFMS_horiz_interp_init(*arglist)
 
 
-#TODO names should be consistent between in/src and out/dst
-#this problem is in part to inconsistency in FMS
+# TODO names should be consistent between in/src and out/dst
+# this problem is in part to inconsistency in FMS
 def get_weights(
-    lon_in: npt.NDArray[np.float32|np.float64],
-    lat_in: npt.NDArray[np.float32|np.float64],
-    lon_out: npt.NDArray[np.float32|np.float64],
-    lat_out: npt.NDArray[np.float32|np.float64],
-    mask_in: npt.NDArray[np.float32|np.float64] = None,
-    mask_out: npt.NDArray[np.float32|np.float64] = None,
+    lon_in: npt.NDArray[np.float32 | np.float64],
+    lat_in: npt.NDArray[np.float32 | np.float64],
+    lon_out: npt.NDArray[np.float32 | np.float64],
+    lat_out: npt.NDArray[np.float32 | np.float64],
+    mask_in: npt.NDArray[np.float32 | np.float64] = None,
+    mask_out: npt.NDArray[np.float32 | np.float64] = None,
     interp_method: str = None,
     verbose: int = 0,
-    max_dist: np.float32|np.float64 = None,
+    max_dist: np.float32 | np.float64 = None,
     src_modulo: bool = False,
     is_latlon_in: bool = False,
     is_latlon_out: bool = False,
@@ -127,9 +131,11 @@ def get_weights(
     """
 
     try:
-        _cFMS_horiz_interp_new = _cFMS_horiz_interp_news[lon_in.dtype.name]
-    except:
-        raise RuntimeError(f"horiz_interp.get_weights: grid of type {lon_in.dtype} not supported")
+        _cFMS_horiz_interp_new = _cFMS_horiz_interp_new_dict[lon_in.dtype.name]
+    except Exception:
+        raise RuntimeError(
+            f"horiz_interp.new: grid of type {lon_in.dtype} not supported"
+        )
 
     arglist = []
     set_array(lon_in, arglist)
@@ -212,7 +218,7 @@ def get_i_src(interp_id: int):
 
     return i_src
 
-    
+
 def get_j_src(interp_id: int):
 
     nxgrid = get_nxgrid(interp_id)
@@ -223,12 +229,12 @@ def get_j_src(interp_id: int):
 
     _cFMS_get_j_src(*arglist)
     return j_src
-    
+
 
 def get_i_dst(interp_id: int):
 
     nxgrid = get_nxgrid(interp_id)
-    
+
     arglist = []
     set_c_int(interp_id, arglist)
     i_dst = set_array(np.zeros(nxgrid, dtype=np.int32), arglist)
@@ -240,7 +246,7 @@ def get_i_dst(interp_id: int):
 def get_j_dst(interp_id: int):
 
     nxgrid = get_nxgrid(interp_id)
-    
+
     arglist = []
     set_c_int(interp_id, arglist)
     j_dst = set_array(np.zeros(nxgrid, dtype=np.int32), arglist)
@@ -252,23 +258,24 @@ def get_j_dst(interp_id: int):
 def get_area_frac_dst(interp_id: int):
 
     nxgrid = get_nxgrid(interp_id)
-    
+
     arglist = []
     set_c_int(interp_id, arglist)
     area_frac_dst = set_array(np.zeros(nxgrid, dtype=np.float64), arglist)
-    
+
     _cFMS_get_area_frac_dst_double(*arglist)
     return area_frac_dst
 
 
 def get_interp_method(interp_id: int):
 
-    interp_method_dict = {1: "conservative",
-                          2: "bilinear",
-                          3: "spherical",
-                          4: "bicubic"
+    interp_method_dict = {
+        1: "conservative",
+        2: "bilinear",
+        3: "spherical",
+        4: "bicubic",
     }
-    
+
     arglist = []
     set_c_int(interp_id, arglist)
     interp_method = set_c_int(0, arglist)
@@ -283,7 +290,7 @@ def _init_functions():
     global _cFMS_create_xgrid_2dx2d_order1
     global _get_maxxgrid
     global _cFMS_horiz_interp_init
-    global _cFMS_horiz_interp_news
+    global _cFMS_horiz_interp_new_dict
     global _cFMS_horiz_interp_new_2d_cdouble
     global _cFMS_horiz_interp_new_2d_cfloat
     global _cFMS_get_wti_cfloat
@@ -301,7 +308,6 @@ def _init_functions():
     global _cFMS_get_interp_method
     global _cFMS_get_area_frac_dst_double
     global _cFMS_get_nxgrid
-        
 
     _cFMS_create_xgrid_2dx2d_order1 = _lib.cFMS_create_xgrid_2dx2d_order1
     _get_maxxgrid = _lib.get_maxxgrid
@@ -325,11 +331,12 @@ def _init_functions():
     _cFMS_get_nxgrid = _lib.cFMS_get_nxgrid
     _cFMS_get_interp_method = _lib.cFMS_get_interp_method
     _cFMS_get_area_frac_dst_double = _lib.cFMS_get_area_frac_dst_cdouble
-    
-    _cFMS_horiz_interp_news = {"float32": _cFMS_horiz_interp_new_2d_cfloat,
-                               "float64": _cFMS_horiz_interp_new_2d_cdouble
+
+    _cFMS_horiz_interp_new_dict = {
+        "float32": _cFMS_horiz_interp_new_2d_cfloat,
+        "float64": _cFMS_horiz_interp_new_2d_cdouble,
     }
-                                          
+
     _functions.define(_lib)
 
 

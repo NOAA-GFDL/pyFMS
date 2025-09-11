@@ -1,4 +1,5 @@
 import os
+
 import numpy as np
 import pytest
 
@@ -12,34 +13,34 @@ def test_create_input_nml():
     inputnml.close()
     assert os.path.isfile("input.nml")
     pyfms.fms.init(ndomain=2)
-    
+
 
 def test_create_xgrid():
 
     create_xgrid = pyfms.horiz_interp.create_xgrid_2dx2d_order1
 
     refine = 1
-    lon_init, lat_init = 0.0, -np.pi/4.0
-    lon_end, lat_end = np.pi, np.pi/4.0
+    lon_init, lat_init = 0.0, -np.pi / 4.0
+    lon_end, lat_end = np.pi, np.pi / 4.0
     nlon_src = 10
     nlat_src = 10
     nlon_tgt = nlon_src * refine
     nlat_tgt = nlat_src * refine
 
-    lon_src_1d = np.linspace(lon_init, lon_end, nlon_src+1)
-    lat_src_1d = np.linspace(lat_init, lat_end, nlat_src+1)
+    lon_src_1d = np.linspace(lon_init, lon_end, nlon_src + 1)
+    lat_src_1d = np.linspace(lat_init, lat_end, nlat_src + 1)
     lon_src, lat_src = np.meshgrid(lon_src_1d, lat_src_1d)
 
-    lon_tgt_1d = np.linspace(lon_init, lon_end, nlon_tgt+1)
-    lat_tgt_1d = np.linspace(lat_init, lat_end, nlat_tgt+1)
+    lon_tgt_1d = np.linspace(lon_init, lon_end, nlon_tgt + 1)
+    lat_tgt_1d = np.linspace(lat_init, lat_end, nlat_tgt + 1)
     lon_tgt, lat_tgt = np.meshgrid(lon_tgt_1d, lat_tgt_1d)
 
     lon_src = lon_src.flatten()
     lat_src = lat_src.flatten()
     lon_tgt = lon_tgt.flatten()
     lat_tgt = lat_tgt.flatten()
-    
-    mask_src = np.ones(nlon_src*nlat_src, dtype=np.float64)
+
+    mask_src = np.ones(nlon_src * nlat_src, dtype=np.float64)
 
     xgrid = create_xgrid(
         nlon_src=nlon_src,
@@ -62,7 +63,7 @@ def test_create_xgrid():
     assert np.array_equal(xgrid["i_src"], xgrid["i_tgt"])
     assert np.array_equal(xgrid["j_src"], xgrid["j_tgt"])
     assert np.array_equal(xgrid["xarea"], area)
-    
+
 
 # same as the test in cFMS, but using the Python interface
 def test_horiz_interp_conservative():
@@ -74,7 +75,7 @@ def test_horiz_interp_conservative():
     nj_dst = 72
     halo = 2
     pes = pyfms.mpp.npes()
-    
+
     global_indices = [0, ni_src - 1, 0, nj_src - 1]
     layout = pyfms.mpp_domains.define_layout(global_indices, ndivs=pes)
     domain = pyfms.mpp_domains.define_domains(
@@ -110,28 +111,33 @@ def test_horiz_interp_conservative():
     pyfms.horiz_interp.init(2)
 
     # get interpolation weights
-    interp_id = pyfms.horiz_interp.get_weights(lon_in=lon_src,
-                                               lat_in=lat_src,
-                                               lon_out=lon_dst,
-                                               lat_out=lat_dst,
-                                               interp_method="conservative",
-                                               verbose=1)
+    interp_id = pyfms.horiz_interp.get_weights(
+        lon_in=lon_src,
+        lat_in=lat_src,
+        lon_out=lon_dst,
+        lat_out=lat_dst,
+        interp_method="conservative",
+        verbose=1,
+    )
 
     # check weights
-    nxgrid = (jec-jsc-1)*(iec-isc-1)
+    nxgrid = (jec - jsc - 1) * (iec - isc - 1)
     interp = pyfms.Interp(interp_id)
 
     assert interp_id == 0
     assert interp.nxgrid == nxgrid
     assert interp.interp_method == "conservative"
-    assert np.all(interp.i_src == np.array(list(range(isc, iec-1))*(jec-jsc-1)))
-    assert np.all(interp.j_src == np.array([j for j in range(jsc, jec-1) for ilon in range(iec-isc-1)]))
+    assert np.all(interp.i_src == np.array(list(range(isc, iec - 1)) * (jec - jsc - 1)))
+
+    j_answer = np.array([j for j in range(jsc, jec - 1) for ilon in range(iec - isc - 1)])
+    assert np.all(interp.j_src == j_answer)
+
     assert interp.nlon_src == ni_src
     assert interp.nlat_src == nj_src
-    assert interp.nlon_dst == lon_dst.shape[0] - 1
+    assert interp.nlon_dst == lon_dst.shape[0] - 1 
     assert interp.nlat_dst == lat_dst.shape[1] - 1
 
-    
+
 @pytest.mark.skip(reason="test needs to be updated")
 def test_horiz_interp_bilinear():
     pyfms.fms.init()
@@ -304,12 +310,8 @@ def test_horiz_interp_bilinear():
 
     pyfms.fms.end()
 
-    
+
 @pytest.mark.remove
 def test_remove_input_nml():
+    if pyfms.mpp.pe() == 0: os.remove("input.nml")
     pyfms.fms.end()
-    os.remove("input.nml")
-    assert not os.path.isfile("input.nml")
-
-
-
