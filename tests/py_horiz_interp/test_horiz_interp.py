@@ -131,6 +131,7 @@ def test_horiz_interp_conservative():
     assert interp.nlon_dst == lon_dst.shape[0] - 1
     assert interp.nlat_dst == lat_dst.shape[1] - 1
 
+    
 @pytest.mark.skip(reason="test needs to be updated")
 def test_horiz_interp_bilinear():
     pyfms.fms.init()
