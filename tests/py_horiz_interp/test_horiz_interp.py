@@ -129,12 +129,14 @@ def test_horiz_interp_conservative():
     assert interp.interp_method == "conservative"
     assert np.all(interp.i_src == np.array(list(range(isc, iec - 1)) * (jec - jsc - 1)))
 
-    j_answer = np.array([j for j in range(jsc, jec - 1) for ilon in range(iec - isc - 1)])
+    j_answer = np.array(
+        [j for j in range(jsc, jec - 1) for ilon in range(iec - isc - 1)]
+    )
     assert np.all(interp.j_src == j_answer)
 
     assert interp.nlon_src == ni_src
     assert interp.nlat_src == nj_src
-    assert interp.nlon_dst == lon_dst.shape[0] - 1 
+    assert interp.nlon_dst == lon_dst.shape[0] - 1
     assert interp.nlat_dst == lat_dst.shape[1] - 1
 
 
@@ -313,5 +315,6 @@ def test_horiz_interp_bilinear():
 
 @pytest.mark.remove
 def test_remove_input_nml():
-    if pyfms.mpp.pe() == 0: os.remove("input.nml")
+    if pyfms.mpp.pe() == 0:
+        os.remove("input.nml")
     pyfms.fms.end()
