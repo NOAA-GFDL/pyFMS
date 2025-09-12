@@ -6,7 +6,9 @@ import pytest
 import pyfms
 from pyfms.utils.constants import DEG_TO_RAD
 
-#please run each test individually
+
+# please run each test individually
+
 
 @pytest.mark.create
 def test_create_input_nml():
@@ -18,7 +20,7 @@ def test_create_input_nml():
 def test_create_xgrid():
 
     pyfms.fms.init()
-    
+
     create_xgrid = pyfms.horiz_interp.create_xgrid_2dx2d_order1
 
     refine = 1
@@ -68,12 +70,12 @@ def test_create_xgrid():
 
     pyfms.fms.end()
 
-    
+
 # same as the test in cFMS, but using the Python interface
 def test_horiz_interp_conservative():
 
     pyfms.fms.init()
-    
+
     # set up domain decomposition
     ni_src = 360
     nj_src = 180
@@ -146,7 +148,7 @@ def test_horiz_interp_conservative():
     assert interp.nlat_dst == lat_dst.shape[1] - 1
 
     pyfms.fms.end()
-    
+
 
 @pytest.mark.skip(reason="test needs to be updated")
 def test_horiz_interp_bilinear():
@@ -324,4 +326,5 @@ def test_horiz_interp_bilinear():
 @pytest.mark.remove
 def test_remove_input_nml():
     input_nml = Path("input.nml")
-    if input_nml.exists(): input_nml.unlink()
+    if input_nml.exists():
+        input_nml.unlink()
