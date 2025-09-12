@@ -1,4 +1,4 @@
-from ctypes import POINTER, c_bool, c_char, c_int
+from ctypes import POINTER, c_bool, c_char, c_int, c_float, c_double
 
 import numpy as np
 
@@ -84,6 +84,38 @@ def define(lib):
         POINTER(c_bool),  # is_latlon_out
     ]
 
+    #cFMS_horiz_interp-base_2d
+    lib.cFMS_horiz_interp_base_2d_cfloat.restype = None
+    lib.cFMS_horiz_interp_base_2d_cfloat.argtypes = [
+        POINTER(c_int), # interp_id
+        npptr(np.float32, ndim=2, flags=C), #data_in_ptr
+        npptr(np.int32, ndim=1, flags=C), #data_in_shape
+        npptr(np.float32, ndim=2, flags=C), #data_out_ptr
+        npptr(np.int32, ndim=1, flags=C), #data_out_shape
+        NDPOINTERf(npptr(np.float32, ndim=2, flags=C)), #mask_in
+        NDPOINTERf(npptr(np.float32, ndim=2, flags=C)), #mask_out
+        POINTER(c_int), #verbose
+        POINTER(c_float), #missing_value
+        POINTER(c_int), #missing_permit
+        POINTER(c_bool), #new_missing_handle
+    ]
+
+    #cFMS_horiz_interp-base_2d
+    lib.cFMS_horiz_interp_base_2d_cdouble.restype = None
+    lib.cFMS_horiz_interp_base_2d_cdouble.argtypes = [
+        POINTER(c_int), # interp_id
+        npptr(np.float64, ndim=2, flags=C), #data_in_ptr
+        npptr(np.int32, ndim=1, flags=C), #data_in_shape
+        npptr(np.float64, ndim=2, flags=C), #data_out_ptr
+        npptr(np.int32, ndim=1, flags=C), #data_out_shape
+        NDPOINTERd(npptr(np.float64, ndim=2, flags=C)), #mask_in
+        NDPOINTERd(npptr(np.float64, ndim=2, flags=C)), #mask_out
+        POINTER(c_int), #verbose
+        POINTER(c_double), #missing_value
+        POINTER(c_int), #missing_permit
+        POINTER(c_bool), #new_missing_handle
+    ]        
+    
     # getter routines for individual fields
     lib.cFMS_get_wti_cfloat.restype = None
     lib.cFMS_get_wti_cfloat.argtypes = [

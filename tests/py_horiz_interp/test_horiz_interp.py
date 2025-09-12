@@ -77,9 +77,6 @@ def test_horiz_interp_conservative():
     # set up domain decomposition
     ni_src = 360
     nj_src = 180
-    ni_dst = 144
-    nj_dst = 72
-    halo = 2
     pes = pyfms.mpp.npes()
 
     global_indices = [0, ni_src - 1, 0, nj_src - 1]
@@ -89,29 +86,22 @@ def test_horiz_interp_conservative():
         layout=layout,
         pelist=pyfms.mpp.get_current_pelist(npes=pes),
         name="horiz_interp_conservative_test",
-        whalo=halo,
-        ehalo=halo,
-        shalo=halo,
-        nhalo=halo,
         xflags=pyfms.mpp_domains.CYCLIC_GLOBAL_DOMAIN,
         yflags=pyfms.mpp_domains.CYCLIC_GLOBAL_DOMAIN,
     )
 
     isc = domain.isc
-    iec = domain.iec
+    iec = domain.iec + 1 #grid has one more point
     jsc = domain.jsc
-    jec = domain.jec
+    jec = domain.jec + 1 #grid has one more point
 
-    lon_in_size = ni_src + 1
-    lat_in_size = nj_src + 1
-
-    lon_in_1d = np.linspace(0, 360, num=lon_in_size, dtype=np.float64) * DEG_TO_RAD
-    lat_in_1d = np.linspace(-90, 90, num=lat_in_size, dtype=np.float64) * DEG_TO_RAD
+    lon_in_1d = np.linspace(0, 360, num=ni_src+1, dtype=np.float64) * DEG_TO_RAD
+    lat_in_1d = np.linspace(-90, 90, num=nj_src+1, dtype=np.float64) * DEG_TO_RAD
 
     lat_src, lon_src = np.meshgrid(lat_in_1d, lon_in_1d)
 
-    lon_dst = np.ascontiguousarray(lon_src[isc:iec, jsc:jec])
-    lat_dst = np.ascontiguousarray(lat_src[isc:iec, jsc:jec])
+    lon_dst = np.ascontiguousarray(lon_src[isc:iec+1, jsc:jec+1])
+    lat_dst = np.ascontiguousarray(lat_src[isc:iec+1, jsc:jec+1])
 
     # init and set a horiz_interp type (required for all horiz_interp calls!)
     pyfms.horiz_interp.init(2)
@@ -127,24 +117,25 @@ def test_horiz_interp_conservative():
     )
 
     # check weights
-    nxgrid = (jec - jsc - 1) * (iec - isc - 1)
+    nxgrid = (jec - jsc) * (iec - isc)
     interp = pyfms.Interp(interp_id)
 
     assert interp_id == 0
     assert interp.nxgrid == nxgrid
     assert interp.interp_method == "conservative"
-    assert np.all(interp.i_src == np.array(list(range(isc, iec - 1)) * (jec - jsc - 1)))
-
-    j_answer = np.array(
-        [j for j in range(jsc, jec - 1) for ilon in range(iec - isc - 1)]
-    )
-    assert np.all(interp.j_src == j_answer)
-
+    assert np.all(interp.i_src == np.array(list(range(isc, iec)) * (jec - jsc)))
+    assert np.all(interp.j_src == np.array([j for j in range(jsc, jec) for ilon in range(iec - isc)]))
     assert interp.nlon_src == ni_src
     assert interp.nlat_src == nj_src
     assert interp.nlon_dst == lon_dst.shape[0] - 1
     assert interp.nlat_dst == lat_dst.shape[1] - 1
+    
+    #interp    
+    data_in = np.array([[j*ni_src+i for j in range(nj_src)] for i in range(ni_src)], dtype=np.float64)
+    data_out = pyfms.horiz_interp.interp(interp_id, data_in)
 
+    assert np.all(data_in[isc:iec, jsc:jec] == data_out)
+    
     pyfms.fms.end()
     
 

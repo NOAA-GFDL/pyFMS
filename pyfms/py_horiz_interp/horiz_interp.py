@@ -7,6 +7,8 @@ from pyfms.py_horiz_interp import _functions
 from pyfms.utils.ctypes_utils import (
     set_array,
     set_c_bool,
+    set_c_double,
+    set_c_float, 
     set_c_int,
     set_c_str,
     set_list,
@@ -25,6 +27,8 @@ _get_maxxgrid = None
 _cFMS_horiz_interp_init = None
 _cFMS_horiz_interp_2d_new_cdouble = None
 _cFMS_horiz_interp_2d_new_cfloat = None
+_cFMS_horiz_interp_2d_base_cdouble = None
+_cFMS_horiz_interp_2d_base_cfloat = None
 _cFMS_get_i_src = None
 _cFMS_get_j_src = None
 _cFMS_get_i_dst = None
@@ -37,6 +41,7 @@ _cFMS_get_interp_method = None
 _cFMS_get_area_frac_dst_double = None
 _cFMS_get_nxgrid = None
 _cFMS_horiz_interp_new_dict = {}
+_cFMS_horiz_interp_base_dict = {}
 
 
 def get_maxxgrid() -> np.int32:
@@ -285,6 +290,45 @@ def get_interp_method(interp_id: int):
     return interp_method_dict[interp_method.value]
 
 
+def interp(interp_id: int,
+           data_in: npt.NDArray[np.float32|np.float64],
+           mask_in: npt.NDArray[np.float32|np.float64] = None,
+           mask_out: npt.NDArray[np.float32|np.float64] = None,
+           verbose: int = 0,
+           missing_value: np.float32|np.float64 = None,
+           missing_permit: int = None,
+           new_missing_handle: bool = None) -> npt.NDArray[np.float32|np.float64]:
+
+    datatype = data_in.dtype
+    try:
+        _cFMS_horiz_interp_base = _cFMS_horiz_interp_base_dict[datatype.name]
+    except Exception:
+        raise RuntimeError(f"horiz_interp.interp: grid of type {datatype} not supported")   
+        
+    arglist = []
+
+    nlon_dst = get_nlon_dst(interp_id)
+    nlat_dst = get_nlat_dst(interp_id)
+
+    set_c_real = set_c_float if datatype == np.float32 else set_c_double
+
+    set_c_int(interp_id, arglist)
+    set_array(data_in, arglist)
+    set_list(data_in.shape, np.int32, arglist)
+    data_out = set_array(np.zeros((nlon_dst, nlat_dst), dtype=datatype), arglist)
+    set_list(data_out.shape, np.int32, arglist)
+    set_array(mask_in, arglist)
+    set_array(mask_out, arglist)
+    set_c_int(verbose, arglist)
+    set_c_real(missing_value, arglist)
+    set_c_int(missing_permit, arglist)
+    set_c_bool(new_missing_handle, arglist)
+
+    _cFMS_horiz_interp_base(*arglist)
+
+    return data_out
+
+
 def _init_functions():
 
     global _cFMS_create_xgrid_2dx2d_order1
@@ -293,6 +337,9 @@ def _init_functions():
     global _cFMS_horiz_interp_new_dict
     global _cFMS_horiz_interp_new_2d_cdouble
     global _cFMS_horiz_interp_new_2d_cfloat
+    global _cFMS_horiz_interp_base_dict
+    global _cFMS_horiz_interp_base_2d_cdouble
+    global _cFMS_horiz_interp_base_2d_cfloat
     global _cFMS_get_wti_cfloat
     global _cFMS_get_wti_cdouble
     global _cFMS_get_wtj_cfloat
@@ -312,9 +359,13 @@ def _init_functions():
     _cFMS_create_xgrid_2dx2d_order1 = _lib.cFMS_create_xgrid_2dx2d_order1
     _get_maxxgrid = _lib.get_maxxgrid
     _cFMS_horiz_interp_init = _lib.cFMS_horiz_interp_init
+
     _cFMS_horiz_interp_new_2d_cdouble = _lib.cFMS_horiz_interp_new_2d_cdouble
     _cFMS_horiz_interp_new_2d_cfloat = _lib.cFMS_horiz_interp_new_2d_cfloat
 
+    _cFMS_horiz_interp_base_2d_cdouble = _lib.cFMS_horiz_interp_base_2d_cdouble
+    _cFMS_horiz_interp_base_2d_cfloat = _lib.cFMS_horiz_interp_base_2d_cfloat
+    
     _cFMS_get_wti_cfloat = _lib.cFMS_get_wti_cfloat
     _cFMS_get_wti_cdouble = _lib.cFMS_get_wti_cdouble
     _cFMS_get_wtj_cfloat = _lib.cFMS_get_wtj_cfloat
@@ -337,6 +388,11 @@ def _init_functions():
         "float64": _cFMS_horiz_interp_new_2d_cdouble,
     }
 
+    _cFMS_horiz_interp_base_dict = {
+        "float32": _cFMS_horiz_interp_base_2d_cfloat,
+        "float64": _cFMS_horiz_interp_base_2d_cdouble
+    }
+    
     _functions.define(_lib)
 
 
