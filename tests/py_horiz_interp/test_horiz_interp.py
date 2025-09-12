@@ -1,4 +1,4 @@
-import os
+from pathlib import Path
 
 import numpy as np
 import pytest
@@ -6,17 +6,19 @@ import pytest
 import pyfms
 from pyfms.utils.constants import DEG_TO_RAD
 
+#please run each test individually
 
 @pytest.mark.create
 def test_create_input_nml():
     inputnml = open("input.nml", "w")
     inputnml.close()
-    assert os.path.isfile("input.nml")
-    pyfms.fms.init(ndomain=2)
+    assert Path("input.nml").exists()
 
 
 def test_create_xgrid():
 
+    pyfms.fms.init()
+    
     create_xgrid = pyfms.horiz_interp.create_xgrid_2dx2d_order1
 
     refine = 1
@@ -64,10 +66,14 @@ def test_create_xgrid():
     assert np.array_equal(xgrid["j_src"], xgrid["j_tgt"])
     assert np.array_equal(xgrid["xarea"], area)
 
+    pyfms.fms.end()
 
+    
 # same as the test in cFMS, but using the Python interface
 def test_horiz_interp_conservative():
 
+    pyfms.fms.init()
+    
     # set up domain decomposition
     ni_src = 360
     nj_src = 180
@@ -139,6 +145,8 @@ def test_horiz_interp_conservative():
     assert interp.nlon_dst == lon_dst.shape[0] - 1
     assert interp.nlat_dst == lat_dst.shape[1] - 1
 
+    pyfms.fms.end()
+    
 
 @pytest.mark.skip(reason="test needs to be updated")
 def test_horiz_interp_bilinear():
@@ -315,6 +323,5 @@ def test_horiz_interp_bilinear():
 
 @pytest.mark.remove
 def test_remove_input_nml():
-    if pyfms.mpp.pe() == 0:
-        os.remove("input.nml")
-    pyfms.fms.end()
+    input_nml = Path("input.nml")
+    if input_nml.exists(): input_nml.unlink()
