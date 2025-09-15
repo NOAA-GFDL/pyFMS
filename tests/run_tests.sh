@@ -56,8 +56,8 @@ remove_input $test
 
 test="py_horiz_interp/test_horiz_interp.py"
 create_input $test
-run_test "python -m pytest -s -k test_create_xgrid $test"
-run_test "python -m pytest -s -k test_horiz_interp_conservative $test"
+run_test "python -m pytest -sv -k test_create_xgrid $test"
+run_test "python -m pytest -sv -k test_horiz_interp_conservative $test"
 run_test "mpirun -n 4 $oversubscribe python -m pytest -s -k test_horiz_interp_conservative $test"
 run_test "python -m pytest -s -k test_horiz_interp_bilinear $test"
 run_test "mpirun -n 2 $oversubscribe python -m pytest -s -k test_horiz_interp_bilinear $test"
