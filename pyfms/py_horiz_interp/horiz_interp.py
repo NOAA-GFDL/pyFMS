@@ -8,7 +8,7 @@ from pyfms.utils.ctypes_utils import (
     set_array,
     set_c_bool,
     set_c_double,
-    set_c_float, 
+    set_c_float,
     set_c_int,
     set_c_str,
     set_list,
@@ -290,21 +290,25 @@ def get_interp_method(interp_id: int):
     return interp_method_dict[interp_method.value]
 
 
-def interp(interp_id: int,
-           data_in: npt.NDArray[np.float32|np.float64],
-           mask_in: npt.NDArray[np.float32|np.float64] = None,
-           mask_out: npt.NDArray[np.float32|np.float64] = None,
-           verbose: int = 0,
-           missing_value: np.float32|np.float64 = None,
-           missing_permit: int = None,
-           new_missing_handle: bool = None) -> npt.NDArray[np.float32|np.float64]:
+def interp(
+    interp_id: int,
+    data_in: npt.NDArray[np.float32 | np.float64],
+    mask_in: npt.NDArray[np.float32 | np.float64] = None,
+    mask_out: npt.NDArray[np.float32 | np.float64] = None,
+    verbose: int = 0,
+    missing_value: np.float32 | np.float64 = None,
+    missing_permit: int = None,
+    new_missing_handle: bool = None,
+) -> npt.NDArray[np.float32 | np.float64]:
 
     datatype = data_in.dtype
     try:
         _cFMS_horiz_interp_base = _cFMS_horiz_interp_base_dict[datatype.name]
     except Exception:
-        raise RuntimeError(f"horiz_interp.interp: grid of type {datatype} not supported")   
-        
+        raise RuntimeError(
+            f"horiz_interp.interp: grid of type {datatype} not supported"
+        )
+
     arglist = []
 
     nlon_dst = get_nlon_dst(interp_id)
@@ -365,7 +369,7 @@ def _init_functions():
 
     _cFMS_horiz_interp_base_2d_cdouble = _lib.cFMS_horiz_interp_base_2d_cdouble
     _cFMS_horiz_interp_base_2d_cfloat = _lib.cFMS_horiz_interp_base_2d_cfloat
-    
+
     _cFMS_get_wti_cfloat = _lib.cFMS_get_wti_cfloat
     _cFMS_get_wti_cdouble = _lib.cFMS_get_wti_cdouble
     _cFMS_get_wtj_cfloat = _lib.cFMS_get_wtj_cfloat
@@ -390,9 +394,9 @@ def _init_functions():
 
     _cFMS_horiz_interp_base_dict = {
         "float32": _cFMS_horiz_interp_base_2d_cfloat,
-        "float64": _cFMS_horiz_interp_base_2d_cdouble
+        "float64": _cFMS_horiz_interp_base_2d_cdouble,
     }
-    
+
     _functions.define(_lib)
 
 

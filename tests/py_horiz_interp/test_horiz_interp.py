@@ -6,7 +6,11 @@ import pytest
 import pyfms
 from pyfms.utils.constants import DEG_TO_RAD
 
-#please run each test individually
+
+# please run each test individually
+
+# please run each test individually
+
 
 @pytest.mark.create
 def test_create_input_nml():
@@ -18,7 +22,7 @@ def test_create_input_nml():
 def test_create_xgrid():
 
     pyfms.fms.init()
-    
+
     create_xgrid = pyfms.horiz_interp.create_xgrid_2dx2d_order1
 
     refine = 1
@@ -68,12 +72,12 @@ def test_create_xgrid():
 
     pyfms.fms.end()
 
-    
+
 # same as the test in cFMS, but using the Python interface
 def test_horiz_interp_conservative():
 
     pyfms.fms.init()
-    
+
     # set up domain decomposition
     ni_src = 360
     nj_src = 180
@@ -91,17 +95,17 @@ def test_horiz_interp_conservative():
     )
 
     isc = domain.isc
-    iec = domain.iec + 1 #grid has one more point
+    iec = domain.iec + 1  # grid has one more point
     jsc = domain.jsc
-    jec = domain.jec + 1 #grid has one more point
+    jec = domain.jec + 1  # grid has one more point
 
-    lon_in_1d = np.linspace(0, 360, num=ni_src+1, dtype=np.float64) * DEG_TO_RAD
-    lat_in_1d = np.linspace(-90, 90, num=nj_src+1, dtype=np.float64) * DEG_TO_RAD
+    lon_in_1d = np.linspace(0, 360, num=ni_src + 1, dtype=np.float64) * DEG_TO_RAD
+    lat_in_1d = np.linspace(-90, 90, num=nj_src + 1, dtype=np.float64) * DEG_TO_RAD
 
     lat_src, lon_src = np.meshgrid(lat_in_1d, lon_in_1d)
 
-    lon_dst = np.ascontiguousarray(lon_src[isc:iec+1, jsc:jec+1])
-    lat_dst = np.ascontiguousarray(lat_src[isc:iec+1, jsc:jec+1])
+    lon_dst = np.ascontiguousarray(lon_src[isc : iec + 1, jsc : jec + 1])
+    lat_dst = np.ascontiguousarray(lat_src[isc : iec + 1, jsc : jec + 1])
 
     # init and set a horiz_interp type (required for all horiz_interp calls!)
     pyfms.horiz_interp.init(2)
@@ -124,20 +128,26 @@ def test_horiz_interp_conservative():
     assert interp.nxgrid == nxgrid
     assert interp.interp_method == "conservative"
     assert np.all(interp.i_src == np.array(list(range(isc, iec)) * (jec - jsc)))
-    assert np.all(interp.j_src == np.array([j for j in range(jsc, jec) for ilon in range(iec - isc)]))
+    assert np.all(
+        interp.j_src
+        == np.array([j for j in range(jsc, jec) for ilon in range(iec - isc)])
+    )
     assert interp.nlon_src == ni_src
     assert interp.nlat_src == nj_src
     assert interp.nlon_dst == lon_dst.shape[0] - 1
     assert interp.nlat_dst == lat_dst.shape[1] - 1
-    
-    #interp    
-    data_in = np.array([[j*ni_src+i for j in range(nj_src)] for i in range(ni_src)], dtype=np.float64)
+
+    # interp
+    data_in = np.array(
+        [[j * ni_src + i for j in range(nj_src)] for i in range(ni_src)],
+        dtype=np.float64,
+    )
     data_out = pyfms.horiz_interp.interp(interp_id, data_in)
 
     assert np.all(data_in[isc:iec, jsc:jec] == data_out)
-    
+
     pyfms.fms.end()
-    
+
 
 @pytest.mark.skip(reason="test needs to be updated")
 def test_horiz_interp_bilinear():
@@ -315,4 +325,5 @@ def test_horiz_interp_bilinear():
 @pytest.mark.remove
 def test_remove_input_nml():
     input_nml = Path("input.nml")
-    if input_nml.exists(): input_nml.unlink()
+    if input_nml.exists():
+        input_nml.unlink()
