@@ -55,10 +55,6 @@ def get_maxxgrid() -> np.int32:
 
 
 def create_xgrid_2dx2d_order1(
-    nlon_src: int,
-    nlat_src: int,
-    nlon_tgt: int,
-    nlat_tgt: int,
     lon_src: npt.NDArray[np.float64],
     lat_src: npt.NDArray[np.float64],
     lon_tgt: npt.NDArray[np.float64],
@@ -71,13 +67,14 @@ def create_xgrid_2dx2d_order1(
     for first order conservative interpolation
     """
 
+    
     maxxgrid = get_maxxgrid()
 
     arglist = []
-    set_c_int(nlon_src, arglist)
-    set_c_int(nlat_src, arglist)
-    set_c_int(nlon_tgt, arglist)
-    set_c_int(nlat_tgt, arglist)
+    set_c_int(lon_src.shape[0], arglist)
+    set_c_int(lon_src.shape[1], arglist)
+    set_c_int(lon_tgt.shape[0], arglist)
+    set_c_int(lon_tgt.shape[1], arglist)
     set_array(lon_src, arglist)
     set_array(lat_src, arglist)
     set_array(lon_tgt, arglist)

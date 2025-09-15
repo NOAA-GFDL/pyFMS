@@ -25,11 +25,11 @@ def define(lib):
         POINTER(c_int),  # nlat_src
         POINTER(c_int),  # nlon_tgt
         POINTER(c_int),  # nlat_tgt
-        npptr(np.float64, ndim=1, flags=C),  # lon_src
-        npptr(np.float64, ndim=1, flags=C),  # lat_src
-        npptr(np.float64, ndim=1, flags=C),  # lon_tgt
-        npptr(np.float64, ndim=1, flags=C),  # lat_tgt
-        npptr(np.float64, ndim=1, flags=C),  # mask_src
+        npptr(np.float64, ndim=2, flags=C),  # lon_src
+        npptr(np.float64, ndim=2, flags=C),  # lat_src
+        npptr(np.float64, ndim=2, flags=C),  # lon_tgt
+        npptr(np.float64, ndim=2, flags=C),  # lat_tgt
+        npptr(np.float64, ndim=2, flags=C),  # mask_src
         POINTER(c_int),  # maxxgrid
         npptr(np.int32, ndim=1, flags=C),  # i_src
         npptr(np.int32, ndim=1, flags=C),  # j_src
