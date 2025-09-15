@@ -18,7 +18,7 @@ def test_create_input_nml():
     inputnml.close()
     assert Path("input.nml").exists()
 
-    
+
 @pytest.mark.skip(reason="create_xgrid in cFMS needs to be fixed")
 def test_create_xgrid():
 
@@ -42,7 +42,7 @@ def test_create_xgrid():
     lat_tgt_1d = np.linspace(lat_init, lat_end, nlat_tgt + 1)
     lon_tgt, lat_tgt = np.meshgrid(lon_tgt_1d, lat_tgt_1d)
 
-    mask_src = np.ones((nlon_src,nlat_src), dtype=np.float64)
+    mask_src = np.ones((nlon_src, nlat_src), dtype=np.float64)
 
     xgrid = create_xgrid(
         lon_src=lon_src,

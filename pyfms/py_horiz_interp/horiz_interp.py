@@ -67,7 +67,6 @@ def create_xgrid_2dx2d_order1(
     for first order conservative interpolation
     """
 
-    
     maxxgrid = get_maxxgrid()
 
     arglist = []

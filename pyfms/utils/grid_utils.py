@@ -24,7 +24,7 @@ def get_grid_area(
     """
 
     nlon, nlat = lon.shape
-    
+
     arglist = []
     set_c_int(nlon, arglist)
     set_c_int(nlat, arglist)
