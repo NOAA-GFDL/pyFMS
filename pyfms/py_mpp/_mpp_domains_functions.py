@@ -194,7 +194,7 @@ def define(lib):
                 POINTER(c_int),  # nhalo
                 c_char_p,  # name
                 POINTER(c_int),  # tile_count
-                POINTER(c_bool), # convert_cf_order
+                POINTER(c_bool),  # convert_cf_order
             ]
 
     # cFMS_v_update_domains_float/double_2/3/4/5d
@@ -219,5 +219,5 @@ def define(lib):
                 POINTER(c_int),  # nhalo
                 c_char_p,  # name
                 POINTER(c_int),  # tile_count
-                POINTER(c_bool), # convert_cf_order
+                POINTER(c_bool),  # convert_cf_order
             ]

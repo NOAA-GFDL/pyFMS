@@ -155,15 +155,19 @@ class NDPOINTERd:
 
 
 ctypes_dict = {np.float32: c_float, np.float64: c_double}
+
+
 class NDPOINTER:
 
     """
     wrapper to np.ctypeslib.ndpointer for doubles
     to accept None as function argument
     """
-    
-    def __init__(self, dtype, ndim = None, shape = None, flags = None):
-        self.ndpointer = np.ctypeslib.ndpointer(dtype=dtype, ndim=ndim, shape=shape, flags=flags)
+
+    def __init__(self, dtype, ndim=None, shape=None, flags=None):
+        self.ndpointer = np.ctypeslib.ndpointer(
+            dtype=dtype, ndim=ndim, shape=shape, flags=flags
+        )
         self.ctypes = ctypes_dict[dtype]
 
     def from_param(self, obj):

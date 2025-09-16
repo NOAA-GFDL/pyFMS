@@ -47,45 +47,55 @@ def define(lib):
     lib.cFMS_horiz_interp_init.argtypes = [POINTER(c_int)]
 
     # cFMS_horiz_interp_2d (for floats and doubles)
-    cFMS_horiz_interp_news = [lib.cFMS_horiz_interp_new_2d_cfloat, lib.cFMS_horiz_interp_new_2d_cdouble]
-    nptypes = [np.float32, np.float64]    
-    for cFMS_horiz_interp_new, npfloat in zip(cFMS_horiz_interp_news, nptypes):
+    cFMS_horiz_interp_news = [
+        lib.cFMS_horiz_interp_new_2d_cfloat,
+        lib.cFMS_horiz_interp_new_2d_cdouble,
+    ]
+    nptypes = [np.float32, np.float64]
+    news = [
+        (np.float32, lib.cFMS_horiz_interp_new_2d_cfloat),
+        (np.float64, lib.cFMS_horiz_interp_new_2d_cdouble),
+    ]
+    for np_float, cFMS_horiz_interp_new in news:
         cFMS_horiz_interp_new.restype = c_int
         cFMS_horiz_interp_new.argtypes = [
-            POINTER(c_int), #nlon_in
-            POINTER(c_int), #nlat_in
-            POINTER(c_int), #nlon_out
-            POINTER(c_int), #nlat_out
-            ndpointer(npfloat, ndim=2, flags=C),  # lon_in_ptr
-            ndpointer(npfloat, ndim=2, flags=C),  # lat_in_ptr
-            ndpointer(npfloat, ndim=2, flags=C),  # lon_out_ptr
-            ndpointer(npfloat, ndim=2, flags=C),  # lat_out_ptr
-            NDPOINTER(npfloat, ndim=2, flags=C),  # mask_in_ptr
-            NDPOINTER(npfloat, ndim=2, flags=C),  # mask_out_ptr
+            POINTER(c_int),  # nlon_in
+            POINTER(c_int),  # nlat_in
+            POINTER(c_int),  # nlon_out
+            POINTER(c_int),  # nlat_out
+            ndpointer(np_float, ndim=2, flags=C),  # lon_in_ptr
+            ndpointer(np_float, ndim=2, flags=C),  # lat_in_ptr
+            ndpointer(np_float, ndim=2, flags=C),  # lon_out_ptr
+            ndpointer(np_float, ndim=2, flags=C),  # lat_out_ptr
+            NDPOINTER(np_float, ndim=2, flags=C),  # mask_in_ptr
+            NDPOINTER(np_float, ndim=2, flags=C),  # mask_out_ptr
             POINTER(c_char),  # interp_method
             POINTER(c_int),  # verbose
-            NDPOINTER(npfloat, ndim=1, flags=C),  # max_dist
+            NDPOINTER(np_float, ndim=1, flags=C),  # max_dist
             POINTER(c_bool),  # src_modulo
             POINTER(c_bool),  # is_latlon_in
             POINTER(c_bool),  # is_latlon_out
-            POINTER(c_bool),  #convert_cf_order
+            POINTER(c_bool),  # convert_cf_order
         ]
 
     # cFMS_horiz_interp_base_2d
-    cFMS_horiz_interp_bases = [lib.cFMS_horiz_interp_base_2d_cfloat, lib.cFMS_horiz_interp_base_2d_cdouble]
-    nptypes = [np.float32, np.float64]
-    for cFMS_horiz_interp_base, npfloat in zip(cFMS_horiz_interp_bases, nptypes):
+    bases = [
+        (np.float32, c_float, lib.cFMS_horiz_interp_base_2d_cfloat),
+        (np.float64, c_double, lib.cFMS_horiz_interp_base_2d_cdouble),
+    ]
+    for np_float, c_real, cFMS_horiz_interp_base in bases:
         cFMS_horiz_interp_base.restype = None
-        cFMS_horiz_interp_base.argtypes = [POINTER(c_int),  # interp_id
-                                           ndpointer(npfloat, ndim=2, flags=C),  # data_in_ptr
-                                           ndpointer(npfloat, ndim=2, flags=C),  # data_out_ptr
-                                           NDPOINTER(npfloat, ndim=2, flags=C),  # mask_in
-                                           NDPOINTER(npfloat, ndim=2, flags=C),  # mask_out
-                                           POINTER(c_int),  # verbose
-                                           POINTER(c_float),  # missing_value
-                                           POINTER(c_int),  # missing_permit
-                                           POINTER(c_bool),  # new_missing_handle
-                                           POINTER(c_bool),  # convert_cf_order
+        cFMS_horiz_interp_base.argtypes = [
+            POINTER(c_int),  # interp_id
+            ndpointer(np_float, ndim=2, flags=C),  # data_in_ptr
+            ndpointer(np_float, ndim=2, flags=C),  # data_out_ptr
+            NDPOINTER(np_float, ndim=2, flags=C),  # mask_in
+            NDPOINTER(np_float, ndim=2, flags=C),  # mask_out
+            POINTER(c_int),  # verbose
+            POINTER(c_real),  # missing_value
+            POINTER(c_int),  # missing_permit
+            POINTER(c_bool),  # new_missing_handle
+            POINTER(c_bool),  # convert_cf_order
         ]
 
     # getter routines for individual fields

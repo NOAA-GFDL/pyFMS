@@ -11,7 +11,6 @@ from pyfms.utils.ctypes_utils import (
     set_c_float,
     set_c_int,
     set_c_str,
-    set_list,
 )
 
 
@@ -113,23 +112,23 @@ def init(ninterp: int = None):
 # TODO names should be consistent between in/src and out/dst
 # this problem is in part to inconsistency in FMS
 def get_weights(
-        lon_in: npt.NDArray[np.float32 | np.float64],
-        lat_in: npt.NDArray[np.float32 | np.float64],
-        lon_out: npt.NDArray[np.float32 | np.float64],
-        lat_out: npt.NDArray[np.float32 | np.float64],
-        mask_in: npt.NDArray[np.float32 | np.float64] = None,
-        mask_out: npt.NDArray[np.float32 | np.float64] = None,
-        nlon_in: int = None,
-        nlat_in: int = None,
-        nlon_out: int = None,
-        nlat_out: int = None,
-        interp_method: str = None,
-        verbose: int = 0,
-        max_dist: np.float32 | np.float64 = None,
-        src_modulo: bool = False,
-        is_latlon_in: bool = False,
-        is_latlon_out: bool = False,
-        convert_cf_order: bool = True
+    lon_in: npt.NDArray[np.float32 | np.float64],
+    lat_in: npt.NDArray[np.float32 | np.float64],
+    lon_out: npt.NDArray[np.float32 | np.float64],
+    lat_out: npt.NDArray[np.float32 | np.float64],
+    mask_in: npt.NDArray[np.float32 | np.float64] = None,
+    mask_out: npt.NDArray[np.float32 | np.float64] = None,
+    nlon_in: int = None,
+    nlat_in: int = None,
+    nlon_out: int = None,
+    nlat_out: int = None,
+    interp_method: str = None,
+    verbose: int = 0,
+    max_dist: np.float32 | np.float64 = None,
+    src_modulo: bool = False,
+    is_latlon_in: bool = False,
+    is_latlon_out: bool = False,
+    convert_cf_order: bool = True,
 ) -> int:
     """
     Performs horizontal interpolation for 2D data
@@ -143,11 +142,15 @@ def get_weights(
             f"horiz_interp.new: grid of type {lon_in.dtype} not supported"
         )
 
-    if nlon_in is None: nlon_in = lon_in.shape[0] - 1
-    if nlat_in is None: nlat_in = lon_in.shape[1] - 1
-    if nlon_out is None: nlon_out = lon_out.shape[0] - 1 
-    if nlat_out is None: nlat_out = lon_out.shape[1] - 1
-    
+    if nlon_in is None:
+        nlon_in = lon_in.shape[0] - 1
+    if nlat_in is None:
+        nlat_in = lon_in.shape[1] - 1
+    if nlon_out is None:
+        nlon_out = lon_out.shape[0] - 1
+    if nlat_out is None:
+        nlat_out = lon_out.shape[1] - 1
+
     arglist = []
     set_c_int(nlon_in, arglist)
     set_c_int(nlat_in, arglist)

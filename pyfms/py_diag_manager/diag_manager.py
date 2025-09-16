@@ -394,9 +394,7 @@ def register_field_scalar(
 
 
 def send_data(
-        diag_field_id: int,
-        field: NDArray,
-        convert_cf_order: bool = True
+    diag_field_id: int, field: NDArray, convert_cf_order: bool = True
 ) -> bool:
 
     """

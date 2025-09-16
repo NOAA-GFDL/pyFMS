@@ -559,7 +559,7 @@ def update_domains(
     nhalo: int = None,
     name: str = None,
     tile_count: int = None,
-    convert_cf_order: bool = True
+    convert_cf_order: bool = True,
 ):
 
     """
@@ -609,7 +609,7 @@ def vector_update_domains(
     nhalo: int = None,
     name: str = None,
     tile_count: int = None,
-    convert_cf_order: bool = True
+    convert_cf_order: bool = True,
 ):
     try:
         cFMS_v_update_this = _cFMS_v_update_domains[fieldx.ndim][fieldx.dtype.name]
