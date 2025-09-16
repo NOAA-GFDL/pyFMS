@@ -24,6 +24,7 @@ _lib = None
 _cFMS_create_xgrid_2dx2d_order1 = None
 _get_maxxgrid = None
 _cFMS_horiz_interp_init = None
+_cFMS_horiz_interp_end = None
 _cFMS_horiz_interp_2d_new_cdouble = None
 _cFMS_horiz_interp_2d_new_cfloat = None
 _cFMS_horiz_interp_2d_base_cdouble = None
@@ -107,6 +108,15 @@ def init(ninterp: int = None):
     set_c_int(ninterp, arglist)
 
     _cFMS_horiz_interp_init(*arglist)
+
+
+def end():
+
+    """
+    Calls cFMS_horiz_interp_end to deallocate interp
+    """
+
+    _cFMS_horiz_interp_end()
 
 
 # TODO names should be consistent between in/src and out/dst
@@ -331,7 +341,10 @@ def interp(
 
     set_c_int(interp_id, arglist)
     set_array(data_in, arglist)
-    data_out = set_array(np.zeros((nlon_dst, nlat_dst), dtype=datatype), arglist)
+    if convert_cf_order:
+        data_out = set_array(np.zeros((nlon_dst, nlat_dst), dtype=datatype), arglist)
+    else:
+        data_out = set_array(np.zeros((nlat_dst, nlon_dst), dtype=datatype), arglist)
     set_array(mask_in, arglist)
     set_array(mask_out, arglist)
     set_c_int(verbose, arglist)
@@ -350,6 +363,7 @@ def _init_functions():
     global _cFMS_create_xgrid_2dx2d_order1
     global _get_maxxgrid
     global _cFMS_horiz_interp_init
+    global _cFMS_horiz_interp_end
     global _cFMS_horiz_interp_new_dict
     global _cFMS_horiz_interp_new_2d_cdouble
     global _cFMS_horiz_interp_new_2d_cfloat
@@ -375,6 +389,7 @@ def _init_functions():
     _cFMS_create_xgrid_2dx2d_order1 = _lib.cFMS_create_xgrid_2dx2d_order1
     _get_maxxgrid = _lib.get_maxxgrid
     _cFMS_horiz_interp_init = _lib.cFMS_horiz_interp_init
+    _cFMS_horiz_interp_end = _lib.cFMS_horiz_interp_end
 
     _cFMS_horiz_interp_new_2d_cdouble = _lib.cFMS_horiz_interp_new_2d_cdouble
     _cFMS_horiz_interp_new_2d_cfloat = _lib.cFMS_horiz_interp_new_2d_cfloat

@@ -46,6 +46,10 @@ def define(lib):
     lib.cFMS_horiz_interp_init.restype = None
     lib.cFMS_horiz_interp_init.argtypes = [POINTER(c_int)]
 
+    #cFMS_horiz_interp_end
+    lib.cFMS_horiz_interp_end.restype = None
+    lib.cFMS_horiz_interp_end.argtypes = None
+    
     # cFMS_horiz_interp_2d (for floats and doubles)
     news = [
         (np.float32, lib.cFMS_horiz_interp_new_2d_cfloat),
