@@ -133,13 +133,14 @@ def override_scalar(
 
 
 def override(
-    gridname: str,
-    fieldname: str,
-    data: npt.NDArray,
-    is_in: int = None,
-    ie_in: int = None,
-    js_in: int = None,
-    je_in: int = None,
+        gridname: str,
+        fieldname: str,
+        data: npt.NDArray,
+        is_in: int = None,
+        ie_in: int = None,
+        js_in: int = None,
+        je_in: int = None,
+        convert_cf_order: bool = True
 ) -> bool:
 
     """
@@ -170,6 +171,7 @@ def override(
     set_c_int(ie_in, arglist)
     set_c_int(js_in, arglist)
     set_c_int(je_in, arglist)
+    set_c_bool(convert_cf_order, arglist)
 
     _cFMS_data_override(*arglist)
 

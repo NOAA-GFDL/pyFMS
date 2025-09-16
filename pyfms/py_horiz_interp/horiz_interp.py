@@ -113,18 +113,23 @@ def init(ninterp: int = None):
 # TODO names should be consistent between in/src and out/dst
 # this problem is in part to inconsistency in FMS
 def get_weights(
-    lon_in: npt.NDArray[np.float32 | np.float64],
-    lat_in: npt.NDArray[np.float32 | np.float64],
-    lon_out: npt.NDArray[np.float32 | np.float64],
-    lat_out: npt.NDArray[np.float32 | np.float64],
-    mask_in: npt.NDArray[np.float32 | np.float64] = None,
-    mask_out: npt.NDArray[np.float32 | np.float64] = None,
-    interp_method: str = None,
-    verbose: int = 0,
-    max_dist: np.float32 | np.float64 = None,
-    src_modulo: bool = False,
-    is_latlon_in: bool = False,
-    is_latlon_out: bool = False,
+        lon_in: npt.NDArray[np.float32 | np.float64],
+        lat_in: npt.NDArray[np.float32 | np.float64],
+        lon_out: npt.NDArray[np.float32 | np.float64],
+        lat_out: npt.NDArray[np.float32 | np.float64],
+        mask_in: npt.NDArray[np.float32 | np.float64] = None,
+        mask_out: npt.NDArray[np.float32 | np.float64] = None,
+        nlon_in: int = None,
+        nlat_in: int = None,
+        nlon_out: int = None,
+        nlat_out: int = None,
+        interp_method: str = None,
+        verbose: int = 0,
+        max_dist: np.float32 | np.float64 = None,
+        src_modulo: bool = False,
+        is_latlon_in: bool = False,
+        is_latlon_out: bool = False,
+        convert_cf_order: bool = True
 ) -> int:
     """
     Performs horizontal interpolation for 2D data
@@ -138,13 +143,20 @@ def get_weights(
             f"horiz_interp.new: grid of type {lon_in.dtype} not supported"
         )
 
+    if nlon_in is None: nlon_in = lon_in.shape[0] - 1
+    if nlat_in is None: nlat_in = lon_in.shape[1] - 1
+    if nlon_out is None: nlon_out = lon_out.shape[0] - 1 
+    if nlat_out is None: nlat_out = lon_out.shape[1] - 1
+    
     arglist = []
+    set_c_int(nlon_in, arglist)
+    set_c_int(nlat_in, arglist)
+    set_c_int(nlon_out, arglist)
+    set_c_int(nlat_out, arglist)
     set_array(lon_in, arglist)
     set_array(lat_in, arglist)
-    set_list(lat_in.shape, np.int32, arglist)
     set_array(lon_out, arglist)
     set_array(lat_out, arglist)
-    set_list(lat_out.shape, np.int32, arglist)
     set_array(mask_in, arglist)
     set_array(mask_out, arglist)
     set_c_str(interp_method, arglist)
@@ -153,6 +165,7 @@ def get_weights(
     set_c_bool(src_modulo, arglist)
     set_c_bool(is_latlon_in, arglist)
     set_c_bool(is_latlon_out, arglist)
+    set_c_bool(convert_cf_order, arglist)
 
     return _cFMS_horiz_interp_new(*arglist)
 
@@ -295,6 +308,7 @@ def interp(
     missing_value: np.float32 | np.float64 = None,
     missing_permit: int = None,
     new_missing_handle: bool = None,
+    convert_cf_order: bool = True,
 ) -> npt.NDArray[np.float32 | np.float64]:
 
     datatype = data_in.dtype
@@ -314,15 +328,14 @@ def interp(
 
     set_c_int(interp_id, arglist)
     set_array(data_in, arglist)
-    set_list(data_in.shape, np.int32, arglist)
     data_out = set_array(np.zeros((nlon_dst, nlat_dst), dtype=datatype), arglist)
-    set_list(data_out.shape, np.int32, arglist)
     set_array(mask_in, arglist)
     set_array(mask_out, arglist)
     set_c_int(verbose, arglist)
     set_c_real(missing_value, arglist)
     set_c_int(missing_permit, arglist)
     set_c_bool(new_missing_handle, arglist)
+    set_c_bool(convert_cf_order, arglist)
 
     _cFMS_horiz_interp_base(*arglist)
 

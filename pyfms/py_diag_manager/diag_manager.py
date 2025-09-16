@@ -394,8 +394,9 @@ def register_field_scalar(
 
 
 def send_data(
-    diag_field_id: int,
-    field: NDArray,
+        diag_field_id: int,
+        field: NDArray,
+        convert_cf_order: bool = True
 ) -> bool:
 
     """
@@ -421,6 +422,7 @@ def send_data(
     set_list([*field.shape], np.int32, arglist)
     set_array(field, arglist)
     err_msg = set_c_str(" ", arglist)
+    set_c_bool(convert_cf_order, arglist)
 
     return cfms_diag_send_data(*arglist)
 

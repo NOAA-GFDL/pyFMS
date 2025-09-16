@@ -132,7 +132,8 @@ def test_horiz_interp_conservative():
         [[j * ni_src + i for j in range(nj_src)] for i in range(ni_src)],
         dtype=np.float64,
     )
-    data_out = pyfms.horiz_interp.interp(interp_id, data_in)
+
+    data_out = pyfms.horiz_interp.interp(interp_id=interp_id, data_in=data_in)
 
     assert np.all(data_in[isc:iec, jsc:jec] == data_out)
 
