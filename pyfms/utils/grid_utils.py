@@ -14,8 +14,6 @@ _cFMS_get_grid_area = None
 
 
 def get_grid_area(
-    nlon: int,
-    nlat: int,
     lon: npt.NDArray[np.float64],
     lat: npt.NDArray[np.float64],
 ) -> npt.NDArray[np.float64]:
@@ -25,12 +23,14 @@ def get_grid_area(
     on lon and lat
     """
 
+    nlon, nlat = lon.shape
+
     arglist = []
     set_c_int(nlon, arglist)
     set_c_int(nlat, arglist)
     set_array(lon, arglist)
     set_array(lat, arglist)
-    area = set_array(np.zeros(nlon * nlat, dtype=np.float64), arglist)
+    area = set_array(np.zeros((nlon, nlat), dtype=np.float64), arglist)
 
     _cFMS_get_grid_area(*arglist)
 

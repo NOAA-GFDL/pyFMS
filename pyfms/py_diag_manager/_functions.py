@@ -169,4 +169,5 @@ def define(lib):
                 npptr(np.int32, shape=(ndim), flags=C),  # field_shape
                 npptr(dtype, ndim=ndim, flags=C),  # field
                 c_char_p,  # err_msg
+                POINTER(c_bool),  # convert_cf_order
             ]

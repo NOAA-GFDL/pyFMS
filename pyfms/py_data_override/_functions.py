@@ -68,6 +68,7 @@ def define(lib):
         POINTER(c_int),  # ie_in
         POINTER(c_int),  # js_in
         POINTER(c_int),  # je_in
+        POINTER(c_bool),  # convert_cf_order
     ]
 
     # cFMS_data_override_3d_cfloat
@@ -82,6 +83,7 @@ def define(lib):
         POINTER(c_int),  # ie_in
         POINTER(c_int),  # js_in
         POINTER(c_int),  # je_in
+        POINTER(c_bool),  # convert_cf_order
     ]
 
     # cFMS_data_override_2d_cdouble
@@ -96,6 +98,7 @@ def define(lib):
         POINTER(c_int),  # ie_in
         POINTER(c_int),  # js_in
         POINTER(c_int),  # je_in
+        POINTER(c_bool),  # convert_cf_order
     ]
 
     # cFMS_data_override_3d_cdouble
@@ -110,4 +113,5 @@ def define(lib):
         POINTER(c_int),  # ie_in
         POINTER(c_int),  # js_in
         POINTER(c_int),  # je_in
+        POINTER(c_bool),  # convert_cf_order
     ]

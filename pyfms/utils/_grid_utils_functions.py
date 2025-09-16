@@ -21,7 +21,7 @@ def define(lib):
     lib.cFMS_get_grid_area.argtypes = [
         POINTER(c_int),  # nlon
         POINTER(c_int),  # nlat
-        npptr(dtype=np.float64, ndim=(1), flags=C),  # lon
-        npptr(dtype=np.float64, ndim=(1), flags=C),  # lat
-        npptr(dtype=np.float64, ndim=(1), flags=C),  # area
+        npptr(dtype=np.float64, ndim=(2), flags=C),  # lon
+        npptr(dtype=np.float64, ndim=(2), flags=C),  # lat
+        npptr(dtype=np.float64, ndim=(2), flags=C),  # area
     ]
