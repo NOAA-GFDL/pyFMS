@@ -36,28 +36,31 @@ def test_data_override():
         year=1, month=1, day=3, hour=0, minute=0, second=0, tick=0
     )
 
-    data = pyfms.data_override.override_scalar(
-        gridname="OCN", fieldname="runoff_scalar", data_type=np.float64
+    data, override = pyfms.data_override.override_scalar(
+        gridname="OCN", fieldname="runoff_scalar", dtype="float64"
     )
-    assert data == 2.0
 
-    data = pyfms.data_override.override(
-        gridname="OCN",
-        fieldname="runoff_2d",
-        data_shape=(xsize, ysize),
-        data_type=np.float64,
-    )
-    assert np.all(data == 200.0)
+    assert override
+    assert data == np.float64(2.0)
 
-    data = pyfms.data_override.override(
-        gridname="OCN",
-        fieldname="runoff_3d",
-        data_shape=(xsize, ysize, nz),
-        data_type=np.float64,
+    data = np.zeros((xsize, ysize), dtype=np.float64)
+    override = pyfms.data_override.override(
+        gridname="OCN", fieldname="runoff_2d", data=data
     )
-    answers = np.array([200 + z + 1 for z in range(nz)] * xsize * ysize).reshape(
-        xsize, ysize, nz
+
+    assert override
+    assert np.all(data == np.float64(200.0))
+
+    data = np.zeros((xsize, ysize, nz), dtype=np.float64)
+    override = pyfms.data_override.override(
+        gridname="OCN", fieldname="runoff_3d", data=data
     )
+
+    answers = np.array(
+        [200 + z + 1 for z in range(nz)] * xsize * ysize, dtype=np.float64
+    ).reshape(xsize, ysize, nz)
+
+    assert override
     assert np.all(data == answers)
 
     pyfms.fms.end()

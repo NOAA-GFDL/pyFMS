@@ -1,69 +1,62 @@
-import ctypes
+from typing import Any
 
 import numpy as np
 import numpy.typing as npt
 
+from pyfms.utils import _grid_utils_functions
+from pyfms.utils.ctypes_utils import set_array, set_c_int
 
-class grid_utils:
 
-    __libpath: str = None
-    __lib: type[ctypes.CDLL] = None
+_libpath = None
+_lib = None
 
-    @classmethod
-    def setlib(cls, libpath: str, lib: type[ctypes.CDLL]):
-        cls.__libpath = libpath
-        cls.__lib = lib
+_cFMS_get_grid_area = None
 
-    @classmethod
-    def lib(cls) -> type[ctypes.CDLL]:
-        return cls.__lib
 
-    @classmethod
-    def libpath(cls) -> str:
-        return cls.__libpath
+def get_grid_area(
+    nlon: int,
+    nlat: int,
+    lon: npt.NDArray[np.float64],
+    lat: npt.NDArray[np.float64],
+) -> npt.NDArray[np.float64]:
 
-    @classmethod
-    def get_grid_area(
-        cls,
-        nlon: int,
-        nlat: int,
-        lon: npt.NDArray[np.float64],
-        lat: npt.NDArray[np.float64],
-    ) -> npt.NDArray[np.float64]:
+    """
+    Returns the cell areas of grids defined
+    on lon and lat
+    """
 
-        ncells = nlon * nlat
-        ngridpts = (nlon + 1) * (nlat + 1)
+    arglist = []
+    set_c_int(nlon, arglist)
+    set_c_int(nlat, arglist)
+    set_array(lon, arglist)
+    set_array(lat, arglist)
+    area = set_array(np.zeros(nlon * nlat, dtype=np.float64), arglist)
 
-        nlon_t = ctypes.c_int
-        nlat_t = ctypes.c_int
-        lon_ndp = np.ctypeslib.ndpointer(
-            dtype=np.float64, shape=(ngridpts), flags="C_CONTIGUOUS"
-        )
-        lat_ndp = np.ctypeslib.ndpointer(
-            dtype=np.float64, shape=(ngridpts), flags="C_CONTIGUOUS"
-        )
-        area_ndp = np.ctypeslib.ndpointer(
-            dtype=np.float64, shape=(ncells), flags="C_CONTIGUOUS"
-        )
+    _cFMS_get_grid_area(*arglist)
 
-        nlon_c = nlon_t(nlon)
-        nlat_c = nlat_t(nlat)
-        area = np.zeros(ncells, dtype=np.float64)
+    return area
 
-        _get_grid_area = cls.lib().cFMS_get_grid_area
 
-        _get_grid_area.restype = None
-        _get_grid_area.argtypes = [
-            ctypes.POINTER(nlon_t),
-            ctypes.POINTER(nlat_t),
-            lon_ndp,
-            lat_ndp,
-            area_ndp,
-        ]
+def _init_functions():
 
-        nlon_c = nlon_t(nlon)
-        nlat_c = nlat_t(nlat)
+    global _cFMS_get_grid_area
 
-        _get_grid_area(ctypes.byref(nlon_c), ctypes.byref(nlat_c), lon, lat, area)
+    _grid_utils_functions.define(_lib)
 
-        return area
+    _cFMS_get_grid_area = _lib.cFMS_get_grid_area
+
+
+def _init(libpath: str, lib: Any):
+
+    """
+    Sets _libpath and _lib module variables associated
+    with the loaded cFMS library.  This function is
+    to be used internally by the cfms module
+    """
+
+    global _libpath, _lib
+
+    _libpath = libpath
+    _lib = lib
+
+    _init_functions()
