@@ -1,14 +1,13 @@
 import subprocess
 
 from setuptools import find_namespace_packages, setup
-from setuptools.command.build import build
+from setuptools.command.install import install
 
 
-class CustomBuild(build):
+class CustomInstall(install):
     def run(self):
-        with open("install.log", "w") as f:
-            subprocess.run(["./compile_c_libs.sh"], stdout=f, check=True)
-        build.run(self)
+        subprocess.run(["conda", "install", "-c", "/home/Frank.Malatino/.conda/envs/throw4/conda-bld"])
+        install.run(self)
 
 
 test_requirements = ["pytest", "pytest-subtests", "coverage"]
@@ -44,7 +43,7 @@ setup(
     name="pyfms",
     license="",
     packages=find_namespace_packages(include=["pyfms", "pyfms.*"]),
-    cmdclass={"build": CustomBuild},
+    cmdclass={"install": CustomInstall},
     include_package_data=True,
     url="https://github.com/fmalatino/pyFMS.git",
     version="2024.02.0",
