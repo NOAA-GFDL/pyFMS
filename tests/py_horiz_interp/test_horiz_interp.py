@@ -59,12 +59,15 @@ def test_create_xgrid():
     pyfms.fms.end()
 
 
-# same as the test in cFMS, but using the Python interface
-@pytest.mark.parametrize("convert_cf_order", [True, False])
-def test_horiz_interp_conservative(convert_cf_order):
+#@pytest.mark.parametrize("convert_cf_order2", [True, False])
+#gives error when using mark.parameterize, it's complicated
+def test_horiz_interp_conservative():
 
-    pyfms.cfms.init()  # reload library, only needed for testing
-    pyfms.fms.init()
+  pyfms.fms.init(ndomain=2)
+  pyfms.horiz_interp.init(2)
+
+  interp_id_answer = 0
+  for convert_cf_order in [True, False]:
 
     # set up domain decomposition
     ni_src = 360
@@ -81,7 +84,7 @@ def test_horiz_interp_conservative(convert_cf_order):
         xflags=pyfms.mpp_domains.CYCLIC_GLOBAL_DOMAIN,
         yflags=pyfms.mpp_domains.CYCLIC_GLOBAL_DOMAIN,
     )
-
+    # get compute domain indices
     isc = domain.isc
     iec = domain.iec + 1  # grid has one more point
     jsc = domain.jsc
@@ -101,9 +104,6 @@ def test_horiz_interp_conservative(convert_cf_order):
         lat_dst = np.ascontiguousarray(lat_src[jsc : jec + 1, isc : iec + 1])
         nlat_in, nlon_in = lon_src.shape[0] - 1, lon_src.shape[1] - 1
         nlat_out, nlon_out = lon_dst.shape[0] - 1, lon_dst.shape[1] - 1
-
-    # init and set a horiz_interp type (required for all horiz_interp calls!)
-    pyfms.horiz_interp.init(2)
 
     # get interpolation weights
     interp_id = pyfms.horiz_interp.get_weights(
@@ -129,7 +129,7 @@ def test_horiz_interp_conservative(convert_cf_order):
         nlon_in, nlat_in = lon_src.shape[0] - 1, lon_src.shape[1] - 1
         nlon_out, nlat_out = lon_dst.shape[0] - 1, lon_dst.shape[1] - 1
 
-    assert interp_id == 0
+    assert interp_id == interp_id_answer
     assert interp.nxgrid == nxgrid
     assert interp.interp_method == "conservative"
     assert np.all(interp.i_src == np.array(list(range(isc, iec)) * (jec - jsc)))
@@ -158,10 +158,12 @@ def test_horiz_interp_conservative(convert_cf_order):
     if convert_cf_order:
         assert np.all(data_in[isc:iec, jsc:jec] == data_out)
     else:
-        assert np.all(data_in[jsc:iec, isc:iec] == data_out)
+        assert np.all(data_in[jsc:jec, isc:iec] == data_out)
 
-    pyfms.horiz_interp.end()
-    pyfms.fms.end()
+    interp_id_answer += 1
+
+  pyfms.horiz_interp.end()
+  pyfms.fms.end()
 
 
 @pytest.mark.skip(reason="test needs to be updated")
