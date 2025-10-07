@@ -71,6 +71,10 @@ def define(lib):
     lib.cFMS_pe.restype = c_int
     lib.cFMS_pe.argtypes = None
 
+    # cFMS_root_pe
+    lib.cFMS_root_pe.restype = c_int
+    lib.cFMS_root_pe.argtypes = None
+    
     # cFMS_set_current_pelist
     lib.cFMS_set_current_pelist.restype = None
     lib.cFMS_set_current_pelist.argtypes = [

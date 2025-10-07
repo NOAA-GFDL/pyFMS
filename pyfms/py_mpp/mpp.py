@@ -3,9 +3,12 @@ from typing import Any
 import numpy as np
 import numpy.typing as npt
 
+from pyfms.py_fms.fms import FATAL
+
 from pyfms.py_mpp import _mpp_functions
 from pyfms.utils.ctypes_utils import (
     check_str,
+    set_array,
     set_c_bool,
     set_c_int,
     set_c_str,
@@ -26,23 +29,28 @@ _cFMS_gather_pelist_2ds = None
 _cFMS_get_current_pelist = None
 _cFMS_npes = None
 _cFMS_pe = None
+_cFMS_root_pe = None
 _cFMS_set_current_pelist = None
 
 
-def gather(domain: dict, pelist: list, send_array: npt.NDArray, ishift: int = None,
+def gather(domain: dict, send_array: npt.NDArray, pelist: list = None, ishift: int = None,
            jshift: int = None, convert_cf_order: bool = True):
 
     datatype = send_array.dtype
-    is_root_pe = pe() == mpp_root()
+    is_root_pe = pe() == root_pe()
+
+    if pelist is None:
+        pelist = get_current_pelist()
 
     try:
-        cFMS_gather_pelist_2d = cFMS_gather_pelist_2ds[datatype.name]
+        cFMS_gather_pelist_2d = _cFMS_gather_pelist_2ds[datatype.name]
     except Exception:
-        cFMS_error(FATAL, f"mpp.gather {datatype.name} not supported")
+        error(FATAL, f"mpp.gather {datatype.name} not supported")
         exit()
     
-    nx = domain.ieg-domain.isg+1 if is_root_pe else 1
+    nx = domain.ieg-domain.isg+1 if is_root_pe else 1    
     ny = domain.jeg-domain.jsg+1 if is_root_pe else 1
+    receive_shape = (nx, ny) if convert_cf_order else (ny, nx)
     
     arglist = []
     set_c_int(domain.isc, arglist)
@@ -50,22 +58,20 @@ def gather(domain: dict, pelist: list, send_array: npt.NDArray, ishift: int = No
     set_c_int(domain.jsc, arglist)
     set_c_int(domain.jec, arglist)
     set_c_int(len(pelist), arglist)
+    set_list(pelist, np.int32, arglist)
     set_array(send_array, arglist)
-    if convert_cf_order:
-        set_list([nx, ny], np.int32, arglist)
-        receive = set_array(np.zeros((nx,ny), dtype=datatype))
-    else:
-        set_list([ny, nx], np.int32, arglist)
-        receive = set_array(np.zeros((ny,nx), dtype=datatype))
+    set_list(receive_shape, np.int32, arglist)
+    receive = set_array(np.zeros(receive_shape, dtype=datatype), arglist)
     set_c_bool(is_root_pe, arglist)
     set_c_int(ishift, arglist)
     set_c_int(jshift, arglist)
-    set_c_bool(convert_cf_order)
+    set_c_bool(convert_cf_order, arglist)
                         
     cFMS_gather_pelist_2d(*arglist)
 
     if is_root_pe:
         return receive
+    else: return None
                             
 
 def declare_pelist(
@@ -168,6 +174,14 @@ def pe() -> int:
     return _cFMS_pe()
 
 
+def root_pe() -> int:
+
+    """
+    Returns the root pe in the current pelist
+    """
+    return _cFMS_root_pe()
+
+
 def set_current_pelist(pelist: list[int] = None, no_sync: bool = None):
 
     """
@@ -196,6 +210,7 @@ def _init_functions():
     global _cFMS_get_current_pelist
     global _cFMS_npes
     global _cFMS_pe
+    global _cFMS_root_pe
     global _cFMS_set_current_pelist
 
     _mpp_functions.define(_lib)
@@ -208,6 +223,7 @@ def _init_functions():
     _cFMS_get_current_pelist = _lib.cFMS_get_current_pelist
     _cFMS_npes = _lib.cFMS_npes
     _cFMS_pe = _lib.cFMS_pe
+    _cFMS_root_pe = _lib.cFMS_root_pe
     _cFMS_set_current_pelist = _lib.cFMS_set_current_pelist
 
     _cFMS_gather_pelist_2ds = {"int32": _cFMS_gather_pelist_2d_cint,
