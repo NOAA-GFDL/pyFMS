@@ -63,8 +63,9 @@ run_test "python -m pytest -s -k test_horiz_interp_bilinear $test"
 run_test "mpirun -n 2 $oversubscribe python -m pytest -s -k test_horiz_interp_bilinear $test"
 remove_input $test
 
-run_test "python -m pytest py_data_override/test_generate_files.py"
-run_test "mpirun -n 6 $oversubscribe python -m pytest -m 'parallel' py_data_override/test_data_override.py"
+run_test "python -m pytest -s py_data_override/test_generate_files.py"
+tree
+run_test "mpirun -n 6 $oversubscribe python -m pytest -s -m 'parallel' py_data_override/test_data_override.py"
 remove_input "py_data_override/test_data_override.py"
 
 run_test "python -m pytest py_diag_manager/test_generate_files.py"
