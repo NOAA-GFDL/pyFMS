@@ -8,7 +8,7 @@ concurrency:
 
 jobs:
   pyfms_unit_tests:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
         - name: Checkout out hash that triggered CI
           uses: actions/checkout@v4
