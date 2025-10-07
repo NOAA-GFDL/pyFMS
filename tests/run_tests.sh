@@ -28,32 +28,32 @@ function run_test() {
 
 test="test_fms.py"
 create_input $test
-run_test "python -m pytest -m parallel $test"
+run_test "python -m pytest -svm parallel $test"
 remove_input $test
 
 test="py_mpp/test_define_domains.py"
 create_input $test
-run_test "mpirun -n 8 $oversubscribe python -m pytest -m 'parallel' $test"
+run_test "mpirun -n 8 $oversubscribe python -m pytest -svm 'parallel' $test"
 remove_input $test
 
 test="py_mpp/test_define_cubic_mosaic.py"
 create_input $test
-run_test "mpirun -n 30 $oversubscribe python -m pytest -m 'parallel' $test"
+run_test "mpirun -n 30 $oversubscribe python -m pytest -svm 'parallel' $test"
 remove_input $test
 
 test="py_mpp/test_getset_domains.py"
 create_input $test
-run_test "mpirun -n 4 $oversubscribe python -m pytest -m 'parallel' py_mpp/test_getset_domains.py"
+run_test "mpirun -n 4 $oversubscribe python -m pytest -svm 'parallel' py_mpp/test_getset_domains.py"
 remove_input $test
 
 test="py_mpp/test_update_domains.py"
 create_input $test
-run_test "mpirun -n 4 $oversubscribe python -m pytest -m 'parallel' py_mpp/test_update_domains.py"
+run_test "mpirun -n 4 $oversubscribe python -m pytest -svm 'parallel' py_mpp/test_update_domains.py"
 remove_input $test
 
 test="py_mpp/test_vector_update_domains.py"
 create_input $test
-run_test "mpirun -n 2 $oversubscribe python -m pytest -m 'parallel' py_mpp/test_vector_update_domains.py"
+run_test "mpirun -n 2 $oversubscribe python -m pytest -svm 'parallel' py_mpp/test_vector_update_domains.py"
 remove_input $test
 
 test="py_horiz_interp/test_horiz_interp.py"
@@ -66,7 +66,7 @@ run_test "mpirun -n 2 $oversubscribe python -m pytest -s -k test_horiz_interp_bi
 remove_input $test
 
 run_test "python -m pytest py_data_override/test_generate_files.py"
-run_test "mpirun -n 6 $oversubscribe python -m pytest -m 'parallel' py_data_override/test_data_override.py"
+run_test "mpirun -n 6 $oversubscribe python -m pytest -svm 'parallel' py_data_override/test_data_override.py"
 remove_input "py_data_override/test_data_override.py"
 
 run_test "python -m pytest py_diag_manager/test_generate_files.py"
