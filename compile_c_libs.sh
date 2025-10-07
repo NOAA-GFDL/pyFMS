@@ -4,10 +4,10 @@ set -ex
 #set -o posix
 
 #yaml includes
-YAML_FLAGS+=""
+YAML_FLAGS+="-I/opt/libyaml/0.2.5/GNU/14.2.0/include"
 
 #yaml libraries
-YAML_LDFLAGS+=""
+YAML_LDFLAGS+="-L/opt/libyaml/0.2.5/GNU/14.2.0/lib"
 
 #fortran netcdf includes
 NF_FLAGS+=$(nf-config --fflags)
@@ -23,15 +23,15 @@ FC=mpif90
 CC=mpicc
 
 #fms fortran, c, library compiler flags
-FMS_FCFLAGS+="$NF_FLAGS -fPIC"
-FMS_CFLAGS+="$NC_FLAGS $YAML_FLAGS -fPIC"
+FMS_FCFLAGS+="$NF_FLAGS -fPIC -fmax-errors=10"
+FMS_CFLAGS+="$NC_FLAGS $YAML_FLAGS -fPIC -fmax-errors=10"
 FMS_LDFLAGS+="$NC_LDFLAGS $YAML_LDFLAGS"
 
 #cfms fortran, c, library compiler flags
 #cfms does not need the netcdf flags.
 #these will be removed once cfms configure.ac is updated
-cFMS_FCFLAGS+="-fPIC $NF_FLAGS"
-cFMS_CFLAGS+="-fPIC $NC_FLAGS"
+cFMS_FCFLAGS+="-fPIC $NF_FLAGS -fmax-errors=10"
+cFMS_CFLAGS+="-fPIC $NC_FLAGS -fmax-errors=10"
 cFMS_LDFLAGS+=""
 
 curr_dir=$PWD

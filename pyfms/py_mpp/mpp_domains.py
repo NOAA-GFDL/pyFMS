@@ -254,6 +254,11 @@ def define_domains(
     for key in data:
         setattr(domain, key, data[key])
 
+    domain.isg = global_indices[0]
+    domain.ieg = global_indices[1]
+    domain.jsg = global_indices[2]
+    domain.jeg = global_indices[3]
+        
     return domain
 
 

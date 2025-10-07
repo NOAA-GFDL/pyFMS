@@ -10,28 +10,32 @@ class Domain:
     """
 
     def __init__(
-        self,
-        domain_id: int = None,
-        isc: int = None,
-        jsc: int = None,
-        iec: int = None,
-        jec: int = None,
-        isd: int = None,
-        jsd: int = None,
-        ied: int = None,
-        jed: int = None,
-        xsize_c: int = None,
-        ysize_c: int = None,
-        xmax_size_c: int = None,
-        ymax_size_c: int = None,
-        x_is_global_c: int = None,
-        y_is_global_c: int = None,
-        xsize_d: int = None,
-        ysize_d: int = None,
-        xmax_size_d: int = None,
-        ymax_size_d: int = None,
-        x_is_global_d: bool = None,
-        y_is_global_d: bool = None,
+            self,
+            domain_id: int = None,
+            isc: int = None,
+            jsc: int = None,
+            iec: int = None,
+            jec: int = None,
+            isd: int = None,
+            jsd: int = None,
+            ied: int = None,
+            jed: int = None,
+            isg: int = None,
+            ieg: int = None,
+            jsg: int = None,
+            jeg: int = None,
+            xsize_c: int = None,
+            ysize_c: int = None,
+            xmax_size_c: int = None,
+            ymax_size_c: int = None,
+            x_is_global_c: int = None,
+            y_is_global_c: int = None,
+            xsize_d: int = None,
+            ysize_d: int = None,
+            xmax_size_d: int = None,
+            ymax_size_d: int = None,
+            x_is_global_d: bool = None,
+            y_is_global_d: bool = None,
     ):
         self.domain_id = domain_id  # domain_id
         self.isc = isc  # xbegin in compute domain
@@ -42,6 +46,10 @@ class Domain:
         self.jsd = jsd  # ybegin in data_domain
         self.ied = ied  # xend in data_domain
         self.jed = jed  # yend in data_domain
+        self.isg = isg  # xbegin in global domain
+        self.ieg = ieg  # xend in global domain
+        self.jsg = jsg  # ybegin in global domain
+        self.jeg = jeg  # yend in global domain
         self.xsize_c = xsize_c  # xsize in compute domain
         self.ysize_c = ysize_c  # ysize in compute domain
         self.xmax_size_c = xmax_size_c  # xmax_size in compute domain
@@ -54,6 +62,7 @@ class Domain:
         self.ymax_size_d = ymax_size_d  # ymax_size in data domain
         self.x_is_global_d = x_is_global_d  # x_is_global in data domain
         self.y_is_global_d = y_is_global_d  # y_is_global in data domain
+
 
     def update(self, domain_dict: dict):
         for key in domain_dict:
