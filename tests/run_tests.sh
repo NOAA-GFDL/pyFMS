@@ -10,12 +10,12 @@ while getopts ":o" flag; do
 done
 
 function create_input() {
-    pytest -m "create" $1
+    pytest -svm "create" $1
     if [ $? -ne 0 ] ; then exit 1 ; fi
 }
 
 function remove_input() {
-    pytest -m "remove" $1
+    pytest -svm "remove" $1
     if [ $? -ne 0 ] ; then exit 1 ; fi
 }
 
