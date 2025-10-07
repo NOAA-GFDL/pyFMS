@@ -4,10 +4,10 @@ set -ex
 #set -o posix
 
 #yaml includes
-YAML_FLAGS+=""
+YAML_FLAGS+=" -I/opt/libyaml/0.2.5/GNU/14.2.0/include"
 
 #yaml libraries
-YAML_LDFLAGS+=""
+YAML_LDFLAGS+=" -L/opt/libyaml/0.2.5/GNU/14.2.0/lib"
 
 #fortran netcdf includes
 NF_FLAGS+=$(nf-config --fflags)

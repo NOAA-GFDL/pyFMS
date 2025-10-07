@@ -64,7 +64,7 @@ run_test "mpirun -n 2 $oversubscribe python -m pytest -sv -k test_horiz_interp_b
 remove_input $test
 
 #test temporarily turned off on Github Action 
-if [ -n $oversubscribe ] ; then
+if [ ! -n $oversubscribe ] ; then
     run_test "python -m pytest py_data_override/test_generate_files.py"
     run_test "mpirun -n 6 $oversubscribe python -m pytest -svm 'parallel' py_data_override/test_data_override.py"
     remove_input "py_data_override/test_data_override.py"
