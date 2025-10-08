@@ -82,7 +82,10 @@ def set_array(arg: npt.ArrayLike | None, arglist: list) -> npt.ArrayLike | None:
     if arg is None:
         return setNone(arglist)
 
-    arglist.append(arg)
+    if not arg.flags['FORC']:
+        arglist.append(np.ascontiguousarray(arg))
+    else:
+        arglist.append(arg)
     return arg
 
 

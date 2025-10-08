@@ -51,7 +51,7 @@ def gather(domain: dict, send_array: npt.NDArray, pelist: list = None, ishift: i
     nx = domain.ieg-domain.isg+1 if is_root_pe else 1    
     ny = domain.jeg-domain.jsg+1 if is_root_pe else 1
     receive_shape = (nx, ny) if convert_cf_order else (ny, nx)
-    
+
     arglist = []
     set_c_int(domain.isc, arglist)
     set_c_int(domain.iec, arglist)
