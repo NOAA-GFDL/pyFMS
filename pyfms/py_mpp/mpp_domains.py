@@ -258,7 +258,7 @@ def define_domains(
     domain.ieg = global_indices[1]
     domain.jsg = global_indices[2]
     domain.jeg = global_indices[3]
-        
+
     return domain
 
 

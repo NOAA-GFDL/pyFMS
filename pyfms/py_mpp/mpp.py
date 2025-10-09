@@ -4,7 +4,6 @@ import numpy as np
 import numpy.typing as npt
 
 from pyfms.py_fms.fms import FATAL
-
 from pyfms.py_mpp import _mpp_functions
 from pyfms.utils.ctypes_utils import (
     check_str,
@@ -33,8 +32,14 @@ _cFMS_root_pe = None
 _cFMS_set_current_pelist = None
 
 
-def gather(domain: dict, send_array: npt.NDArray, pelist: list = None, ishift: int = None,
-           jshift: int = None, convert_cf_order: bool = True):
+def gather(
+    domain: dict,
+    send_array: npt.NDArray,
+    pelist: list = None,
+    ishift: int = None,
+    jshift: int = None,
+    convert_cf_order: bool = True,
+):
 
     datatype = send_array.dtype
     is_root_pe = pe() == root_pe()
@@ -47,9 +52,9 @@ def gather(domain: dict, send_array: npt.NDArray, pelist: list = None, ishift: i
     except Exception:
         error(FATAL, f"mpp.gather {datatype.name} not supported")
         exit()
-    
-    nx = domain.ieg-domain.isg+1 if is_root_pe else 1    
-    ny = domain.jeg-domain.jsg+1 if is_root_pe else 1
+
+    nx = domain.ieg - domain.isg + 1 if is_root_pe else 1
+    ny = domain.jeg - domain.jsg + 1 if is_root_pe else 1
     receive_shape = (nx, ny) if convert_cf_order else (ny, nx)
 
     arglist = []
@@ -66,13 +71,14 @@ def gather(domain: dict, send_array: npt.NDArray, pelist: list = None, ishift: i
     set_c_int(ishift, arglist)
     set_c_int(jshift, arglist)
     set_c_bool(convert_cf_order, arglist)
-                        
+
     cFMS_gather_pelist_2d(*arglist)
 
     if is_root_pe:
         return receive
-    else: return None
-                            
+    else:
+        return None
+
 
 def declare_pelist(
     pelist: list[int],
@@ -126,7 +132,7 @@ def error(errortype: int, errormsg: str = None):
 
 
 def get_current_pelist(
-    npes: int,
+    npes: int = None,
     get_name: bool = False,
     get_commID: bool = False,
 ) -> Any:
@@ -203,7 +209,7 @@ def _init_functions():
 
     global _cFMS_declare_pelist
     global _cFMS_error
-    global _cFMS_gather_pelist_2d_cdouble    
+    global _cFMS_gather_pelist_2d_cdouble
     global _cFMS_gather_pelist_2d_cfloat
     global _cFMS_gather_pelist_2d_cint
     global _cFMS_gather_pelist_2ds
@@ -226,10 +232,12 @@ def _init_functions():
     _cFMS_root_pe = _lib.cFMS_root_pe
     _cFMS_set_current_pelist = _lib.cFMS_set_current_pelist
 
-    _cFMS_gather_pelist_2ds = {"int32": _cFMS_gather_pelist_2d_cint,
-                               "float32": _cFMS_gather_pelist_2d_cfloat,
-                               "float64": _cFMS_gather_pelist_2d_cdouble
+    _cFMS_gather_pelist_2ds = {
+        "int32": _cFMS_gather_pelist_2d_cint,
+        "float32": _cFMS_gather_pelist_2d_cfloat,
+        "float64": _cFMS_gather_pelist_2d_cdouble,
     }
+
 
 def _init(libpath: str, lib: Any):
 
