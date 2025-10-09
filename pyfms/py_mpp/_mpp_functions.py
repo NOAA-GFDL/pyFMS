@@ -2,7 +2,7 @@ from ctypes import POINTER, c_bool, c_char_p, c_int
 
 import numpy as np
 
-from pyfms.utils.ctypes_utils import NDPOINTERi32
+from pyfms.utils.ctypes_utils import NDPOINTER
 
 
 ndpointer = np.ctypeslib.ndpointer
@@ -32,8 +32,8 @@ def define(lib):
 
     # cFMS_gather_pelist_2ds
     gatherdict = {np.int32: lib.cFMS_gather_pelist_2d_cint,
-                np.float64: lib.cFMS_gather_pelist_2d_cdouble,
-                np.float32: lib.cFMS_gather_pelist_2d_cfloat
+                  np.float64: lib.cFMS_gather_pelist_2d_cdouble,
+                  np.float32: lib.cFMS_gather_pelist_2d_cfloat
     }
     for nptype, cFMS_gather_pelist_2d in gatherdict.items():
         cFMS_gather_pelist_2d.restype = None
@@ -58,7 +58,7 @@ def define(lib):
     lib.cFMS_get_current_pelist.restype = None
     lib.cFMS_get_current_pelist.argtypes = [
         POINTER(c_int),  # npes
-        ndpointer(dtype=np.int32, ndim=(1), flags=C),  # pelist
+        NDPOINTER(dtype=np.int32, ndim=(1), flags=C),  # pelist
         c_char_p,  # name
         POINTER(c_int),  # commID
     ]
@@ -79,6 +79,6 @@ def define(lib):
     lib.cFMS_set_current_pelist.restype = None
     lib.cFMS_set_current_pelist.argtypes = [
         POINTER(c_int),  # npes
-        NDPOINTERi32(ndpointer(dtype=np.int32, ndim=(1), flags=C)),  # pelist
+        NDPOINTER(dtype=np.int32, ndim=(1), flags=C),  # pelist
         POINTER(c_bool),  # no_sync
     ]

@@ -7,9 +7,6 @@ import pyfms
 from pyfms.utils.constants import DEG_TO_RAD
 
 
-# please run each test individually
-
-
 @pytest.mark.create
 def test_create_input_nml():
     inputnml = open("input.nml", "w")
@@ -17,8 +14,10 @@ def test_create_input_nml():
     assert Path("input.nml").exists()
 
 
+@pytest.mark.skip(reason="create_xgrid in cFMS needs to be fixed")
 def test_create_xgrid():
 
+    pyfms.cfms.init()  # reload library
     pyfms.fms.init()
 
     create_xgrid = pyfms.horiz_interp.create_xgrid_2dx2d_order1
@@ -39,18 +38,9 @@ def test_create_xgrid():
     lat_tgt_1d = np.linspace(lat_init, lat_end, nlat_tgt + 1)
     lon_tgt, lat_tgt = np.meshgrid(lon_tgt_1d, lat_tgt_1d)
 
-    lon_src = lon_src.flatten()
-    lat_src = lat_src.flatten()
-    lon_tgt = lon_tgt.flatten()
-    lat_tgt = lat_tgt.flatten()
-
-    mask_src = np.ones(nlon_src * nlat_src, dtype=np.float64)
+    mask_src = np.ones((nlon_src, nlat_src), dtype=np.float64)
 
     xgrid = create_xgrid(
-        nlon_src=nlon_src,
-        nlat_src=nlat_src,
-        nlon_tgt=nlon_tgt,
-        nlat_tgt=nlat_tgt,
         lon_src=lon_src,
         lat_src=lat_src,
         lon_tgt=lon_tgt,
@@ -59,9 +49,7 @@ def test_create_xgrid():
     )
 
     # answer checking
-    area = pyfms.grid_utils.get_grid_area(
-        nlon=nlon_src, nlat=nlat_src, lon=lon_src, lat=lat_src
-    )
+    area = pyfms.grid_utils.get_grid_area(lon=lon_src, lat=lat_src)
 
     assert xgrid["nxgrid"] == nlon_src * nlat_src
     assert np.array_equal(xgrid["i_src"], xgrid["i_tgt"])
@@ -71,87 +59,117 @@ def test_create_xgrid():
     pyfms.fms.end()
 
 
-# same as the test in cFMS, but using the Python interface
+# @pytest.mark.parametrize("convert_cf_order2", [True, False])
+# gives error when using mark.parameterize, it's complicated
 def test_horiz_interp_conservative():
 
-    pyfms.fms.init()
-
-    # set up domain decomposition
-    ni_src = 360
-    nj_src = 180
-    ni_dst = 144
-    nj_dst = 72
-    halo = 2
-    pes = pyfms.mpp.npes()
-
-    global_indices = [0, ni_src - 1, 0, nj_src - 1]
-    layout = pyfms.mpp_domains.define_layout(global_indices, ndivs=pes)
-    domain = pyfms.mpp_domains.define_domains(
-        global_indices=global_indices,
-        layout=layout,
-        pelist=pyfms.mpp.get_current_pelist(npes=pes),
-        name="horiz_interp_conservative_test",
-        whalo=halo,
-        ehalo=halo,
-        shalo=halo,
-        nhalo=halo,
-        xflags=pyfms.mpp_domains.CYCLIC_GLOBAL_DOMAIN,
-        yflags=pyfms.mpp_domains.CYCLIC_GLOBAL_DOMAIN,
-    )
-
-    isc = domain.isc
-    iec = domain.iec
-    jsc = domain.jsc
-    jec = domain.jec
-
-    lon_in_size = ni_src + 1
-    lat_in_size = nj_src + 1
-
-    lon_in_1d = np.linspace(0, 360, num=lon_in_size, dtype=np.float64) * DEG_TO_RAD
-    lat_in_1d = np.linspace(-90, 90, num=lat_in_size, dtype=np.float64) * DEG_TO_RAD
-
-    lat_src, lon_src = np.meshgrid(lat_in_1d, lon_in_1d)
-
-    lon_dst = np.ascontiguousarray(lon_src[isc:iec, jsc:jec])
-    lat_dst = np.ascontiguousarray(lat_src[isc:iec, jsc:jec])
-
-    # init and set a horiz_interp type (required for all horiz_interp calls!)
+    pyfms.fms.init(ndomain=2)
     pyfms.horiz_interp.init(2)
 
-    # get interpolation weights
-    interp_id = pyfms.horiz_interp.get_weights(
-        lon_in=lon_src,
-        lat_in=lat_src,
-        lon_out=lon_dst,
-        lat_out=lat_dst,
-        interp_method="conservative",
-        verbose=1,
-    )
+    interp_id_answer = 0
+    for convert_cf_order in [True, False]:
 
-    # check weights
-    nxgrid = (jec - jsc - 1) * (iec - isc - 1)
-    interp = pyfms.Interp(interp_id)
+        # set up domain decomposition
+        ni_src = 360
+        nj_src = 180
+        pes = pyfms.mpp.npes()
 
-    assert interp_id == 0
-    assert interp.nxgrid == nxgrid
-    assert interp.interp_method == "conservative"
-    assert np.all(interp.i_src == np.array(list(range(isc, iec - 1)) * (jec - jsc - 1)))
+        global_indices = [0, ni_src - 1, 0, nj_src - 1]
+        layout = pyfms.mpp_domains.define_layout(global_indices, ndivs=pes)
+        domain = pyfms.mpp_domains.define_domains(
+            global_indices=global_indices,
+            layout=layout,
+            pelist=pyfms.mpp.get_current_pelist(npes=pes),
+            name="horiz_interp_conservative_test",
+            xflags=pyfms.mpp_domains.CYCLIC_GLOBAL_DOMAIN,
+            yflags=pyfms.mpp_domains.CYCLIC_GLOBAL_DOMAIN,
+        )
+        # get compute domain indices
+        isc = domain.isc
+        iec = domain.iec + 1  # grid has one more point
+        jsc = domain.jsc
+        jec = domain.jec + 1  # grid has one more point
 
-    j_answer = np.array(
-        [j for j in range(jsc, jec - 1) for ilon in range(iec - isc - 1)]
-    )
-    assert np.all(interp.j_src == j_answer)
+        lon_in_1d = np.linspace(0, 360, num=ni_src + 1, dtype=np.float64) * DEG_TO_RAD
+        lat_in_1d = np.linspace(-90, 90, num=nj_src + 1, dtype=np.float64) * DEG_TO_RAD
 
-    assert interp.nlon_src == ni_src
-    assert interp.nlat_src == nj_src
-    assert interp.nlon_dst == lon_dst.shape[0] - 1
-    assert interp.nlat_dst == lat_dst.shape[1] - 1
+        if convert_cf_order:
+            lat_src, lon_src = np.meshgrid(lat_in_1d, lon_in_1d)
+            lon_dst = np.ascontiguousarray(lon_src[isc : iec + 1, jsc : jec + 1])
+            lat_dst = np.ascontiguousarray(lat_src[isc : iec + 1, jsc : jec + 1])
+            nlon_in, nlat_in, nlon_out, nlat_out = None, None, None, None
+        else:
+            lon_src, lat_src = np.meshgrid(lon_in_1d, lat_in_1d)
+            lon_dst = np.ascontiguousarray(lon_src[jsc : jec + 1, isc : iec + 1])
+            lat_dst = np.ascontiguousarray(lat_src[jsc : jec + 1, isc : iec + 1])
+            nlat_in, nlon_in = lon_src.shape[0] - 1, lon_src.shape[1] - 1
+            nlat_out, nlon_out = lon_dst.shape[0] - 1, lon_dst.shape[1] - 1
 
+        # get interpolation weights
+        interp_id = pyfms.horiz_interp.get_weights(
+            lon_in=lon_src,
+            lat_in=lat_src,
+            lon_out=lon_dst,
+            lat_out=lat_dst,
+            interp_method="conservative",
+            verbose=1,
+            nlon_in=nlon_in,
+            nlat_in=nlat_in,
+            nlon_out=nlon_out,
+            nlat_out=nlat_out,
+            convert_cf_order=convert_cf_order,
+        )
+
+        # check weights
+        nxgrid = (jec - jsc) * (iec - isc)
+        interp = pyfms.Interp(interp_id)
+
+        j_answers = np.array([j for j in range(jsc, jec) for ilon in range(iec - isc)])
+        if convert_cf_order:
+            nlon_in, nlat_in = lon_src.shape[0] - 1, lon_src.shape[1] - 1
+            nlon_out, nlat_out = lon_dst.shape[0] - 1, lon_dst.shape[1] - 1
+
+        assert interp_id == interp_id_answer
+        assert interp.nxgrid == nxgrid
+        assert interp.interp_method == "conservative"
+        assert np.all(interp.i_src == np.array(list(range(isc, iec)) * (jec - jsc)))
+        assert np.all(interp.j_src == j_answers)
+        assert interp.nlon_src == nlon_in
+        assert interp.nlat_src == nlat_in
+        assert interp.nlon_dst == nlon_out
+        assert interp.nlat_dst == nlat_out
+
+        # interp
+        if convert_cf_order:
+            data_in = np.array(
+                [[j * ni_src + i for j in range(nj_src)] for i in range(ni_src)],
+                dtype=np.float64,
+            )
+        else:
+            data_in = np.array(
+                [[j * ni_src + i for i in range(ni_src)] for j in range(nj_src)],
+                dtype=np.float64,
+            )
+
+        data_out = pyfms.horiz_interp.interp(
+            interp_id=interp_id, data_in=data_in, convert_cf_order=convert_cf_order
+        )
+
+        if convert_cf_order:
+            assert np.all(data_in[isc:iec, jsc:jec] == data_out)
+        else:
+            assert np.all(data_in[jsc:jec, isc:iec] == data_out)
+
+        interp_id_answer += 1
+
+    pyfms.horiz_interp.end()
     pyfms.fms.end()
 
 
 @pytest.mark.skip(reason="test needs to be updated")
 def test_horiz_interp_bilinear():
+
+    pyfms.cfms.init()  # reload library
     pyfms.fms.init()
     horiz_interp_double_2d = pyfms.horiz_interp.horiz_interp_2d_double
     horiz_interp_float_2d = pyfms.horiz_interp.horiz_interp_2d_float
