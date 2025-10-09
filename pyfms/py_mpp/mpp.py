@@ -45,7 +45,7 @@ def gather(
     is_root_pe = pe() == root_pe()
 
     if pelist is None:
-        pelist = get_current_pelist()
+        pelist = get_current_pelist(npes())
 
     try:
         cFMS_gather_pelist_2d = _cFMS_gather_pelist_2ds[datatype.name]
@@ -132,7 +132,7 @@ def error(errortype: int, errormsg: str = None):
 
 
 def get_current_pelist(
-    npes: int = None,
+    npes: int,
     get_name: bool = False,
     get_commID: bool = False,
 ) -> Any:
