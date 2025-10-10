@@ -258,6 +258,8 @@ def define_domains(
     domain.ieg = global_indices[1]
     domain.jsg = global_indices[2]
     domain.jeg = global_indices[3]
+    domain.xsize_g = global_indices[1] + 1
+    domain.ysize_g = global_indices[3] + 1
 
     return domain
 

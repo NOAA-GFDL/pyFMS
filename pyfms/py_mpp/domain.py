@@ -34,6 +34,8 @@ class Domain:
         ysize_d: int = None,
         xmax_size_d: int = None,
         ymax_size_d: int = None,
+        xsize_g: int = None,
+        ysize_g: int = None,
         x_is_global_d: bool = None,
         y_is_global_d: bool = None,
     ):
@@ -60,6 +62,8 @@ class Domain:
         self.ysize_d = ysize_d  # ysize in data_domain
         self.xmax_size_d = xmax_size_d  # xmax_size in data domain
         self.ymax_size_d = ymax_size_d  # ymax_size in data domain
+        self.xsize_g = xsize_g  # size of the global domain in x direction
+        self.ysize_g = ysize_g  # size of the global domain in the y direction
         self.x_is_global_d = x_is_global_d  # x_is_global in data domain
         self.y_is_global_d = y_is_global_d  # y_is_global in data domain
 

@@ -53,8 +53,8 @@ def gather(
         error(FATAL, f"mpp.gather {datatype.name} not supported")
         exit()
 
-    nx = domain.ieg - domain.isg + 1 if is_root_pe else 1
-    ny = domain.jeg - domain.jsg + 1 if is_root_pe else 1
+    nx = domain.xsize_g if is_root_pe else 1
+    ny = domain.ysize_g if is_root_pe else 1
     receive_shape = (nx, ny) if convert_cf_order else (ny, nx)
 
     arglist = []
