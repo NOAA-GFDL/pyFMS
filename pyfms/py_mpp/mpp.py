@@ -1,10 +1,13 @@
 from typing import Any
 
 import numpy as np
+import numpy.typing as npt
 
+from pyfms.py_fms.fms import FATAL
 from pyfms.py_mpp import _mpp_functions
 from pyfms.utils.ctypes_utils import (
     check_str,
+    set_array,
     set_c_bool,
     set_c_int,
     set_c_str,
@@ -16,26 +19,65 @@ from pyfms.utils.ctypes_utils import (
 _libpath = None
 _lib = None
 
-_cFMS_set_pelist_npes = None
 _cFMS_declare_pelist = None
 _cFMS_error = None
+_cFMS_gather_pelist_2d_cdouble = None
+_cFMS_gather_pelist_2d_cfloat = None
+_cFMS_gather_pelist_2d_cint = None
+_cFMS_gather_pelist_2ds = None
 _cFMS_get_current_pelist = None
 _cFMS_npes = None
 _cFMS_pe = None
+_cFMS_root_pe = None
 _cFMS_set_current_pelist = None
 
 
-def set_pelist_npes(npes: int):
+def gather(
+    domain: dict,
+    send_array: npt.NDArray,
+    pelist: list = None,
+    ishift: int = None,
+    jshift: int = None,
+    convert_cf_order: bool = True,
+):
 
-    """
-    Sets the length of the pelist that is to be sent to
-    or retrieved from cFMS/FMS.  This function is to be
-    used internally.
-    """
+    datatype = send_array.dtype
+    is_root_pe = pe() == root_pe()
+
+    if pelist is None:
+        pelist = get_current_pelist(npes())
+
+    try:
+        cFMS_gather_pelist_2d = _cFMS_gather_pelist_2ds[datatype.name]
+    except Exception:
+        error(FATAL, f"mpp.gather {datatype.name} not supported")
+        exit()
+
+    nx = domain.xsize_g if is_root_pe else 1
+    ny = domain.ysize_g if is_root_pe else 1
+    receive_shape = (nx, ny) if convert_cf_order else (ny, nx)
 
     arglist = []
-    set_c_int(npes, arglist)
-    _cFMS_set_pelist_npes(*arglist)
+    set_c_int(domain.isc, arglist)
+    set_c_int(domain.iec, arglist)
+    set_c_int(domain.jsc, arglist)
+    set_c_int(domain.jec, arglist)
+    set_c_int(len(pelist), arglist)
+    set_list(pelist, np.int32, arglist)
+    set_array(send_array, arglist)
+    set_list(receive_shape, np.int32, arglist)
+    receive = set_array(np.zeros(receive_shape, dtype=datatype), arglist)
+    set_c_bool(is_root_pe, arglist)
+    set_c_int(ishift, arglist)
+    set_c_int(jshift, arglist)
+    set_c_bool(convert_cf_order, arglist)
+
+    cFMS_gather_pelist_2d(*arglist)
+
+    if is_root_pe:
+        return receive
+    else:
+        return None
 
 
 def declare_pelist(
@@ -62,11 +104,11 @@ def declare_pelist(
     """
 
     arglist = []
+    set_c_int(len(pelist), arglist)
     set_list(pelist, np.int32, arglist)
     set_c_str(name, arglist)
     commID = set_c_int(0, arglist)
 
-    set_pelist_npes(npes=len(pelist))
     _cFMS_declare_pelist(*arglist)
 
     return commID
@@ -102,11 +144,11 @@ def get_current_pelist(
     """
 
     arglist = []
+    set_c_int(npes, arglist)
     pelist = set_list([0] * npes, np.int32, arglist)
     name = set_c_str(" ", arglist) if get_name else set_c_str(None, arglist)
     commid = set_c_int(0, arglist) if get_commID else set_c_int(None, arglist)
 
-    set_pelist_npes(npes)
     _cFMS_get_current_pelist(*arglist)
 
     returns = []
@@ -138,6 +180,14 @@ def pe() -> int:
     return _cFMS_pe()
 
 
+def root_pe() -> int:
+
+    """
+    Returns the root pe in the current pelist
+    """
+    return _cFMS_root_pe()
+
+
 def set_current_pelist(pelist: list[int] = None, no_sync: bool = None):
 
     """
@@ -145,32 +195,48 @@ def set_current_pelist(pelist: list[int] = None, no_sync: bool = None):
     """
 
     arglist = []
+    if pelist is None:
+        set_c_int(None, arglist)
+    else:
+        set_c_int(len(pelist), arglist)
     set_list(pelist, np.int32, arglist)
     set_c_bool(no_sync, arglist)
 
-    set_pelist_npes(1 if pelist is None else len(pelist))
     _cFMS_set_current_pelist(*arglist)
 
 
 def _init_functions():
 
-    global _cFMS_set_pelist_npes
     global _cFMS_declare_pelist
     global _cFMS_error
+    global _cFMS_gather_pelist_2d_cdouble
+    global _cFMS_gather_pelist_2d_cfloat
+    global _cFMS_gather_pelist_2d_cint
+    global _cFMS_gather_pelist_2ds
     global _cFMS_get_current_pelist
     global _cFMS_npes
     global _cFMS_pe
+    global _cFMS_root_pe
     global _cFMS_set_current_pelist
 
     _mpp_functions.define(_lib)
 
-    _cFMS_set_pelist_npes = _lib.cFMS_set_pelist_npes
     _cFMS_declare_pelist = _lib.cFMS_declare_pelist
     _cFMS_error = _lib.cFMS_error
+    _cFMS_gather_pelist_2d_cdouble = _lib.cFMS_gather_pelist_2d_cdouble
+    _cFMS_gather_pelist_2d_cfloat = _lib.cFMS_gather_pelist_2d_cfloat
+    _cFMS_gather_pelist_2d_cint = _lib.cFMS_gather_pelist_2d_cint
     _cFMS_get_current_pelist = _lib.cFMS_get_current_pelist
     _cFMS_npes = _lib.cFMS_npes
     _cFMS_pe = _lib.cFMS_pe
+    _cFMS_root_pe = _lib.cFMS_root_pe
     _cFMS_set_current_pelist = _lib.cFMS_set_current_pelist
+
+    _cFMS_gather_pelist_2ds = {
+        "int32": _cFMS_gather_pelist_2d_cint,
+        "float32": _cFMS_gather_pelist_2d_cfloat,
+        "float64": _cFMS_gather_pelist_2d_cdouble,
+    }
 
 
 def _init(libpath: str, lib: Any):

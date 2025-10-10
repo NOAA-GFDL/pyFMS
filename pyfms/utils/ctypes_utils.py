@@ -82,7 +82,10 @@ def set_array(arg: npt.ArrayLike | None, arglist: list) -> npt.ArrayLike | None:
     if arg is None:
         return setNone(arglist)
 
-    arglist.append(arg)
+    if not arg.flags["FORC"]:
+        arglist.append(np.ascontiguousarray(arg))
+    else:
+        arglist.append(arg)
     return arg
 
 
@@ -154,7 +157,7 @@ class NDPOINTERd:
         return self.thispointer.from_param(obj)
 
 
-ctypes_dict = {np.float32: c_float, np.float64: c_double}
+ctypes_dict = {np.int32: c_int, np.float32: c_float, np.float64: c_double}
 
 
 class NDPOINTER:
