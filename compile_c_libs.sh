@@ -4,10 +4,10 @@ set -ex
 #set -o posix
 
 #yaml includes
-YAML_FLAGS+="-I/opt/libyaml/0.2.5/GNU/14.2.0/include"
+YAML_FLAGS+=""
 
 #yaml libraries
-YAML_LDFLAGS+="-L/opt/libyaml/0.2.5/GNU/14.2.0/lib"
+YAML_LDFLAGS+=""
 
 #fortran netcdf includes
 NF_FLAGS+=$(nf-config --fflags)
@@ -23,8 +23,8 @@ FC=mpif90
 CC=mpicc
 
 #fms fortran, c, library compiler flags
-FMS_FCFLAGS+="$NF_FLAGS -fPIC -fmax-errors=10"
-FMS_CFLAGS+="$NC_FLAGS $YAML_FLAGS -fPIC -fmax-errors=10"
+FMS_FCFLAGS+="$NF_FLAGS -fPIC"
+FMS_CFLAGS+="$NC_FLAGS $YAML_FLAGS -fPIC"
 FMS_LDFLAGS+="$NC_LDFLAGS $YAML_LDFLAGS"
 
 #cfms fortran, c, library compiler flags
