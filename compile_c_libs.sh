@@ -30,8 +30,8 @@ FMS_LDFLAGS+="$NC_LDFLAGS $YAML_LDFLAGS"
 #cfms fortran, c, library compiler flags
 #cfms does not need the netcdf flags.
 #these will be removed once cfms configure.ac is updated
-cFMS_FCFLAGS+="-fPIC $NF_FLAGS -fmax-errors=10"
-cFMS_CFLAGS+="-fPIC $NC_FLAGS -fmax-errors=10"
+cFMS_FCFLAGS+="-fPIC $NF_FLAGS"
+cFMS_CFLAGS+="-fPIC $NC_FLAGS"
 cFMS_LDFLAGS+=""
 
 curr_dir=$PWD
