@@ -6,7 +6,13 @@ from setuptools.command.install import install
 
 class CustomInstall(install):
     def run(self):
-        subprocess.run(["conda", "install", "-c", "/home/Frank.Malatino/.conda/envs/throw4/conda-bld"])
+        print("Installing cFMS")
+        try:
+            subprocess.run(["conda", "install", "-c", "/home/Frank.Malatino/.conda/envs/throw4/conda-bld"], check=True, capture_output=True, text=True)
+        except subprocess.CalledProcessError as e:
+            print(f"Error during conda install of cFMS: {e}")
+            print("STDOUT:", e.stdout)
+            print("STDERR:", e.stderr)
         install.run(self)
 
 

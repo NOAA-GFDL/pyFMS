@@ -1,5 +1,4 @@
 import ctypes
-import os
 
 import pyfms
 
@@ -22,19 +21,12 @@ def init(libpath: str = None):
     global _libpath, _lib
 
     if libpath is None:
-        # _libpath = os.path.dirname(__file__) + "/lib/cFMS/lib/libcFMS.so"
-        # _libpath = "/home/Frank.Malatino/pyfms_fork/pyfms/lib/cFMS/lib/libcFMS.so"
-        # _libpath = os.getenv('CONDA_PREFIX') + "/lib/libcFMS.so"
         _libpath = "libcFMS.so"
-        _lib = ctypes.cdll.LoadLibrary(_libpath)
-        # try:
-        #     _lib = ctypes.cdll.LoadLibrary(_libpath)
-        # except OSError:
-        #     print(
-        #         f"{_libpath} does not exist.  Please provide a path to cFMS with\
-        #         pyfms.cfms.init(libpath=path_to_cfms)"
-        #     )
-        #     return
+        try:
+            _lib = ctypes.cdll.LoadLibrary(_libpath)
+        except Exception as e:
+            print(f"{type(e).__name__}: {e}")
+            return
     else:
         _libpath = libpath
         _lib = ctypes.cdll.LoadLibrary(_libpath)
