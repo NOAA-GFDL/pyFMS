@@ -126,20 +126,26 @@ def test_define_domains():
 
 def test_optional_pelist():
 
-    global_indices = [0, 47, 0, 91]
-    
-    pyfms.fms.init(ndomain=2)
-    domain_test = pyfms.mpp_domains.define_domains(global_indices)
+    global_indices = [0, 384, 0, 384]
 
+    pyfms.fms.init(ndomain=4)
+    domain_test1 = pyfms.mpp_domains.define_domains(global_indices)
+
+    # test without pelist
     layout = pyfms.mpp_domains.define_layout(global_indices, pyfms.mpp.npes())
     domain_answer = pyfms.mpp_domains.define_domains(global_indices, layout)
 
-    del domain_answer.__dict__["domain_id"] #domain ids will differ by 1    
+    # test with pelist
+    pelist = list(range(pyfms.mpp.npes()))
+    domain_test2 = pyfms.mpp_domains.define_domains(global_indices, pelist=pelist)
+
+    del domain_answer.__dict__["domain_id"]  # domain ids will differ by 1
     for key in domain_answer.__dict__:
-        assert domain_test.__dict__[key] == domain_answer.__dict__[key]
+        assert domain_test1.__dict__[key] == domain_answer.__dict__[key]
+        assert domain_test2.__dict__[key] == domain_answer.__dict__[key]
 
     pyfms.fms.end()
-            
+
 
 @pytest.mark.remove
 def test_remove_input_nml():

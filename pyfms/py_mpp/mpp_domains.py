@@ -3,8 +3,8 @@ from typing import Any
 import numpy as np
 from numpy.typing import NDArray
 
-from pyfms.py_mpp import _mpp_domains_functions
 import pyfms.py_mpp.mpp as mpp
+from pyfms.py_mpp import _mpp_domains_functions
 from pyfms.py_mpp.domain import Domain
 from pyfms.utils.ctypes_utils import (
     check_str,
@@ -215,8 +215,11 @@ def define_domains(
     """
 
     if layout is None:
-        layout = define_layout(global_indices, mpp.npes())
-    
+        if pelist is None:
+            layout = define_layout(global_indices, mpp.npes())
+        else:
+            layout = define_layout(global_indices, len(pelist))
+
     arglist = []
     set_list(global_indices, np.int32, arglist)
     set_list(layout, np.int32, arglist)
