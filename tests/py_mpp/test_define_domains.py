@@ -124,6 +124,7 @@ def test_define_domains():
     pyfms.fms.end()
 
 
+@pytest.mark.parallel
 def test_optional_pelist():
 
     global_indices = [0, 383, 0, 383]
