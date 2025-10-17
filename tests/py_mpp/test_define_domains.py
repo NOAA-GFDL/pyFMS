@@ -126,7 +126,7 @@ def test_define_domains():
 
 def test_optional_pelist():
 
-    global_indices = [0, 384, 0, 384]
+    global_indices = [0, 383, 0, 383]
 
     pyfms.fms.init(ndomain=4)
     domain_test1 = pyfms.mpp_domains.define_domains(global_indices)
