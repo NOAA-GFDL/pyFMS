@@ -20,6 +20,10 @@ def init(libpath: str = None):
 
     global _libpath, _lib
 
+    if _lib is not None:
+        ctypes.CDLL(None).dlclose(_lib._handle)
+    # todo reset all _function parameters to None
+
     if libpath is None:
         _libpath = "libcFMS.so"
         try:

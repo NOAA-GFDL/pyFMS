@@ -82,7 +82,10 @@ def set_array(arg: npt.ArrayLike | None, arglist: list) -> npt.ArrayLike | None:
     if arg is None:
         return setNone(arglist)
 
-    arglist.append(arg)
+    if not arg.flags["FORC"]:
+        arglist.append(np.ascontiguousarray(arg))
+    else:
+        arglist.append(arg)
     return arg
 
 
@@ -152,3 +155,25 @@ class NDPOINTERd:
         if obj is None:
             return POINTER(self.ctypes).from_param(obj)
         return self.thispointer.from_param(obj)
+
+
+ctypes_dict = {np.int32: c_int, np.float32: c_float, np.float64: c_double}
+
+
+class NDPOINTER:
+
+    """
+    wrapper to np.ctypeslib.ndpointer for doubles
+    to accept None as function argument
+    """
+
+    def __init__(self, dtype, ndim=None, shape=None, flags=None):
+        self.ndpointer = np.ctypeslib.ndpointer(
+            dtype=dtype, ndim=ndim, shape=shape, flags=flags
+        )
+        self.ctypes = ctypes_dict[dtype]
+
+    def from_param(self, obj):
+        if obj is None:
+            return POINTER(self.ctypes).from_param(obj)
+        return self.ndpointer.from_param(obj)

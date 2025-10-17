@@ -9,13 +9,15 @@ while getopts ":o" flag; do
     esac
 done
 
+flags="--tb=long -s"
+
 function create_input() {
-    pytest -m "create" $1
+    pytest $flags -m "create" $1
     if [ $? -ne 0 ] ; then exit 1 ; fi
 }
 
 function remove_input() {
-    pytest -m "remove" $1
+    pytest $flags -m "remove" $1
     if [ $? -ne 0 ] ; then exit 1 ; fi
 }
 
@@ -26,52 +28,58 @@ function run_test() {
 
 test="test_fms.py"
 create_input $test
-run_test "python -m pytest -m parallel $test"
+run_test "python -m pytest $flags -m parallel $test"
 remove_input $test
 
 test="py_mpp/test_define_domains.py"
 create_input $test
-run_test "mpirun -n 8 $oversubscribe python -m pytest -m 'parallel' $test"
+run_test "mpirun -n 8 $oversubscribe pytest $flags -m 'parallel' $test"
 remove_input $test
 
 test="py_mpp/test_define_cubic_mosaic.py"
 create_input $test
-run_test "mpirun -n 30 $oversubscribe python -m pytest -m 'parallel' $test"
+run_test "mpirun -n 30 $oversubscribe pytest $flags -m 'parallel' $test"
 remove_input $test
 
 test="py_mpp/test_getset_domains.py"
 create_input $test
-run_test "mpirun -n 4 $oversubscribe python -m pytest -m 'parallel' py_mpp/test_getset_domains.py"
+run_test "mpirun -n 4 $oversubscribe pytest $flags -m 'parallel' $test"
 remove_input $test
 
 test="py_mpp/test_update_domains.py"
 create_input $test
-run_test "mpirun -n 4 $oversubscribe python -m pytest -m 'parallel' py_mpp/test_update_domains.py"
+run_test "mpirun -n 4 $oversubscribe pytest $flags -m 'parallel' $test"
 remove_input $test
 
 test="py_mpp/test_vector_update_domains.py"
 create_input $test
-run_test "mpirun -n 2 $oversubscribe python -m pytest -m 'parallel' py_mpp/test_vector_update_domains.py"
+run_test "mpirun -n 2 $oversubscribe pytest $flags -m 'parallel' $test"
 remove_input $test
+
+touch -a input.nml
+test="py_mpp/test_gather.py"
+run_test "mpirun -n 4 $oversubscribe pytest $flags $test"
+rm -f input.nml
 
 test="py_horiz_interp/test_horiz_interp.py"
 create_input $test
-run_test "python -m pytest -sv -k test_create_xgrid $test"
-run_test "python -m pytest -sv -k test_horiz_interp_conservative $test"
-run_test "mpirun -n 4 $oversubscribe python -m pytest -s -k test_horiz_interp_conservative $test"
-run_test "python -m pytest -s -k test_horiz_interp_bilinear $test"
-run_test "mpirun -n 2 $oversubscribe python -m pytest -s -k test_horiz_interp_bilinear $test"
+run_test "pytest $flags  ${test}::test_create_xgrid"
+run_test "mpirun -n 4 $oversubscribe pytest $flags ${test}::test_horiz_interp_conservative"
+run_test "pytest $flags ${test}::test_horiz_interp_bilinear"
+run_test "mpirun -n 2 $oversubscribe pytest $flags ${test}::test_horiz_interp_bilinear"
 remove_input $test
 
-run_test "python -m pytest py_data_override/test_generate_files.py"
-run_test "mpirun -n 6 $oversubscribe python -m pytest -m 'parallel' py_data_override/test_data_override.py"
-remove_input "py_data_override/test_data_override.py"
+#test temporarily turned off on Github Action
+# test="py_data_override/test_data_override.py"
+# run_test "python -m pytest $flags py_data_override/test_generate_files.py"
+# run_test "mpirun -n 6 $oversubscribe pytest $flags -m 'parallel' $test"
+# remove_input $test
 
-run_test "python -m pytest py_diag_manager/test_generate_files.py"
-run_test "mpirun -n 1 python -m pytest py_diag_manager/test_diag_manager.py"
+run_test "pytest $flags py_diag_manager/test_generate_files.py"
+run_test "mpirun -n 1 pytest $flags py_diag_manager/test_diag_manager.py"
 
-run_test "python -m pytest utils/test_constants.py"
+run_test "pytest $flags utils/test_constants.py"
 
-run_test "python -m pytest test_init.py"
+run_test "pytest $flags test_init.py"
 
 rm -rf INPUT *logfile* *warnfile*

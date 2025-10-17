@@ -254,6 +254,13 @@ def define_domains(
     for key in data:
         setattr(domain, key, data[key])
 
+    domain.isg = global_indices[0]
+    domain.ieg = global_indices[1]
+    domain.jsg = global_indices[2]
+    domain.jeg = global_indices[3]
+    domain.xsize_g = global_indices[1] + 1
+    domain.ysize_g = global_indices[3] + 1
+
     return domain
 
 
@@ -559,6 +566,7 @@ def update_domains(
     nhalo: int = None,
     name: str = None,
     tile_count: int = None,
+    convert_cf_order: bool = True,
 ):
 
     """
@@ -590,6 +598,7 @@ def update_domains(
     set_c_int(nhalo, arglist)
     set_c_str(name, arglist)
     set_c_int(tile_count, arglist)
+    set_c_bool(convert_cf_order, arglist)
 
     cFMS_update_this(*arglist)
 
@@ -607,6 +616,7 @@ def vector_update_domains(
     nhalo: int = None,
     name: str = None,
     tile_count: int = None,
+    convert_cf_order: bool = True,
 ):
     try:
         cFMS_v_update_this = _cFMS_v_update_domains[fieldx.ndim][fieldx.dtype.name]
@@ -634,6 +644,7 @@ def vector_update_domains(
     set_c_int(nhalo, arglist)
     set_c_str(name, arglist)
     set_c_int(tile_count, arglist)
+    set_c_bool(convert_cf_order, arglist)
 
     cFMS_v_update_this(*arglist)
 
