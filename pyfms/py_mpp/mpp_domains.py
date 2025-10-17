@@ -4,6 +4,7 @@ import numpy as np
 from numpy.typing import NDArray
 
 from pyfms.py_mpp import _mpp_domains_functions
+import pyfms.py_mpp.mpp as mpp
 from pyfms.py_mpp.domain import Domain
 from pyfms.utils.ctypes_utils import (
     check_str,
@@ -117,7 +118,7 @@ def get_compute_domain(
     _cFMS_get_compute_domain(*arglist)
 
     return dict(
-        domain_id_c=domain_id,
+        domain_id=domain_id,
         isc=xbegin.value,
         jsc=ybegin.value,
         iec=xend.value,
@@ -182,7 +183,7 @@ def get_data_domain(
 
 def define_domains(
     global_indices: list[int],
-    layout: list[int],
+    layout: list[int] = None,
     pelist: list[int] = None,
     xflags: int = None,
     yflags: int = None,
@@ -213,6 +214,9 @@ def define_domains(
     corresponds to the saved FmsMppDomain2D derived type in cFMS
     """
 
+    if layout is None:
+        layout = define_layout(global_indices, mpp.npes())
+    
     arglist = []
     set_list(global_indices, np.int32, arglist)
     set_list(layout, np.int32, arglist)
