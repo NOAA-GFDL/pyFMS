@@ -12,6 +12,7 @@ from pyfms.utils.ctypes_utils import (
     set_c_int,
     set_c_str,
 )
+from pyfms.py_mpp.domain import Domain
 
 
 # enumerations used by horiz_interp_types.F90 (FMS)
@@ -29,6 +30,7 @@ _cFMS_horiz_interp_2d_new_cdouble = None
 _cFMS_horiz_interp_2d_new_cfloat = None
 _cFMS_horiz_interp_2d_base_cdouble = None
 _cFMS_horiz_interp_2d_base_cfloat = None
+_cFMS_horiz_interp_read_weights_conserve = None
 _cFMS_get_i_src = None
 _cFMS_get_j_src = None
 _cFMS_get_i_dst = None
@@ -358,6 +360,29 @@ def interp(
     return data_out
 
 
+def read_weights_conserve(weight_filename: str,
+                          weight_file_src: str,
+                          nlon_src: int,
+                          nlat_src: int,
+                          domain: Domain,
+                          src_tile: int = None):
+
+    arglist = []
+    set_c_str(weight_filename, arglist)
+    set_c_str(weight_file_src, arglist)
+    set_c_int(nlon_src, arglist)
+    set_c_int(nlat_src, arglist)
+    set_c_int(domain.xsize_c, arglist)
+    set_c_int(domain.ysize_c, arglist)
+    set_c_int(domain.isc, arglist)
+    set_c_int(domain.iec, arglist)
+    set_c_int(domain.jsc, arglist)
+    set_c_int(domain.jec, arglist)
+    set_c_int(src_tile, arglist)
+
+    return _cFMS_horiz_interp_read_weights_conserve(*arglist)
+
+
 def _init_functions():
 
     global _cFMS_create_xgrid_2dx2d_order1
@@ -370,6 +395,7 @@ def _init_functions():
     global _cFMS_horiz_interp_base_dict
     global _cFMS_horiz_interp_base_2d_cdouble
     global _cFMS_horiz_interp_base_2d_cfloat
+    global _cFMS_horiz_interp_read_weights_conserve
     global _cFMS_get_wti_cfloat
     global _cFMS_get_wti_cdouble
     global _cFMS_get_wtj_cfloat
@@ -397,6 +423,8 @@ def _init_functions():
     _cFMS_horiz_interp_base_2d_cdouble = _lib.cFMS_horiz_interp_base_2d_cdouble
     _cFMS_horiz_interp_base_2d_cfloat = _lib.cFMS_horiz_interp_base_2d_cfloat
 
+    _cFMS_horiz_interp_read_weights_conserve = _lib.cFMS_horiz_interp_read_weights_conserve
+    
     _cFMS_get_wti_cfloat = _lib.cFMS_get_wti_cfloat
     _cFMS_get_wti_cdouble = _lib.cFMS_get_wti_cdouble
     _cFMS_get_wtj_cfloat = _lib.cFMS_get_wtj_cfloat

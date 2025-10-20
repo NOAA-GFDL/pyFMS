@@ -23,14 +23,16 @@ def get_grid_area(
     on lon and lat
     """
 
-    nlon, nlat = lon.shape
+    nlat, nlon = lon.shape
+    nlat -= 1
+    nlon -= 1
 
     arglist = []
     set_c_int(nlon, arglist)
     set_c_int(nlat, arglist)
     set_array(lon, arglist)
     set_array(lat, arglist)
-    area = set_array(np.zeros((nlon, nlat), dtype=np.float64), arglist)
+    area = set_array(np.zeros((nlat, nlon), dtype=np.float64), arglist)
 
     _cFMS_get_grid_area(*arglist)
 

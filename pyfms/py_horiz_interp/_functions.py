@@ -97,6 +97,21 @@ def define(lib):
             POINTER(c_bool),  # convert_cf_order
         ]
 
+    lib.cFMS_horiz_interp_read_weights_conserve.restype = c_int
+    lib.cFMS_horiz_interp_read_weights_conserve.argtypes = [        
+        POINTER(c_char),  # weight_filename
+        POINTER(c_char),  # weight_file_src
+        POINTER(c_int),  # nlon_src
+        POINTER(c_int),  # nlat_src
+        POINTER(c_int),  # nlon_dst
+        POINTER(c_int),  # nlat_dst
+        POINTER(c_int),  # isw
+        POINTER(c_int),  # iew
+        POINTER(c_int),  # jsw
+        POINTER(c_int),  # jew
+        POINTER(c_int)  # src_tile
+    ]
+        
     # getter routines for individual fields
     lib.cFMS_get_wti_cfloat.restype = None
     lib.cFMS_get_wti_cfloat.argtypes = [
