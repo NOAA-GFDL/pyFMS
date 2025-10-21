@@ -74,6 +74,7 @@ def define(lib):
             POINTER(c_bool),  # src_modulo
             POINTER(c_bool),  # is_latlon_in
             POINTER(c_bool),  # is_latlon_out
+            POINTER(c_bool), # save_weights_as_fregrid
             POINTER(c_bool),  # convert_cf_order
         ]
 
@@ -161,6 +162,13 @@ def define(lib):
         ndpointer(np.float64, ndim=1, flags=C),
     ]
 
+    # cFMS_get_area_frac_dst
+    lib.cFMS_get_xgrid_area.restype = None
+    lib.cFMS_get_xgrid_area.argtypes = [
+        POINTER(c_int),
+        ndpointer(np.float64, ndim=1, flags=C),
+    ]
+    
     # cFMS_get_nlon_src
     lib.cFMS_get_nlon_src.restype = None
     lib.cFMS_get_nlon_src.argtypes = [POINTER(c_int), POINTER(c_int)]

@@ -40,6 +40,7 @@ _cFMS_get_nlat_src = None
 _cFMS_get_nlon_dst = None
 _cFMS_get_nlat_dst = None
 _cFMS_get_interp_method = None
+_cFMS_get_xgrid_area = None
 _cFMS_get_area_frac_dst_double = None
 _cFMS_get_nxgrid = None
 _cFMS_horiz_interp_new_dict = {}
@@ -140,6 +141,7 @@ def get_weights(
     src_modulo: bool = False,
     is_latlon_in: bool = False,
     is_latlon_out: bool = False,
+    save_weights_as_fregrid: bool = False,
     convert_cf_order: bool = True,
 ) -> int:
     """
@@ -180,6 +182,7 @@ def get_weights(
     set_c_bool(src_modulo, arglist)
     set_c_bool(is_latlon_in, arglist)
     set_c_bool(is_latlon_out, arglist)
+    set_c_bool(save_weights_as_fregrid, arglist)
     set_c_bool(convert_cf_order, arglist)
 
     return _cFMS_horiz_interp_new(*arglist)
@@ -296,6 +299,17 @@ def get_area_frac_dst(interp_id: int):
     return area_frac_dst
 
 
+def get_xgrid_area(interp_id: int):
+
+    nxgrid = get_nxgrid(interp_id)
+    arglist = []
+    set_c_int(interp_id, arglist)
+    xgrid_area = set_array(np.zeros(nxgrid, dtype=np.float64), arglist)
+
+    _cFMS_get_xgrid_area(*arglist)
+    return xgrid_area
+
+
 def get_interp_method(interp_id: int):
 
     interp_method_dict = {
@@ -409,6 +423,7 @@ def _init_functions():
     global _cFMS_get_nlon_dst
     global _cFMS_get_nlat_dst
     global _cFMS_get_interp_method
+    global _cFMS_get_xgrid_area
     global _cFMS_get_area_frac_dst_double
     global _cFMS_get_nxgrid
 
@@ -440,6 +455,7 @@ def _init_functions():
     _cFMS_get_nlat_dst = _lib.cFMS_get_nlat_dst
     _cFMS_get_nxgrid = _lib.cFMS_get_nxgrid
     _cFMS_get_interp_method = _lib.cFMS_get_interp_method
+    _cFMS_get_xgrid_area = _lib.cFMS_get_xgrid_area
     _cFMS_get_area_frac_dst_double = _lib.cFMS_get_area_frac_dst_cdouble
 
     _cFMS_horiz_interp_new_dict = {

@@ -1,8 +1,8 @@
 from pyfms.py_horiz_interp import horiz_interp
 
 
-class Interp:
-    def __init__(self, interp_id: int):
+class ConserveInterp:
+    def __init__(self, interp_id: int, weights_as_fregrid: bool = False):
         # set only for conservative
         self.interp_id = interp_id
         self.nxgrid = horiz_interp.get_nxgrid(interp_id)
@@ -16,3 +16,7 @@ class Interp:
         self.nlat_dst = horiz_interp.get_nlat_dst(interp_id)
         self.interp_method = horiz_interp.get_interp_method(interp_id)
         self.get_area_frac_dst = horiz_interp.get_area_frac_dst(interp_id)
+
+        self.xgrid_area = None
+        if weights_as_fregrid:
+            self.xgrid_area = horiz_interp.get_xgrid_area(interp_id)

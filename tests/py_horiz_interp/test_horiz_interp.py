@@ -75,15 +75,7 @@ def test_horiz_interp_conservative():
         pes = pyfms.mpp.npes()
 
         global_indices = [0, ni_src - 1, 0, nj_src - 1]
-        layout = pyfms.mpp_domains.define_layout(global_indices, ndivs=pes)
-        domain = pyfms.mpp_domains.define_domains(
-            global_indices=global_indices,
-            layout=layout,
-            pelist=pyfms.mpp.get_current_pelist(npes=pes),
-            name="horiz_interp_conservative_test",
-            xflags=pyfms.mpp_domains.CYCLIC_GLOBAL_DOMAIN,
-            yflags=pyfms.mpp_domains.CYCLIC_GLOBAL_DOMAIN,
-        )
+        domain = pyfms.mpp_domains.define_domains(global_indices=global_indices)
         # get compute domain indices
         isc = domain.isc
         iec = domain.iec + 1  # grid has one more point
@@ -117,12 +109,14 @@ def test_horiz_interp_conservative():
             nlat_in=nlat_in,
             nlon_out=nlon_out,
             nlat_out=nlat_out,
+            save_weights_as_fregrid=True,
             convert_cf_order=convert_cf_order,
         )
 
         # check weights
         nxgrid = (jec - jsc) * (iec - isc)
-        interp = pyfms.Interp(interp_id)
+        interp = pyfms.ConserveInterp(interp_id, weights_as_fregrid=True)
+        assert interp.xgrid_area is not None
 
         j_answers = np.array([j for j in range(jsc, jec) for ilon in range(iec - isc)])
         if convert_cf_order:
