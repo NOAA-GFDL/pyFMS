@@ -378,20 +378,34 @@ def read_weights_conserve(weight_filename: str,
                           weight_file_src: str,
                           nlon_src: int,
                           nlat_src: int,
-                          domain: Domain,
+                          domain: Domain = None,
+                          nlon_tgt: int = None,
+                          nlat_tgt: int = None,
                           src_tile: int = None):
+
+    if domain is None:
+        if nlon_tgt is None: cFMS_error(FATAL, "must provide nlon_tgt if Domain is not specified")
+        if nlat_tgt is None: cFMS_error(FATAL, "must provide nlon_tgt if Domain is not specified")
+        isc, iec, jsc, jec = -1, nlon_tgt-1, -1, nlat_tgt-1
+    else:
+        nlon_tgt = domain.xsize_c
+        nlat_tgt = domain.ysize_c
+        isc = domain.isc
+        iec = domain.iec
+        jsc = domain.jsc
+        jec = domain.jec
 
     arglist = []
     set_c_str(weight_filename, arglist)
     set_c_str(weight_file_src, arglist)
     set_c_int(nlon_src, arglist)
     set_c_int(nlat_src, arglist)
-    set_c_int(domain.xsize_c, arglist)
-    set_c_int(domain.ysize_c, arglist)
-    set_c_int(domain.isc, arglist)
-    set_c_int(domain.iec, arglist)
-    set_c_int(domain.jsc, arglist)
-    set_c_int(domain.jec, arglist)
+    set_c_int(nlon_tgt, arglist)
+    set_c_int(nlat_tgt, arglist)
+    set_c_int(isc, arglist)
+    set_c_int(iec, arglist)
+    set_c_int(jsc, arglist)
+    set_c_int(jec, arglist)
     set_c_int(src_tile, arglist)
 
     return _cFMS_horiz_interp_read_weights_conserve(*arglist)
@@ -439,7 +453,7 @@ def _init_functions():
     _cFMS_horiz_interp_base_2d_cfloat = _lib.cFMS_horiz_interp_base_2d_cfloat
 
     _cFMS_horiz_interp_read_weights_conserve = _lib.cFMS_horiz_interp_read_weights_conserve
-    
+
     _cFMS_get_wti_cfloat = _lib.cFMS_get_wti_cfloat
     _cFMS_get_wti_cdouble = _lib.cFMS_get_wti_cdouble
     _cFMS_get_wtj_cfloat = _lib.cFMS_get_wtj_cfloat
