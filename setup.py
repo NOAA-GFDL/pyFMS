@@ -8,7 +8,7 @@ class CustomInstall(install):
     def run(self):
         print("Installing cFMS")
         try:
-            subprocess.run(["conda", "install", "-c", "/home/Frank.Malatino/.conda/envs/throw4/conda-bld"], check=True, capture_output=True, text=True)
+            subprocess.run(["conda", "install", "-y", "-c", "file:///home/Frank.Malatino/cfms_conda_channel", "cfms"], check=True, capture_output=True, text=True)
         except subprocess.CalledProcessError as e:
             print(f"Error during conda install of cFMS: {e}")
             print("STDOUT:", e.stdout)
