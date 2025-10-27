@@ -12,6 +12,7 @@ from pyfms.utils.ctypes_utils import (
     set_c_int,
     set_c_str,
 )
+from pyfms.py_mpp.domain import Domain
 
 
 # enumerations used by horiz_interp_types.F90 (FMS)
@@ -29,6 +30,7 @@ _cFMS_horiz_interp_2d_new_cdouble = None
 _cFMS_horiz_interp_2d_new_cfloat = None
 _cFMS_horiz_interp_2d_base_cdouble = None
 _cFMS_horiz_interp_2d_base_cfloat = None
+_cFMS_horiz_interp_read_weights_conserve = None
 _cFMS_get_i_src = None
 _cFMS_get_j_src = None
 _cFMS_get_i_dst = None
@@ -38,6 +40,7 @@ _cFMS_get_nlat_src = None
 _cFMS_get_nlon_dst = None
 _cFMS_get_nlat_dst = None
 _cFMS_get_interp_method = None
+_cFMS_get_xgrid_area = None
 _cFMS_get_area_frac_dst_double = None
 _cFMS_get_nxgrid = None
 _cFMS_horiz_interp_new_dict = {}
@@ -138,6 +141,7 @@ def get_weights(
     src_modulo: bool = False,
     is_latlon_in: bool = False,
     is_latlon_out: bool = False,
+    save_weights_as_fregrid: bool = False,
     convert_cf_order: bool = True,
 ) -> int:
     """
@@ -178,6 +182,7 @@ def get_weights(
     set_c_bool(src_modulo, arglist)
     set_c_bool(is_latlon_in, arglist)
     set_c_bool(is_latlon_out, arglist)
+    set_c_bool(save_weights_as_fregrid, arglist)
     set_c_bool(convert_cf_order, arglist)
 
     return _cFMS_horiz_interp_new(*arglist)
@@ -294,6 +299,17 @@ def get_area_frac_dst(interp_id: int):
     return area_frac_dst
 
 
+def get_xgrid_area(interp_id: int):
+
+    nxgrid = get_nxgrid(interp_id)
+    arglist = []
+    set_c_int(interp_id, arglist)
+    xgrid_area = set_array(np.zeros(nxgrid, dtype=np.float64), arglist)
+
+    _cFMS_get_xgrid_area(*arglist)
+    return xgrid_area
+
+
 def get_interp_method(interp_id: int):
 
     interp_method_dict = {
@@ -358,6 +374,43 @@ def interp(
     return data_out
 
 
+def read_weights_conserve(weight_filename: str,
+                          weight_file_src: str,
+                          nlon_src: int,
+                          nlat_src: int,
+                          domain: Domain = None,
+                          nlon_tgt: int = None,
+                          nlat_tgt: int = None,
+                          src_tile: int = None):
+
+    if domain is None:
+        if nlon_tgt is None: cFMS_error(FATAL, "must provide nlon_tgt if Domain is not specified")
+        if nlat_tgt is None: cFMS_error(FATAL, "must provide nlon_tgt if Domain is not specified")
+        isc, iec, jsc, jec = 0, nlon_tgt-1, 0, nlat_tgt-1
+    else:
+        nlon_tgt = domain.xsize_c
+        nlat_tgt = domain.ysize_c
+        isc = domain.isc
+        iec = domain.iec
+        jsc = domain.jsc
+        jec = domain.jec
+
+    arglist = []
+    set_c_str(weight_filename, arglist)
+    set_c_str(weight_file_src, arglist)
+    set_c_int(nlon_src, arglist)
+    set_c_int(nlat_src, arglist)
+    set_c_int(nlon_tgt, arglist)
+    set_c_int(nlat_tgt, arglist)
+    set_c_int(isc, arglist)
+    set_c_int(iec, arglist)
+    set_c_int(jsc, arglist)
+    set_c_int(jec, arglist)
+    set_c_int(src_tile, arglist)
+
+    return _cFMS_horiz_interp_read_weights_conserve(*arglist)
+
+
 def _init_functions():
 
     global _cFMS_create_xgrid_2dx2d_order1
@@ -370,6 +423,7 @@ def _init_functions():
     global _cFMS_horiz_interp_base_dict
     global _cFMS_horiz_interp_base_2d_cdouble
     global _cFMS_horiz_interp_base_2d_cfloat
+    global _cFMS_horiz_interp_read_weights_conserve
     global _cFMS_get_wti_cfloat
     global _cFMS_get_wti_cdouble
     global _cFMS_get_wtj_cfloat
@@ -383,6 +437,7 @@ def _init_functions():
     global _cFMS_get_nlon_dst
     global _cFMS_get_nlat_dst
     global _cFMS_get_interp_method
+    global _cFMS_get_xgrid_area
     global _cFMS_get_area_frac_dst_double
     global _cFMS_get_nxgrid
 
@@ -396,6 +451,8 @@ def _init_functions():
 
     _cFMS_horiz_interp_base_2d_cdouble = _lib.cFMS_horiz_interp_base_2d_cdouble
     _cFMS_horiz_interp_base_2d_cfloat = _lib.cFMS_horiz_interp_base_2d_cfloat
+
+    _cFMS_horiz_interp_read_weights_conserve = _lib.cFMS_horiz_interp_read_weights_conserve
 
     _cFMS_get_wti_cfloat = _lib.cFMS_get_wti_cfloat
     _cFMS_get_wti_cdouble = _lib.cFMS_get_wti_cdouble
@@ -412,6 +469,7 @@ def _init_functions():
     _cFMS_get_nlat_dst = _lib.cFMS_get_nlat_dst
     _cFMS_get_nxgrid = _lib.cFMS_get_nxgrid
     _cFMS_get_interp_method = _lib.cFMS_get_interp_method
+    _cFMS_get_xgrid_area = _lib.cFMS_get_xgrid_area
     _cFMS_get_area_frac_dst_double = _lib.cFMS_get_area_frac_dst_cdouble
 
     _cFMS_horiz_interp_new_dict = {
