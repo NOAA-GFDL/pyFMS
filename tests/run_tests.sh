@@ -33,7 +33,8 @@ remove_input $test
 
 test="py_mpp/test_define_domains.py"
 create_input $test
-run_test "mpirun -n 8 $oversubscribe pytest $flags -m 'parallel' $test"
+run_test "mpirun -n 8 $oversubscribe pytest $flags -m 'parallel' $test::test_define_domains"
+run_test "mpirun -n 8 $oversubscribe pytest $flags -m 'parallel' $test::test_optional_pelist"
 remove_input $test
 
 test="py_mpp/test_define_cubic_mosaic.py"
