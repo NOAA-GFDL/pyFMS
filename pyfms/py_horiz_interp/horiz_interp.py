@@ -386,7 +386,7 @@ def read_weights_conserve(weight_filename: str,
     if domain is None:
         if nlon_tgt is None: cFMS_error(FATAL, "must provide nlon_tgt if Domain is not specified")
         if nlat_tgt is None: cFMS_error(FATAL, "must provide nlon_tgt if Domain is not specified")
-        isc, iec, jsc, jec = -1, nlon_tgt-1, -1, nlat_tgt-1
+        isc, iec, jsc, jec = 0, nlon_tgt-1, 0, nlat_tgt-1
     else:
         nlon_tgt = domain.xsize_c
         nlat_tgt = domain.ysize_c
