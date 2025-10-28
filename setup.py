@@ -1,10 +1,11 @@
 import subprocess
 
 from setuptools import find_namespace_packages, setup
-from setuptools.command.install import install
+from setuptools.command.editable_wheel import editable_wheel as _editable_wheel
+from setuptools.command.install import install as _install
 
 
-class CustomInstall(install):
+class editable_wheel(_editable_wheel):
     def run(self):
         print("Installing cFMS")
         try:
@@ -13,7 +14,18 @@ class CustomInstall(install):
             print(f"Error during conda install of cFMS: {e}")
             print("STDOUT:", e.stdout)
             print("STDERR:", e.stderr)
-        install.run(self)
+        _editable_wheel.run(self)
+
+class install(_install):
+    def run(self):
+        print("Installing cFMS")
+        try:
+            subprocess.run(["conda", "install", "-y", "-c", "file:///home/Frank.Malatino/cfms_conda_channel", "cfms"], check=True, capture_output=True, text=True)
+        except subprocess.CalledProcessError as e:
+            print(f"Error during conda install of cFMS: {e}")
+            print("STDOUT:", e.stdout)
+            print("STDERR:", e.stderr)
+        _install.run(self)
 
 
 test_requirements = ["pytest", "pytest-subtests", "coverage"]
@@ -49,7 +61,7 @@ setup(
     name="pyfms",
     license="",
     packages=find_namespace_packages(include=["pyfms", "pyfms.*"]),
-    cmdclass={"install": CustomInstall},
+    cmdclass={"editable_wheel": editable_wheel, "install": install},
     include_package_data=True,
     url="https://github.com/fmalatino/pyFMS.git",
     version="2024.02.0",
