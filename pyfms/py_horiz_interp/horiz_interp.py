@@ -157,13 +157,13 @@ def get_weights(
         )
 
     if nlon_in is None:
-        nlon_in = lon_in.shape[0] - 1
+        nlon_in = lon_in.shape[1] - 1
     if nlat_in is None:
-        nlat_in = lon_in.shape[1] - 1
+        nlat_in = lon_in.shape[0] - 1
     if nlon_out is None:
-        nlon_out = lon_out.shape[0] - 1
+        nlon_out = lon_out.shape[1] - 1
     if nlat_out is None:
-        nlat_out = lon_out.shape[1] - 1
+        nlat_out = lon_out.shape[0] - 1
 
     arglist = []
     set_c_int(nlon_in, arglist)
