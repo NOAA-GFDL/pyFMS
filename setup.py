@@ -44,7 +44,7 @@ setup(
     name="pyfms",
     license="",
     packages=find_namespace_packages(include=["pyfms", "pyfms.*"]),
-    cmdclass={"build": CustomBuild},
+#    cmdclass={"build": CustomBuild},
     include_package_data=True,
     url="https://github.com/fmalatino/pyFMS.git",
     version="2024.02.0",

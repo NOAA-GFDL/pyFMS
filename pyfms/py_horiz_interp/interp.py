@@ -5,7 +5,12 @@ class ConserveInterp:
     def __init__(self,
                  interp_id: int = None,
                  weights_as_fregrid: bool = False):
-        # set only for conservative
+
+        """
+        Python counterpart to FmsHorizInterp_type
+        for conservative interpolation
+        """
+
         self.interp_id = interp_id
         self.xgrid_area = None
         if interp_id is not None:
@@ -34,3 +39,15 @@ class ConserveInterp:
             self.nlat_dst = None
             self.interp_method = None
             self.get_area_frac_dst = None
+
+    def __repr__(self):
+        description = "\n\nConserveInterp object\n\n"
+        description += "src_nx = {:>5} src_ny={:>5}\n".format(self.nlon_src, self.nlat_src)
+        description += "tgt_nx = {:>5} tgt_ny={:>5}\n".format(self.nlon_dst, self.nlat_dst)
+        description += f"nxgrid = {self.nxgrid}\n"
+        description += f"i_src = {self.i_src}\n"
+        description += f"j_src = {self.j_src}\n"
+        description += f"i_dst = {self.i_dst}\n"
+        description += f"j_dst = {self.j_dst}\n"
+        description += f"xgrid_area = {self.xgrid_area}\n"
+        return description
