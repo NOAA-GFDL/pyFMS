@@ -3,7 +3,7 @@ import numpy as np
 import pyfms
 
 
-def test_gather2d():
+def test_gather_2d():
 
     pyfms.fms.init(ndomain=2)
 

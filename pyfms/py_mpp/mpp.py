@@ -84,13 +84,10 @@ def gather(
         n_pes = len(pelist)
         #rbuf_size = sbuf_size * n_pes if is_root_pe else 1
         rbuf_size = sbuf_size * n_pes
-
         set_c_int(sbuf_size, arglist)
         set_c_int(rbuf_size, arglist)
         set_array(sbuf, arglist)
-        rbuf = set_array(
-            np.zeros(rbuf_size, dtype=datatype) if is_root_pe else None, arglist
-        )
+        rbuf = set_array(np.zeros(rbuf_size, dtype=datatype), arglist)
         set_list(pelist, np.int32, arglist)
         set_c_int(n_pes, arglist)
 
@@ -98,8 +95,12 @@ def gather(
 
         nx = domain.xsize_g if is_root_pe else 1
         ny = domain.ysize_g if is_root_pe else 1
-        rbuf_shape = (nx, ny) if convert_cf_order else (ny, nx)
-        rbuf = np.zeros(rbuf_shape, dtype=datatype) if is_root_pe else None
+        if is_root_pe:
+            rbuf_shape = (nx, ny) if convert_cf_order else (ny, nx)
+            rbuf = np.zeros(rbuf_shape, dtype=datatype)
+        else:
+            rbuf_shape = None
+            rbuf = None
 
         pelist = get_current_pelist(npes()) if pelist is None else pelist
 
@@ -111,7 +112,7 @@ def gather(
         set_list(pelist, np.int32, arglist)
         set_array(sbuf, arglist)
         set_list(rbuf_shape, np.int32, arglist)
-        rbuf = set_array(np.zeros(rbuf_shape, dtype=datatype), arglist)
+        set_array(rbuf, arglist)
         set_c_bool(is_root_pe, arglist)
         set_c_int(ishift, arglist)
         set_c_int(jshift, arglist)
