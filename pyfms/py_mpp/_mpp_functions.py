@@ -33,25 +33,59 @@ def define(lib):
     # cFMS_gather_pelist_2ds
     gatherdict = {
         np.int32: lib.cFMS_gather_pelist_2d_cint,
-        np.float64: lib.cFMS_gather_pelist_2d_cdouble,
         np.float32: lib.cFMS_gather_pelist_2d_cfloat,
+        np.float64: lib.cFMS_gather_pelist_2d_cdouble,
     }
-    for nptype, cFMS_gather_pelist_2d in gatherdict.items():
-        cFMS_gather_pelist_2d.restype = None
-        cFMS_gather_pelist_2d.argtypes = [
+    for nptype, cFMS_gather in gatherdict.items():
+        cFMS_gather.restype = None
+        cFMS_gather.argtypes = [
             POINTER(c_int),  # is
             POINTER(c_int),  # ie
             POINTER(c_int),  # js
             POINTER(c_int),  # je
             POINTER(c_int),  # npes
-            ndpointer(dtype=np.int32, ndim=(1), flags=C),  # pelist
-            ndpointer(dtype=nptype, ndim=(2), flags=C),  # array_seg
-            ndpointer(dtype=np.int32, shape=(2,), flags=C),  # gather_data_c_shape
-            ndpointer(dtype=nptype, ndim=(2), flags=C),  # gather_data
-            POINTER(c_bool),  # is root_pe
+            NDPOINTER(dtype=np.int32, ndim=1, flags=C),  # pelist
+            NDPOINTER(dtype=nptype, ndim=2, flags=C),  # array_seg
+            NDPOINTER(dtype=np.int32, shape=(2,), flags=C),  # gather_data_c_shape
+            NDPOINTER(dtype=nptype, ndim=2, flags=C),  # gather_data
+            POINTER(c_bool),  # is_root_pe
             POINTER(c_int),  # ishift
             POINTER(c_int),  # jshift
             POINTER(c_bool),  # convert_cf_order
+        ]
+
+    # cFMS_gather_1d: set restype/argtypes for supported numpy dtypes
+    gatherdict = {
+        np.int32: lib.cFMS_gather_1d_cint,
+        np.float32: lib.cFMS_gather_1d_cfloat,
+        np.float64: lib.cFMS_gather_1d_cdouble,
+    }
+    for nptype, cFMS_gather in gatherdict.items():
+        cFMS_gather.restype = None
+        cFMS_gather.argtypes = [
+            POINTER(c_int),  # sbufsize
+            POINTER(c_int),  # rbufsize
+            NDPOINTER(dtype=nptype, ndim=1, flags=C),  # sbuf
+            NDPOINTER(dtype=nptype, ndim=1, flags=C),  # rbuf
+            NDPOINTER(dtype=np.int32, ndim=1, flags=C),  # pelist
+            POINTER(c_int),  # npes
+        ]
+
+    gatherdict = {
+        np.int32: lib.cFMS_gather_v_1d_cint,
+        np.float32: lib.cFMS_gather_v_1d_cfloat,
+        np.float64: lib.cFMS_gather_v_1d_cdouble
+    }
+    for nptype, cFMS_gather in gatherdict.items():
+        cFMS_gather.restype = None
+        cFMS_gather.argtypes = [
+            POINTER(c_int), #npes
+            POINTER(c_int), #sbuf_size
+            POINTER(c_int), #rbuf_size
+            NDPOINTER(dtype=nptype, ndim=1, flags=C), #sbuf
+            NDPOINTER(dtype=nptype, ndim=1, flags=C), #rbuf
+            NDPOINTER(dtype=np.int32, ndim=1, flags=C), #rsize
+            NDPOINTER(dtype=np.int32, ndim=1, flags=C), #pelist
         ]
 
     # cFMS_get_current_pelist
