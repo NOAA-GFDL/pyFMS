@@ -40,8 +40,8 @@ _cFMS_set_current_pelist = None
 
 def gather(
     sbuf: npt.NDArray,
-    rsize: list[int] = None, #mpp_gather_v_1d argument
-    domain: dict = None, # for mpp_gather_2d argument
+    rsize: list[int] = None, # mpp_gather_v_1d argument
+    domain: dict = None, # mpp_gather_2d argument
     pelist: list = None,
     ishift: int = None, # mpp_gather_2d argument
     jshift: int = None, # mpp_gather_2d argument

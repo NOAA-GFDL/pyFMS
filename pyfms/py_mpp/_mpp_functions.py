@@ -45,7 +45,7 @@ def define(lib):
             POINTER(c_int),  # je
             POINTER(c_int),  # npes
             NDPOINTER(dtype=np.int32, ndim=1, flags=C),  # pelist
-            NDPOINTER(dtype=nptype, ndim=2, flags=C),  # array_seg
+            ndpointer(dtype=nptype, ndim=2, flags=C),  # array_seg
             NDPOINTER(dtype=np.int32, shape=(2,), flags=C),  # gather_data_c_shape
             NDPOINTER(dtype=nptype, ndim=2, flags=C),  # gather_data
             POINTER(c_bool),  # is_root_pe
@@ -65,8 +65,8 @@ def define(lib):
         cFMS_gather.argtypes = [
             POINTER(c_int),  # sbufsize
             POINTER(c_int),  # rbufsize
-            NDPOINTER(dtype=nptype, ndim=1, flags=C),  # sbuf
-            NDPOINTER(dtype=nptype, ndim=1, flags=C),  # rbuf
+            ndpointer(dtype=nptype, ndim=1, flags=C),  # sbuf
+            ndpointer(dtype=nptype, ndim=1, flags=C),  # rbuf
             NDPOINTER(dtype=np.int32, ndim=1, flags=C),  # pelist
             POINTER(c_int),  # npes
         ]
@@ -82,7 +82,7 @@ def define(lib):
             POINTER(c_int), #npes
             POINTER(c_int), #sbuf_size
             POINTER(c_int), #rbuf_size
-            NDPOINTER(dtype=nptype, ndim=1, flags=C), #sbuf
+            ndpointer(dtype=nptype, ndim=1, flags=C), #sbuf
             NDPOINTER(dtype=nptype, ndim=1, flags=C), #rbuf
             NDPOINTER(dtype=np.int32, ndim=1, flags=C), #rsize
             NDPOINTER(dtype=np.int32, ndim=1, flags=C), #pelist
