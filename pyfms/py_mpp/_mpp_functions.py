@@ -44,7 +44,7 @@ def define(lib):
             POINTER(c_int),  # js
             POINTER(c_int),  # je
             POINTER(c_int),  # npes
-            NDPOINTER(dtype=np.int32, ndim=1, flags=C),  # pelist
+            ndpointer(dtype=np.int32, ndim=1, flags=C),  # pelist
             ndpointer(dtype=nptype, ndim=2, flags=C),  # array_seg
             NDPOINTER(dtype=np.int32, shape=(2,), flags=C),  # gather_data_c_shape
             NDPOINTER(dtype=nptype, ndim=2, flags=C),  # gather_data
