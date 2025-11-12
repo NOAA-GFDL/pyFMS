@@ -26,7 +26,6 @@ def test_gather_2d():
             global_data = global_data.T
             send = send.T
 
-
         pelist = pyfms.mpp.get_current_pelist(pyfms.mpp.npes())
         gathered = pyfms.mpp.gather(
             send, domain=domain, pelist=pelist, convert_cf_order=convert
@@ -39,11 +38,13 @@ def test_gather_2d():
 
     pyfms.fms.end()
 
+
 def test_gather_1d():
 
     sbuf_size = 5
+
     def buffer(ipe):
-        return [ipe*10 + i for i in range(sbuf_size)]
+        return [ipe * 10 + i for i in range(sbuf_size)]
 
     pyfms.fms.init()
 
@@ -65,15 +66,14 @@ def test_gather_1d():
 
 
 def test_gather_v_1d():
-
     def buffer(ipe):
-        return [ipe*10 + i for i in range(ipe+2)]
+        return [ipe * 10 + i for i in range(ipe + 2)]
 
     pyfms.fms.init()
     pe = pyfms.mpp.pe()
 
     sbuf = np.array(buffer(pe), dtype=np.float64)
-    rsize = [ipe+2 for ipe in range(pyfms.mpp.npes())]
+    rsize = [ipe + 2 for ipe in range(pyfms.mpp.npes())]
 
     receive = pyfms.mpp.gather(sbuf, rsize=rsize)
 

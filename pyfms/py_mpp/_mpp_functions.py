@@ -74,18 +74,18 @@ def define(lib):
     gatherdict = {
         np.int32: lib.cFMS_gather_v_1d_cint,
         np.float32: lib.cFMS_gather_v_1d_cfloat,
-        np.float64: lib.cFMS_gather_v_1d_cdouble
+        np.float64: lib.cFMS_gather_v_1d_cdouble,
     }
     for nptype, cFMS_gather in gatherdict.items():
         cFMS_gather.restype = None
         cFMS_gather.argtypes = [
-            POINTER(c_int), #npes
-            POINTER(c_int), #sbuf_size
-            POINTER(c_int), #rbuf_size
-            ndpointer(dtype=nptype, ndim=1, flags=C), #sbuf
-            ndpointer(dtype=nptype, ndim=1, flags=C), #rbuf
-            NDPOINTER(dtype=np.int32, ndim=1, flags=C), #rsize
-            NDPOINTER(dtype=np.int32, ndim=1, flags=C), #pelist
+            POINTER(c_int),  # npes
+            POINTER(c_int),  # sbuf_size
+            POINTER(c_int),  # rbuf_size
+            ndpointer(dtype=nptype, ndim=1, flags=C),  # sbuf
+            ndpointer(dtype=nptype, ndim=1, flags=C),  # rbuf
+            NDPOINTER(dtype=np.int32, ndim=1, flags=C),  # rsize
+            NDPOINTER(dtype=np.int32, ndim=1, flags=C),  # pelist
         ]
 
     # cFMS_get_current_pelist
