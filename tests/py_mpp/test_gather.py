@@ -86,6 +86,3 @@ def test_gather_v_1d():
         assert receive is None
 
     pyfms.fms.end()
-
-if __name__ == "__main__":
-    test_gather_v_1d()
