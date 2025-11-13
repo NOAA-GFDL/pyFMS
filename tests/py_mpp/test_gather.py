@@ -65,7 +65,8 @@ def test_gather_1d():
     pyfms.fms.end()
 
 
-def test_gather_v_1d():
+def test_gatherv_1d():
+
     def buffer(ipe):
         return [ipe * 10 + i for i in range(ipe + 2)]
 
@@ -75,7 +76,7 @@ def test_gather_v_1d():
     sbuf = np.array(buffer(pe), dtype=np.float64)
     rsize = [ipe + 2 for ipe in range(pyfms.mpp.npes())]
 
-    receive = pyfms.mpp.gather(sbuf, rsize=rsize)
+    receive = pyfms.mpp.gather(sbuf, ssize=pe+2, rsize=rsize)
 
     if pe == pyfms.mpp.root_pe():
         answers = []

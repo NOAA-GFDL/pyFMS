@@ -69,7 +69,7 @@ rm -f input.nml
 
 touch -a input.nml
 test="py_mpp/test_gather.py"
-run_test "mpirun -n 4 $oversubscribe pytest $flags $test::test_gather_v_1d"
+run_test "mpirun -n 4 $oversubscribe pytest $flags $test::test_gatherv_1d"
 rm -f input.nml
 
 test="py_horiz_interp/test_horiz_interp.py"

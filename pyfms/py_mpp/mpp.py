@@ -24,9 +24,9 @@ _cFMS_error = None
 _cFMS_gather_1d_cint = None
 _cFMS_gather_1d_cfloat = None
 _cFMS_gather_1d_cdouble = None
-_cFMS_gather_v_1d_cint = None
-_cFMS_gather_v_1d_cfloat = None
-_cFMS_gather_v_1d_cdouble = None
+_cFMS_gatherv_1d_cint = None
+_cFMS_gatherv_1d_cfloat = None
+_cFMS_gatherv_1d_cdouble = None
 _cFMS_gather_pelist_2d_cdouble = None
 _cFMS_gather_pelist_2d_cfloat = None
 _cFMS_gather_pelist_2d_cint = None
@@ -40,7 +40,8 @@ _cFMS_set_current_pelist = None
 
 def gather(
     sbuf: npt.NDArray,
-    rsize: list[int] = None,  # mpp_gather_v_1d argument
+    ssize: int = None, # mpp_gatherv_1d argument
+    rsize: list[int] = None,  # mpp_gatherv_1d argument
     domain: dict = None,  # mpp_gather_2d argument
     pelist: list = None,
     ishift: int = None,  # mpp_gather_2d argument
@@ -68,6 +69,7 @@ def gather(
         set_c_int(sbuf.shape[0], arglist)
         set_c_int(rbuf_size, arglist)
         set_array(sbuf, arglist)
+        set_c_int(ssize, arglist)
         set_array(rbuf, arglist)
         set_list(rsize, np.int32, arglist)
         set_list(pelist, np.int32, arglist)
@@ -80,14 +82,13 @@ def gather(
     if dim == 1:
 
         sbuf_size = sbuf.shape[0]
-        pelist = get_current_pelist(npes()) if pelist is None else pelist
-        n_pes = len(pelist)
-        # rbuf_size = sbuf_size * n_pes if is_root_pe else 1
-        rbuf_size = sbuf_size * n_pes
+        n_pes = None if pelist is None else len(pelist)
+        rbuf_size = sbuf_size * npes()
+        rbuf = np.zeros(rbuf_size, dtype=datatype)
         set_c_int(sbuf_size, arglist)
         set_c_int(rbuf_size, arglist)
         set_array(sbuf, arglist)
-        rbuf = set_array(np.zeros(rbuf_size, dtype=datatype), arglist)
+        set_array(rbuf, arglist)
         set_list(pelist, np.int32, arglist)
         set_c_int(n_pes, arglist)
 
@@ -257,6 +258,9 @@ def _init_functions():
     global _cFMS_gather_1d_cint
     global _cFMS_gather_1d_cfloat
     global _cFMS_gather_1d_cdouble
+    global _cFMS_gatherv_1d_cint
+    global _cFMS_gatherv_1d_cfloat
+    global _cFMS_gatherv_1d_cdouble
     global _cFMS_gather_pelist_2d_cdouble
     global _cFMS_gather_pelist_2d_cfloat
     global _cFMS_gather_pelist_2d_cint
@@ -274,9 +278,9 @@ def _init_functions():
     _cFMS_gather_1d_cint = _lib.cFMS_gather_1d_cint
     _cFMS_gather_1d_cfloat = _lib.cFMS_gather_1d_cfloat
     _cFMS_gather_1d_cdouble = _lib.cFMS_gather_1d_cdouble
-    _cFMS_gather_v_1d_cint = _lib.cFMS_gather_v_1d_cint
-    _cFMS_gather_v_1d_cfloat = _lib.cFMS_gather_v_1d_cfloat
-    _cFMS_gather_v_1d_cdouble = _lib.cFMS_gather_v_1d_cdouble
+    _cFMS_gatherv_1d_cint = _lib.cFMS_gatherv_1d_cint
+    _cFMS_gatherv_1d_cfloat = _lib.cFMS_gatherv_1d_cfloat
+    _cFMS_gatherv_1d_cdouble = _lib.cFMS_gatherv_1d_cdouble
     _cFMS_gather_pelist_2d_cdouble = _lib.cFMS_gather_pelist_2d_cdouble
     _cFMS_gather_pelist_2d_cfloat = _lib.cFMS_gather_pelist_2d_cfloat
     _cFMS_gather_pelist_2d_cint = _lib.cFMS_gather_pelist_2d_cint
@@ -288,9 +292,9 @@ def _init_functions():
 
     _cFMS_gathers = {
         "v": {
-            "int32": _cFMS_gather_v_1d_cint,
-            "float32": _cFMS_gather_v_1d_cfloat,
-            "float64": _cFMS_gather_v_1d_cdouble,
+            "int32": _cFMS_gatherv_1d_cint,
+            "float32": _cFMS_gatherv_1d_cfloat,
+            "float64": _cFMS_gatherv_1d_cdouble,
         },
         1: {
             "int32": _cFMS_gather_1d_cint,
