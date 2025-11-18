@@ -400,7 +400,8 @@ def read_weights_conserve(weight_filename: str,
                           domain: Domain = None,
                           nlon_tgt: int = None,
                           nlat_tgt: int = None,
-                          src_tile: int = None):
+                          src_tile: int = None,
+                          save_weights_as_fregrid: bool = False) -> int:
 
     if domain is None:
         if nlon_tgt is None: cFMS_error(FATAL, "must provide nlon_tgt if Domain is not specified")
@@ -426,6 +427,7 @@ def read_weights_conserve(weight_filename: str,
     set_c_int(jsc, arglist)
     set_c_int(jec, arglist)
     set_c_int(src_tile, arglist)
+    set_c_bool(save_weights_as_fregrid, arglist)
 
     return _cFMS_horiz_interp_read_weights_conserve(*arglist)
 

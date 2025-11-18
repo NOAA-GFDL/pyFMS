@@ -110,7 +110,8 @@ def define(lib):
         POINTER(c_int),  # iew
         POINTER(c_int),  # jsw
         POINTER(c_int),  # jew
-        POINTER(c_int)  # src_tile
+        POINTER(c_int),  # src_tile
+        POINTER(c_bool)  # save_weights_as_fregrid
     ]
         
     # getter routines for individual fields
