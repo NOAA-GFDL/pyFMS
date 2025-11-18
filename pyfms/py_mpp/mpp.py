@@ -62,10 +62,14 @@ def gather(
 
     if do_vector:
 
-        rbuf_size = sum(rsize) if is_root_pe else 1
+        rsize = rsize if is_root_pe else [1]
+        rbuf_size = sum(rsize)
+        npes_here = len(rsize)
         rbuf = np.zeros((rbuf_size), dtype=datatype)
+        if pelist is not None:
+            pelist = pelist[:npes_here]
 
-        set_c_int(len(rsize), arglist)
+        set_c_int(npes_here, arglist)
         set_c_int(sbuf.shape[0], arglist)
         set_c_int(rbuf_size, arglist)
         set_array(sbuf, arglist)
