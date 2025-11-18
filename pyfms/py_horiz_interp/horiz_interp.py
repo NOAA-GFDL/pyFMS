@@ -40,9 +40,8 @@ _cFMS_get_nlat_src = None
 _cFMS_get_nlon_dst = None
 _cFMS_get_nlat_dst = None
 _cFMS_get_interp_method = None
-_cFMS_get_xgrid_area = None
-_cFMS_get_area_frac_dst_double = None
-_cFMS_get_xgrid_area = None
+_cFMS_get_xgrid_area_cdouble = None
+_cFMS_get_area_frac_dst_cdouble = None
 _cFMS_get_nxgrid = None
 _cFMS_horiz_interp_new_dict = {}
 _cFMS_horiz_interp_base_dict = {}
@@ -132,10 +131,6 @@ def get_weights(
     lat_out: npt.NDArray[np.float32 | np.float64],
     mask_in: npt.NDArray[np.float32 | np.float64] = None,
     mask_out: npt.NDArray[np.float32 | np.float64] = None,
-    nlon_in: int = None,
-    nlat_in: int = None,
-    nlon_out: int = None,
-    nlat_out: int = None,
     interp_method: str = None,
     verbose: int = 0,
     max_dist: np.float32 | np.float64 = None,
@@ -164,14 +159,10 @@ def get_weights(
         lon_index = 1
         lat_index = 0
 
-    if nlon_in is None:
-        nlon_in = lon_in.shape[lon_index] - 1
-    if nlat_in is None:
-        nlat_in = lon_in.shape[lat_index] - 1
-    if nlon_out is None:
-        nlon_out = lon_out.shape[lon_index] - 1
-    if nlat_out is None:
-        nlat_out = lon_out.shape[lat_index] - 1
+    nlon_in = lon_in.shape[lon_index] - 1
+    nlat_in = lon_in.shape[lat_index] - 1
+    nlon_out = lon_out.shape[lon_index] - 1
+    nlat_out = lon_out.shape[lat_index] - 1
 
     arglist = []
     set_c_int(nlon_in, arglist)
@@ -303,18 +294,19 @@ def get_area_frac_dst(interp_id: int):
     set_c_int(interp_id, arglist)
     area_frac_dst = set_array(np.zeros(nxgrid, dtype=np.float64), arglist)
 
-    _cFMS_get_area_frac_dst_double(*arglist)
+    _cFMS_get_area_frac_dst_cdouble(*arglist)
     return area_frac_dst
 
 
 def get_xgrid_area(interp_id: int):
 
     nxgrid = get_nxgrid(interp_id)
+   
     arglist = []
     set_c_int(interp_id, arglist)
     xgrid_area = set_array(np.zeros(nxgrid, dtype=np.float64), arglist)
 
-    _cFMS_get_xgrid_area(*arglist)
+    _cFMS_get_xgrid_area_cdouble(*arglist)
     return xgrid_area
 
 
@@ -334,17 +326,6 @@ def get_interp_method(interp_id: int):
     _cFMS_get_interp_method(*arglist)
 
     return interp_method_dict[interp_method.value]
-
-
-def get_xgrid_area(interp_id: int):
-
-    nxgrid = get_nxgrid(interp_id)
-
-    arglist = []
-    xgrid_area = set_array(np.zeros(nxgrid, dtype=np.float64), arglist)
-
-    _cFMS_get_xgrid_area(*arglist)
-    return xgrid_area
 
 
 def interp(
@@ -458,8 +439,8 @@ def _init_functions():
     global _cFMS_get_nlon_dst
     global _cFMS_get_nlat_dst
     global _cFMS_get_interp_method
-    global _cFMS_get_xgrid_area
-    global _cFMS_get_area_frac_dst_double
+    global _cFMS_get_xgrid_area_cdouble
+    global _cFMS_get_area_frac_dst_cdouble
     global _cFMS_get_nxgrid
 
     _cFMS_create_xgrid_2dx2d_order1 = _lib.cFMS_create_xgrid_2dx2d_order1
@@ -490,10 +471,8 @@ def _init_functions():
     _cFMS_get_nlat_dst = _lib.cFMS_get_nlat_dst
     _cFMS_get_nxgrid = _lib.cFMS_get_nxgrid
     _cFMS_get_interp_method = _lib.cFMS_get_interp_method
-    _cFMS_get_xgrid_area = _lib.cFMS_get_xgrid_area
-    _cFMS_get_area_frac_dst_double = _lib.cFMS_get_area_frac_dst_cdouble
-    #get xgrid area
-    _cFMS_get_xgrid_area = _lib.cFMS_get_xgrid
+    _cFMS_get_xgrid_area_cdouble = _lib.cFMS_get_xgrid_area_cdouble
+    _cFMS_get_area_frac_dst_cdouble = _lib.cFMS_get_area_frac_dst_cdouble
 
     _cFMS_horiz_interp_new_dict = {
         "float32": _cFMS_horiz_interp_new_2d_cfloat,

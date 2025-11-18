@@ -16,6 +16,7 @@ _cFMS_get_grid_area = None
 def get_grid_area(
     lon: npt.NDArray[np.float64],
     lat: npt.NDArray[np.float64],
+    convert_cf_order: bool = False,
 ) -> npt.NDArray[np.float64]:
 
     """
@@ -23,19 +24,28 @@ def get_grid_area(
     on lon and lat
     """
 
-    nlat, nlon = lon.shape
+    if convert_cf_order:
+        nlon, nlat = lon.shape
+    else:
+        nlat, nlon = lon.shape
     nlat -= 1
     nlon -= 1
 
     arglist = []
     set_c_int(nlon, arglist)
     set_c_int(nlat, arglist)
-    set_array(lon, arglist)
-    set_array(lat, arglist)
+    if convert_cf_order:
+        set_array(lon.T, arglist)
+        set_array(lat.T, arglist)
+    else:
+        set_array(lon, arglist)
+        set_array(lat, arglist)
     area = set_array(np.zeros((nlat, nlon), dtype=np.float64), arglist)
 
     _cFMS_get_grid_area(*arglist)
 
+    if convert_cf_order:
+        return area.T
     return area
 
 

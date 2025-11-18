@@ -6,7 +6,7 @@ from pyfms.utils.ctypes_utils import NDPOINTER
 
 
 ndpointer = np.ctypeslib.ndpointer
-C = "C_CONTIGUOUS"
+C = ("C_CONTIGUOUS")
 
 
 def define(lib):
@@ -164,12 +164,12 @@ def define(lib):
     ]
 
     # cFMS_get_area_frac_dst
-    lib.cFMS_get_xgrid_area.restype = None
-    lib.cFMS_get_xgrid_area.argtypes = [
+    lib.cFMS_get_xgrid_area_cdouble.restype = None
+    lib.cFMS_get_xgrid_area_cdouble.argtypes = [
         POINTER(c_int),
         ndpointer(np.float64, ndim=1, flags=C),
     ]
-    
+   
     # cFMS_get_nlon_src
     lib.cFMS_get_nlon_src.restype = None
     lib.cFMS_get_nlon_src.argtypes = [POINTER(c_int), POINTER(c_int)]

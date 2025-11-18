@@ -4,7 +4,7 @@ import numpy as np
 
 
 npptr = np.ctypeslib.ndpointer
-C = "C_CONTIGUOUS"
+C = ("C_CONTIGUOUS")
 
 
 def define(lib):
