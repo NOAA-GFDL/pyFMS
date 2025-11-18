@@ -40,6 +40,7 @@ _cFMS_get_nlat_src = None
 _cFMS_get_nlon_dst = None
 _cFMS_get_nlat_dst = None
 _cFMS_get_interp_method = None
+_cFMS_get_xgrid_area = None
 _cFMS_get_area_frac_dst_double = None
 _cFMS_get_xgrid_area = None
 _cFMS_get_nxgrid = None
@@ -306,6 +307,17 @@ def get_area_frac_dst(interp_id: int):
     return area_frac_dst
 
 
+def get_xgrid_area(interp_id: int):
+
+    nxgrid = get_nxgrid(interp_id)
+    arglist = []
+    set_c_int(interp_id, arglist)
+    xgrid_area = set_array(np.zeros(nxgrid, dtype=np.float64), arglist)
+
+    _cFMS_get_xgrid_area(*arglist)
+    return xgrid_area
+
+
 def get_interp_method(interp_id: int):
 
     interp_method_dict = {
@@ -385,20 +397,34 @@ def read_weights_conserve(weight_filename: str,
                           weight_file_src: str,
                           nlon_src: int,
                           nlat_src: int,
-                          domain: Domain,
+                          domain: Domain = None,
+                          nlon_tgt: int = None,
+                          nlat_tgt: int = None,
                           src_tile: int = None):
+
+    if domain is None:
+        if nlon_tgt is None: cFMS_error(FATAL, "must provide nlon_tgt if Domain is not specified")
+        if nlat_tgt is None: cFMS_error(FATAL, "must provide nlon_tgt if Domain is not specified")
+        isc, iec, jsc, jec = 0, nlon_tgt-1, 0, nlat_tgt-1
+    else:
+        nlon_tgt = domain.xsize_c
+        nlat_tgt = domain.ysize_c
+        isc = domain.isc
+        iec = domain.iec
+        jsc = domain.jsc
+        jec = domain.jec
 
     arglist = []
     set_c_str(weight_filename, arglist)
     set_c_str(weight_file_src, arglist)
     set_c_int(nlon_src, arglist)
     set_c_int(nlat_src, arglist)
-    set_c_int(domain.xsize_c, arglist)
-    set_c_int(domain.ysize_c, arglist)
-    set_c_int(domain.isc, arglist)
-    set_c_int(domain.iec, arglist)
-    set_c_int(domain.jsc, arglist)
-    set_c_int(domain.jec, arglist)
+    set_c_int(nlon_tgt, arglist)
+    set_c_int(nlat_tgt, arglist)
+    set_c_int(isc, arglist)
+    set_c_int(iec, arglist)
+    set_c_int(jsc, arglist)
+    set_c_int(jec, arglist)
     set_c_int(src_tile, arglist)
 
     return _cFMS_horiz_interp_read_weights_conserve(*arglist)
@@ -430,6 +456,7 @@ def _init_functions():
     global _cFMS_get_nlon_dst
     global _cFMS_get_nlat_dst
     global _cFMS_get_interp_method
+    global _cFMS_get_xgrid_area
     global _cFMS_get_area_frac_dst_double
     global _cFMS_get_nxgrid
 
@@ -461,6 +488,7 @@ def _init_functions():
     _cFMS_get_nlat_dst = _lib.cFMS_get_nlat_dst
     _cFMS_get_nxgrid = _lib.cFMS_get_nxgrid
     _cFMS_get_interp_method = _lib.cFMS_get_interp_method
+    _cFMS_get_xgrid_area = _lib.cFMS_get_xgrid_area
     _cFMS_get_area_frac_dst_double = _lib.cFMS_get_area_frac_dst_cdouble
     #get xgrid area
     _cFMS_get_xgrid_area = _lib.cFMS_get_xgrid
