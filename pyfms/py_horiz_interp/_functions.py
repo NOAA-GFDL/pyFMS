@@ -74,6 +74,7 @@ def define(lib):
             POINTER(c_bool),  # src_modulo
             POINTER(c_bool),  # is_latlon_in
             POINTER(c_bool),  # is_latlon_out
+            POINTER(c_bool),  # save_weights_as_fregrid
             POINTER(c_bool),  # convert_cf_order
         ]
 

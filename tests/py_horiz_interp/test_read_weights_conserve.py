@@ -48,8 +48,6 @@ def test_read_weights_conserve():
 
     interp_id = pyfms.horiz_interp.read_weights_conserve("remap.nc", "fregrid", nx_src, ny_src, domain, src_tile=pyfms.mpp.pe()+1)
 
-    interp = pyfms.Interp(interp_id)
-
     data_src = np.array([[pe*1000 + j*100 + i for i in range(nx_src)] for j in range(ny_src)], dtype=np.float64)
 
     data_dst = pyfms.horiz_interp.interp(interp_id, data_src, convert_cf_order=False)

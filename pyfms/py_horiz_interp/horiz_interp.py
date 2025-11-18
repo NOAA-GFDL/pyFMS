@@ -41,6 +41,7 @@ _cFMS_get_nlon_dst = None
 _cFMS_get_nlat_dst = None
 _cFMS_get_interp_method = None
 _cFMS_get_area_frac_dst_double = None
+_cFMS_get_xgrid_area = None
 _cFMS_get_nxgrid = None
 _cFMS_horiz_interp_new_dict = {}
 _cFMS_horiz_interp_base_dict = {}
@@ -140,6 +141,7 @@ def get_weights(
     src_modulo: bool = False,
     is_latlon_in: bool = False,
     is_latlon_out: bool = False,
+    save_weights_as_fregrid: bool = False,
     convert_cf_order: bool = True,
 ) -> int:
     """
@@ -154,14 +156,21 @@ def get_weights(
             f"horiz_interp.new: grid of type {lon_in.dtype} not supported"
         )
 
+    if convert_cf_order:
+        lon_index = 0
+        lat_index = 1
+    else:
+        lon_index = 1
+        lat_index = 0
+
     if nlon_in is None:
-        nlon_in = lon_in.shape[0] - 1
+        nlon_in = lon_in.shape[lon_index] - 1
     if nlat_in is None:
-        nlat_in = lon_in.shape[1] - 1
+        nlat_in = lon_in.shape[lat_index] - 1
     if nlon_out is None:
-        nlon_out = lon_out.shape[0] - 1
+        nlon_out = lon_out.shape[lon_index] - 1
     if nlat_out is None:
-        nlat_out = lon_out.shape[1] - 1
+        nlat_out = lon_out.shape[lat_index] - 1
 
     arglist = []
     set_c_int(nlon_in, arglist)
@@ -180,6 +189,7 @@ def get_weights(
     set_c_bool(src_modulo, arglist)
     set_c_bool(is_latlon_in, arglist)
     set_c_bool(is_latlon_out, arglist)
+    set_c_bool(save_weights_as_fregrid, arglist)
     set_c_bool(convert_cf_order, arglist)
 
     return _cFMS_horiz_interp_new(*arglist)
@@ -314,6 +324,17 @@ def get_interp_method(interp_id: int):
     return interp_method_dict[interp_method.value]
 
 
+def get_xgrid_area(interp_id: int):
+
+    nxgrid = get_nxgrid(interp_id)
+
+    arglist = []
+    xgrid_area = set_array(np.zeros(nxgrid, dtype=np.float64), arglist)
+
+    _cFMS_get_xgrid_area(*arglist)
+    return xgrid_area
+
+
 def interp(
     interp_id: int,
     data_in: npt.NDArray[np.float32 | np.float64],
@@ -424,7 +445,7 @@ def _init_functions():
     _cFMS_horiz_interp_base_2d_cfloat = _lib.cFMS_horiz_interp_base_2d_cfloat
 
     _cFMS_horiz_interp_read_weights_conserve = _lib.cFMS_horiz_interp_read_weights_conserve
-    
+
     _cFMS_get_wti_cfloat = _lib.cFMS_get_wti_cfloat
     _cFMS_get_wti_cdouble = _lib.cFMS_get_wti_cdouble
     _cFMS_get_wtj_cfloat = _lib.cFMS_get_wtj_cfloat
@@ -441,6 +462,8 @@ def _init_functions():
     _cFMS_get_nxgrid = _lib.cFMS_get_nxgrid
     _cFMS_get_interp_method = _lib.cFMS_get_interp_method
     _cFMS_get_area_frac_dst_double = _lib.cFMS_get_area_frac_dst_cdouble
+    #get xgrid area
+    _cFMS_get_xgrid_area = _lib.cFMS_get_xgrid
 
     _cFMS_horiz_interp_new_dict = {
         "float32": _cFMS_horiz_interp_new_2d_cfloat,
