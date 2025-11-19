@@ -21,10 +21,16 @@ _lib = None
 
 _cFMS_declare_pelist = None
 _cFMS_error = None
+_cFMS_gather_1d_cint = None
+_cFMS_gather_1d_cfloat = None
+_cFMS_gather_1d_cdouble = None
+_cFMS_gatherv_1d_cint = None
+_cFMS_gatherv_1d_cfloat = None
+_cFMS_gatherv_1d_cdouble = None
 _cFMS_gather_pelist_2d_cdouble = None
 _cFMS_gather_pelist_2d_cfloat = None
 _cFMS_gather_pelist_2d_cint = None
-_cFMS_gather_pelist_2ds = None
+_cFMS_gathers: dict = None
 _cFMS_get_current_pelist = None
 _cFMS_npes = None
 _cFMS_pe = None
@@ -33,51 +39,99 @@ _cFMS_set_current_pelist = None
 
 
 def gather(
-    domain: dict,
-    send_array: npt.NDArray,
+    sbuf: npt.NDArray,
+    ssize: int = None,  # mpp_gatherv_1d argument
+    rsize: list[int] = None,  # mpp_gatherv_1d argument
+    domain: dict = None,  # mpp_gather_2d argument
     pelist: list = None,
-    ishift: int = None,
-    jshift: int = None,
+    ishift: int = None,  # mpp_gather_pelist_2d argument
+    jshift: int = None,  # mpp_gather_pelist_2d argument
     convert_cf_order: bool = True,
 ):
 
-    datatype = send_array.dtype
+    datatype = sbuf.dtype
     is_root_pe = pe() == root_pe()
-
-    if pelist is None:
-        pelist = get_current_pelist(npes())
+    (dim, do_vector) = (sbuf.ndim, False) if rsize is None else ("v", True)
 
     try:
-        cFMS_gather_pelist_2d = _cFMS_gather_pelist_2ds[datatype.name]
+        cFMS_gather = _cFMS_gathers[dim][datatype.name]
     except Exception:
-        error(FATAL, f"mpp.gather {datatype.name} not supported")
-        exit()
-
-    nx = domain.xsize_g if is_root_pe else 1
-    ny = domain.ysize_g if is_root_pe else 1
-    receive_shape = (nx, ny) if convert_cf_order else (ny, nx)
+        error(FATAL, f"mpp.gather {datatype.name} not supported for dim={dim}")
 
     arglist = []
-    set_c_int(domain.isc, arglist)
-    set_c_int(domain.iec, arglist)
-    set_c_int(domain.jsc, arglist)
-    set_c_int(domain.jec, arglist)
-    set_c_int(len(pelist), arglist)
-    set_list(pelist, np.int32, arglist)
-    set_array(send_array, arglist)
-    set_list(receive_shape, np.int32, arglist)
-    receive = set_array(np.zeros(receive_shape, dtype=datatype), arglist)
-    set_c_bool(is_root_pe, arglist)
-    set_c_int(ishift, arglist)
-    set_c_int(jshift, arglist)
-    set_c_bool(convert_cf_order, arglist)
 
-    cFMS_gather_pelist_2d(*arglist)
+    if do_vector:
+
+        rsize = rsize if is_root_pe else [1]
+        rbuf_size = sum(rsize)
+        npes_here = len(rsize)
+        rbuf = np.zeros((rbuf_size), dtype=datatype)
+
+        # The pelist does not matter for non-root pe's
+        # However, pelist is declared to be the size of rsize in cFMS
+        # for non root-pelist, len(rsize) = 1 so pelist has to be the len of [1]
+        if pelist is not None:
+            pelist = pelist[:npes_here]
+
+        set_c_int(npes_here, arglist)
+        set_c_int(sbuf.shape[0], arglist)
+        set_c_int(rbuf_size, arglist)
+        set_array(sbuf, arglist)
+        set_c_int(ssize, arglist)
+        set_array(rbuf, arglist)
+        set_list(rsize, np.int32, arglist)
+        set_list(pelist, np.int32, arglist)
+
+        cFMS_gather(*arglist)
+        if is_root_pe:
+            return rbuf
+        return None
+
+    if dim == 1:
+
+        sbuf_size = sbuf.shape[0]
+        n_pes = None if pelist is None else len(pelist)
+        rbuf_size = sbuf_size * npes()
+        rbuf = np.zeros(rbuf_size, dtype=datatype)
+        set_c_int(sbuf_size, arglist)
+        set_c_int(rbuf_size, arglist)
+        set_array(sbuf, arglist)
+        set_array(rbuf, arglist)
+        set_list(pelist, np.int32, arglist)
+        set_c_int(n_pes, arglist)
+
+    elif dim == 2:
+
+        nx = domain.xsize_g if is_root_pe else 1
+        ny = domain.ysize_g if is_root_pe else 1
+        if is_root_pe:
+            rbuf_shape = (nx, ny) if convert_cf_order else (ny, nx)
+            rbuf = np.zeros(rbuf_shape, dtype=datatype)
+        else:
+            rbuf_shape = None
+            rbuf = None
+
+        pelist = get_current_pelist(npes()) if pelist is None else pelist
+
+        set_c_int(domain.isc, arglist)
+        set_c_int(domain.iec, arglist)
+        set_c_int(domain.jsc, arglist)
+        set_c_int(domain.jec, arglist)
+        set_c_int(len(pelist), arglist)
+        set_list(pelist, np.int32, arglist)
+        set_array(sbuf, arglist)
+        set_list(rbuf_shape, np.int32, arglist)
+        set_array(rbuf, arglist)
+        set_c_bool(is_root_pe, arglist)
+        set_c_int(ishift, arglist)
+        set_c_int(jshift, arglist)
+        set_c_bool(convert_cf_order, arglist)
+
+    cFMS_gather(*arglist)
 
     if is_root_pe:
-        return receive
-    else:
-        return None
+        return rbuf
+    return None
 
 
 def declare_pelist(
@@ -209,10 +263,16 @@ def _init_functions():
 
     global _cFMS_declare_pelist
     global _cFMS_error
+    global _cFMS_gather_1d_cint
+    global _cFMS_gather_1d_cfloat
+    global _cFMS_gather_1d_cdouble
+    global _cFMS_gatherv_1d_cint
+    global _cFMS_gatherv_1d_cfloat
+    global _cFMS_gatherv_1d_cdouble
     global _cFMS_gather_pelist_2d_cdouble
     global _cFMS_gather_pelist_2d_cfloat
     global _cFMS_gather_pelist_2d_cint
-    global _cFMS_gather_pelist_2ds
+    global _cFMS_gathers
     global _cFMS_get_current_pelist
     global _cFMS_npes
     global _cFMS_pe
@@ -223,6 +283,12 @@ def _init_functions():
 
     _cFMS_declare_pelist = _lib.cFMS_declare_pelist
     _cFMS_error = _lib.cFMS_error
+    _cFMS_gather_1d_cint = _lib.cFMS_gather_1d_cint
+    _cFMS_gather_1d_cfloat = _lib.cFMS_gather_1d_cfloat
+    _cFMS_gather_1d_cdouble = _lib.cFMS_gather_1d_cdouble
+    _cFMS_gatherv_1d_cint = _lib.cFMS_gatherv_1d_cint
+    _cFMS_gatherv_1d_cfloat = _lib.cFMS_gatherv_1d_cfloat
+    _cFMS_gatherv_1d_cdouble = _lib.cFMS_gatherv_1d_cdouble
     _cFMS_gather_pelist_2d_cdouble = _lib.cFMS_gather_pelist_2d_cdouble
     _cFMS_gather_pelist_2d_cfloat = _lib.cFMS_gather_pelist_2d_cfloat
     _cFMS_gather_pelist_2d_cint = _lib.cFMS_gather_pelist_2d_cint
@@ -232,10 +298,22 @@ def _init_functions():
     _cFMS_root_pe = _lib.cFMS_root_pe
     _cFMS_set_current_pelist = _lib.cFMS_set_current_pelist
 
-    _cFMS_gather_pelist_2ds = {
-        "int32": _cFMS_gather_pelist_2d_cint,
-        "float32": _cFMS_gather_pelist_2d_cfloat,
-        "float64": _cFMS_gather_pelist_2d_cdouble,
+    _cFMS_gathers = {
+        "v": {
+            "int32": _cFMS_gatherv_1d_cint,
+            "float32": _cFMS_gatherv_1d_cfloat,
+            "float64": _cFMS_gatherv_1d_cdouble,
+        },
+        1: {
+            "int32": _cFMS_gather_1d_cint,
+            "float32": _cFMS_gather_1d_cfloat,
+            "float64": _cFMS_gather_1d_cdouble,
+        },
+        2: {
+            "int32": _cFMS_gather_pelist_2d_cint,
+            "float32": _cFMS_gather_pelist_2d_cfloat,
+            "float64": _cFMS_gather_pelist_2d_cdouble,
+        },
     }
 
 
