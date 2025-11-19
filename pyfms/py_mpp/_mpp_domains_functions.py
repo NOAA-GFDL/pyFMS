@@ -85,7 +85,7 @@ def define(lib):
         POINTER(c_int),  # yhalo
         NDPOINTERi32(npptr(np.int32, ndim=(1), flags=C)),  # xextent
         NDPOINTERi32(npptr(np.int32, ndim=(1), flags=C)),  # yextent
-        NDPOINTERi32(npptr(np.bool, ndim=(2), flags=C)),  # maskmap
+        NDPOINTERi32(npptr(bool, ndim=(2), flags=C)),  # maskmap
         c_char_p,  # name
         POINTER(c_bool),  # symmetry
         NDPOINTERi32(npptr(np.int32, shape=(2), flags=C)),  # memory_size
