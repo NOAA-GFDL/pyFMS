@@ -85,7 +85,7 @@ def define(lib):
             ndpointer(dtype=nptype, ndim=1, flags=C),  # sbuf
             POINTER(c_int),  # ssize
             ndpointer(dtype=nptype, ndim=1, flags=C),  # rbuf
-            NDPOINTER(dtype=np.int32, ndim=1, flags=C),  # rsize
+            ndpointer(dtype=np.int32, ndim=1, flags=C),  # rsize
             NDPOINTER(dtype=np.int32, ndim=1, flags=C),  # pelist
         ]
 

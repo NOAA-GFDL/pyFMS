@@ -40,12 +40,12 @@ _cFMS_set_current_pelist = None
 
 def gather(
     sbuf: npt.NDArray,
-    ssize: int = None, # mpp_gatherv_1d argument
+    ssize: int = None,  # mpp_gatherv_1d argument
     rsize: list[int] = None,  # mpp_gatherv_1d argument
     domain: dict = None,  # mpp_gather_2d argument
     pelist: list = None,
-    ishift: int = None,  # mpp_gather_2d argument
-    jshift: int = None,  # mpp_gather_2d argument
+    ishift: int = None,  # mpp_gather_pelist_2d argument
+    jshift: int = None,  # mpp_gather_pelist_2d argument
     convert_cf_order: bool = True,
 ):
 
@@ -66,6 +66,10 @@ def gather(
         rbuf_size = sum(rsize)
         npes_here = len(rsize)
         rbuf = np.zeros((rbuf_size), dtype=datatype)
+
+        # The pelist does not matter for non-root pe's
+        # However, pelist is declared to be the size of rsize in cFMS
+        # for non root-pelist, len(rsize) = 1 so pelist has to be the len of [1]
         if pelist is not None:
             pelist = pelist[:npes_here]
 
