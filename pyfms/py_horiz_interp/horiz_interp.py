@@ -21,6 +21,7 @@ _BILINEAR = 2
 _libpath = None
 _lib = None
 
+_c_horiz_interp_is_initialized = None
 _cFMS_create_xgrid_2dx2d_order1 = None
 _get_maxxgrid = None
 _cFMS_horiz_interp_init = None
@@ -117,6 +118,16 @@ def end():
     """
 
     _cFMS_horiz_interp_end()
+
+
+def module_is_initialized():
+    
+    """
+    returns module_is_initialized in c_horiz_interp_mod
+    """
+
+    return _c_horiz_interp_is_initialized()
+
 
 
 # TODO names should be consistent between in/src and out/dst
@@ -360,6 +371,7 @@ def interp(
 
 def _init_functions():
 
+    global _c_horiz_interp_is_initialized
     global _cFMS_create_xgrid_2dx2d_order1
     global _get_maxxgrid
     global _cFMS_horiz_interp_init
@@ -385,6 +397,8 @@ def _init_functions():
     global _cFMS_get_interp_method
     global _cFMS_get_area_frac_dst_double
     global _cFMS_get_nxgrid
+
+    _c_horiz_interp_is_initialized = _lib.c_horiz_interp_is_initialized
 
     _cFMS_create_xgrid_2dx2d_order1 = _lib.cFMS_create_xgrid_2dx2d_order1
     _get_maxxgrid = _lib.get_maxxgrid

@@ -17,7 +17,12 @@ NOLEAP = None
 
 _cFMS_init = None
 _cFMS_end = None
+_c_fms_is_initialized = None
 
+
+def check_initialized():
+    return __is_initialized
+    
 
 def init(
     alt_input_nml_path: str = None,
@@ -48,6 +53,7 @@ def init(
     _cFMS_init(*arglist)
 
 
+
 def end():
 
     """
@@ -56,7 +62,18 @@ def end():
     for the mpp, mpp_domains, and mpp_io modules.
     """
 
+    global __is_initialized
+    
     _cFMS_end()
+
+
+def module_is_initialized():
+    
+    """
+    returns module_is_initialized variable from c_fms_mod
+    """
+
+    return _c_fms_is_initialized()
 
 
 def _init_constants():
@@ -84,12 +101,15 @@ def _init_constants():
 
 def _init_functions():
 
-    global _cFMS_init, _cFMS_end
+    global _cFMS_init
+    global _cFMS_end
+    global _c_fms_is_initialized
 
     _functions.define(_lib)
 
     _cFMS_init = _lib.cFMS_init
     _cFMS_end = _lib.cFMS_end
+    _c_fms_is_initialized = _lib.c_fms_is_initialized
 
 
 def _init(libpath: str, lib: Any):

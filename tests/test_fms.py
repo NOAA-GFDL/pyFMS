@@ -18,7 +18,8 @@ def test_pyfms_init():
 
     fcomm = MPI.COMM_WORLD.py2f()
 
-    pyfms.fms.init(localcomm=fcomm)
+    pyfms.fms.init(localcomm=fcomm)    
+    assert pyfms.fms.module_is_initialized()
 
     pyfms.fms.end()
 

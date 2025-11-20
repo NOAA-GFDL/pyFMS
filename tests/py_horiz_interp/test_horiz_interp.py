@@ -65,6 +65,8 @@ def test_horiz_interp_conservative():
 
     pyfms.fms.init(ndomain=2)
     pyfms.horiz_interp.init(2)
+    
+    assert pyfms.horiz_interp.module_is_initialized()
 
     interp_id_answer = 0
     for convert_cf_order in [True, False]:

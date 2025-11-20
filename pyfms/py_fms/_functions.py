@@ -1,4 +1,4 @@
-from ctypes import POINTER, c_char_p, c_int
+from ctypes import POINTER, c_bool, c_char_p, c_int
 
 
 def define(lib):
@@ -23,3 +23,6 @@ def define(lib):
     # cFMS_end
     lib.cFMS_end.restype = None
     lib.cFMS_end.argtypes = None
+
+    lib.c_fms_is_initialized.restype = c_bool
+    lib.c_fms_is_initialized.argtypes = None
