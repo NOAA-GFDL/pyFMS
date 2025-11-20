@@ -20,10 +20,6 @@ _cFMS_end = None
 _c_fms_is_initialized = None
 
 
-def check_initialized():
-    return __is_initialized
-
-
 def init(
     alt_input_nml_path: str = None,
     localcomm: int = None,
