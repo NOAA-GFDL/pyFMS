@@ -30,6 +30,9 @@ def define(lib):
         c_char_p,  # err_msg
     ]
 
+    lib.c_diag_manager_is_initialized.restype = c_bool
+    lib.c_diag_manager_is_initialized.argtypes = None
+
     # cFMS_send_complete
     lib.cFMS_diag_send_complete.restype = None
     lib.cFMS_diag_send_complete.argtypes = [
