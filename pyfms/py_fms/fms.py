@@ -61,8 +61,6 @@ def end():
     for the mpp, mpp_domains, and mpp_io modules.
     """
 
-    global __is_initialized
-
     _cFMS_end()
 
 
