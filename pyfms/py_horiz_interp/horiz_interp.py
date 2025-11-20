@@ -121,13 +121,12 @@ def end():
 
 
 def module_is_initialized():
-    
+
     """
     returns module_is_initialized in c_horiz_interp_mod
     """
 
     return _c_horiz_interp_is_initialized()
-
 
 
 # TODO names should be consistent between in/src and out/dst

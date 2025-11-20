@@ -22,7 +22,7 @@ _c_fms_is_initialized = None
 
 def check_initialized():
     return __is_initialized
-    
+
 
 def init(
     alt_input_nml_path: str = None,
@@ -53,7 +53,6 @@ def init(
     _cFMS_init(*arglist)
 
 
-
 def end():
 
     """
@@ -63,12 +62,12 @@ def end():
     """
 
     global __is_initialized
-    
+
     _cFMS_end()
 
 
 def module_is_initialized():
-    
+
     """
     returns module_is_initialized variable from c_fms_mod
     """

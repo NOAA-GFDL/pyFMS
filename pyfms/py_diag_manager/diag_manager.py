@@ -102,7 +102,7 @@ def module_is_initialized():
     """
     returns module_is_initialized from c_diag_manager_mod
     """
-   
+
     return _c_diag_manager_is_initialized()
 
 
