@@ -18,6 +18,9 @@ def define(lib):
     during package initialization
     """
 
+    lib.c_horiz_interp_is_initialized.restype = c_bool
+    lib.c_horiz_interp_is_initialized.argtypes = None
+
     # create_xgrid_2dx2d_order1
     lib.cFMS_create_xgrid_2dx2d_order1.restype = c_int
     lib.cFMS_create_xgrid_2dx2d_order1.argtypes = [
