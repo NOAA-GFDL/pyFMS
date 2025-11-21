@@ -16,7 +16,7 @@ _cFMS_get_grid_area = None
 def get_grid_area(
     lon: npt.NDArray[np.float64],
     lat: npt.NDArray[np.float64],
-    convert_cf_order: bool = False,
+    convert_cf_order: bool = True,
 ) -> npt.NDArray[np.float64]:
 
     """
