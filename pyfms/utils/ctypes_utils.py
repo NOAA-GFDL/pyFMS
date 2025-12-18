@@ -7,7 +7,7 @@ import numpy.typing as npt
 
 ctypelist = Union[type(c_int), type(c_float), type(c_double), type(c_bool)]
 
-nptypelist = Union[np.int32, np.int64, np.float32, np.float64, np.bool]
+nptypelist = Union[np.int32, np.int64, np.float32, np.float64, bool]
 
 
 def setNone(arglist) -> None:
