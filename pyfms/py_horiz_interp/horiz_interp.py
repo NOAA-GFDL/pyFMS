@@ -137,7 +137,8 @@ def get_weights(
     src_modulo: bool = False,
     is_latlon_in: bool = False,
     is_latlon_out: bool = False,
-    save_weights_as_fregrid: bool = False,
+    save_xgrid_area: bool = False,
+    as_fregrid: bool = False,
     convert_cf_order: bool = True,
 ) -> int:
     """
@@ -181,7 +182,8 @@ def get_weights(
     set_c_bool(src_modulo, arglist)
     set_c_bool(is_latlon_in, arglist)
     set_c_bool(is_latlon_out, arglist)
-    set_c_bool(save_weights_as_fregrid, arglist)
+    set_c_bool(save_xgrid_area, arglist)
+    set_c_bool(as_fregrid, arglist)
     set_c_bool(convert_cf_order, arglist)
 
     return _cFMS_horiz_interp_new(*arglist)
@@ -382,7 +384,7 @@ def read_weights_conserve(weight_filename: str,
                           nlon_tgt: int = None,
                           nlat_tgt: int = None,
                           src_tile: int = None,
-                          save_weights_as_fregrid: bool = False) -> int:
+                          save_xgrid_area: bool = False) -> int:
 
     if domain is None:
         if nlon_tgt is None: cFMS_error(FATAL, "must provide nlon_tgt if Domain is not specified")
@@ -408,7 +410,7 @@ def read_weights_conserve(weight_filename: str,
     set_c_int(jsc, arglist)
     set_c_int(jec, arglist)
     set_c_int(src_tile, arglist)
-    set_c_bool(save_weights_as_fregrid, arglist)
+    set_c_bool(save_xgrid_area, arglist)
 
     return _cFMS_horiz_interp_read_weights_conserve(*arglist)
 

@@ -101,29 +101,27 @@ def test_horiz_interp_conservative():
             lat_out=lat_dst,
             interp_method="conservative",
             verbose=1,
-            save_weights_as_fregrid=True,
+            save_xgrid_area=True,
             convert_cf_order=convert_cf_order,
         )
 
         # check weights
         nxgrid = (jec - jsc) * (iec - isc)
-        interp = pyfms.ConserveInterp(interp_id, weights_as_fregrid=True)
+        interp = pyfms.ConserveInterp(interp_id, save_xgrid_area=True)
         
         xgrid_area_answers =  pyfms.grid_utils.get_grid_area(lon_dst, lat_dst, convert_cf_order=convert_cf_order)
 
         j_answers = np.array([j for j in range(jsc, jec) for ilon in range(iec - isc)])
-        nlon_in, nlat_in = ni_src, nj_src
-        nlon_out, nlat_out = domain.xsize_c, domain.ysize_c
 
         assert interp_id == interp_id_answer
         assert interp.nxgrid == nxgrid
         assert interp.interp_method == "conservative"
         assert np.all(interp.i_src == np.array(list(range(isc, iec)) * (jec - jsc)))
         assert np.all(interp.j_src == j_answers)
-        assert interp.nlon_src == nlon_in
-        assert interp.nlat_src == nlat_in
-        assert interp.nlon_dst == nlon_out
-        assert interp.nlat_dst == nlat_out
+        assert interp.nlon_src == ni_src
+        assert interp.nlat_src == nj_src
+        assert interp.nlon_dst == domain.xsize_c
+        assert interp.nlat_dst == domain.ysize_c
 
         if convert_cf_order:
             np.testing.assert_array_equal(interp.xgrid_area, xgrid_area_answers.T.flatten())

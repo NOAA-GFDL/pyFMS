@@ -4,7 +4,7 @@ from pyfms.py_horiz_interp import horiz_interp
 class ConserveInterp:
     def __init__(self,
                  interp_id: int = None,
-                 weights_as_fregrid: bool = False):
+                 save_xgrid_area: bool = False):
 
         """
         Python counterpart to FmsHorizInterp_type
@@ -25,7 +25,7 @@ class ConserveInterp:
             self.nlat_dst = horiz_interp.get_nlat_dst(interp_id)
             self.interp_method = horiz_interp.get_interp_method(interp_id)
             self.get_area_frac_dst = horiz_interp.get_area_frac_dst(interp_id)
-            if weights_as_fregrid:
+            if save_xgrid_area:
                 self.xgrid_area = horiz_interp.get_xgrid_area(interp_id)
         else:
             self.nxgrid = None
