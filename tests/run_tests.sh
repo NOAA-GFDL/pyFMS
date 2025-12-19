@@ -80,6 +80,9 @@ run_test "pytest $flags ${test}::test_horiz_interp_bilinear"
 run_test "mpirun -n 2 $oversubscribe pytest $flags ${test}::test_horiz_interp_bilinear"
 remove_input $test
 
+test="py_horiz_interp/test_read_weights_conserve.py"
+run_test "mpirun -n 4 $oversubscribe pytest $flags ${test}::test_read_weights_conserve"
+
 #test temporarily turned off on Github Action
 # test="py_data_override/test_data_override.py"
 # run_test "python -m pytest $flags py_data_override/test_generate_files.py"

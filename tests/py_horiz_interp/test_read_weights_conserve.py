@@ -1,5 +1,6 @@
-import numpy as np
 from pathlib import Path
+
+import numpy as np
 import xarray as xr
 
 import pyfms
@@ -58,13 +59,13 @@ def write_remap():
 def test_read_weights_conserve():
 
     Path("input.nml").touch()
-    
+
     pyfms.fms.init(ndomain=1)
     pyfms.horiz_interp.init(ninterp=1)
 
     pe = pyfms.mpp.pe()
     is_root_pe = pe == pyfms.mpp.root_pe()
-    
+
     if is_root_pe:
         write_remap()
     pyfms.mpp.sync()
@@ -84,7 +85,8 @@ def test_read_weights_conserve():
 
     assert np.all(data_dst == data_src)
 
-    if is_root_pe: Path("input.nml").unlink()
+    if is_root_pe:
+        Path("input.nml").unlink()
     pyfms.fms.end()
 
 
