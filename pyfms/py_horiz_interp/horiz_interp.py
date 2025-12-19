@@ -3,7 +3,7 @@ from typing import Any
 import numpy as np
 import numpy.typing as npt
 
-import pyfms.mpp
+import pyfms.py_mpp.mpp as mpp
 from pyfms.py_horiz_interp import _functions
 from pyfms.py_mpp.domain import Domain
 from pyfms.utils.ctypes_utils import (
@@ -401,13 +401,9 @@ def read_weights_conserve(
 
     if domain is None:
         if nlon_tgt is None:
-            pyfms.mpp.error(
-                pyfms.mpp.FATAL, "must provide nlon_tgt if Domain is not specified"
-            )
+            mpp.error(mpp.FATAL, "must provide nlon_tgt if Domain is not specified")
         if nlat_tgt is None:
-            pyfms.mpp.error(
-                pyfms.mpp.FATAL, "must provide nlon_tgt if Domain is not specified"
-            )
+            mpp.error(mpp.FATAL, "must provide nlon_tgt if Domain is not specified")
         isc, iec, jsc, jec = 0, nlon_tgt - 1, 0, nlat_tgt - 1
     else:
         nlon_tgt = domain.xsize_c
