@@ -69,7 +69,7 @@ def test_horiz_interp_conservative():
     assert pyfms.horiz_interp.module_is_initialized()
 
     interp_id_answer = 0
-    for convert_cf_order in [True]:#, False]:
+    for convert_cf_order in [True, False]:
 
         # set up domain decomposition
         ni_src = 180
@@ -110,8 +110,10 @@ def test_horiz_interp_conservative():
         # check weights
         nxgrid = (jec - jsc) * (iec - isc)
         interp = pyfms.ConserveInterp(interp_id, save_xgrid_area=True)
-        
-        xgrid_area_answers =  pyfms.grid_utils.get_grid_area(lon_dst, lat_dst, convert_cf_order=convert_cf_order)
+
+        xgrid_area_answers = pyfms.grid_utils.get_grid_area(
+            lon_dst, lat_dst, convert_cf_order=convert_cf_order
+        )
 
         j_answers = np.array([j for j in range(jsc, jec) for ilon in range(iec - isc)])
 
@@ -126,9 +128,13 @@ def test_horiz_interp_conservative():
         assert interp.nlat_dst == domain.ysize_c
 
         if convert_cf_order:
-            np.testing.assert_array_equal(interp.xgrid_area, xgrid_area_answers.T.flatten())
-        else:   
-            np.testing.assert_array_equal(interp.xgrid_area, xgrid_area_answers.flatten())
+            np.testing.assert_array_equal(
+                interp.xgrid_area, xgrid_area_answers.T.flatten()
+            )
+        else:
+            np.testing.assert_array_equal(
+                interp.xgrid_area, xgrid_area_answers.flatten()
+            )
 
         # interp
         if convert_cf_order:

@@ -2,9 +2,7 @@ from pyfms.py_horiz_interp import horiz_interp
 
 
 class ConserveInterp:
-    def __init__(self,
-                 interp_id: int = None,
-                 save_xgrid_area: bool = False):
+    def __init__(self, interp_id: int = None, save_xgrid_area: bool = False):
 
         """
         Python counterpart to FmsHorizInterp_type
@@ -42,8 +40,12 @@ class ConserveInterp:
 
     def __repr__(self):
         description = "\n\nConserveInterp object\n\n"
-        description += "src_nx = {:>5} src_ny={:>5}\n".format(self.nlon_src, self.nlat_src)
-        description += "tgt_nx = {:>5} tgt_ny={:>5}\n".format(self.nlon_dst, self.nlat_dst)
+        description += "src_nx = {:>5} src_ny={:>5}\n".format(
+            self.nlon_src, self.nlat_src
+        )
+        description += "tgt_nx = {:>5} tgt_ny={:>5}\n".format(
+            self.nlon_dst, self.nlat_dst
+        )
         description += f"nxgrid = {self.nxgrid}\n"
         description += f"i_src = {self.i_src}\n"
         description += f"j_src = {self.j_src}\n"

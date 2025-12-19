@@ -3,7 +3,9 @@ from typing import Any
 import numpy as np
 import numpy.typing as npt
 
+import pyfms.mpp
 from pyfms.py_horiz_interp import _functions
+from pyfms.py_mpp.domain import Domain
 from pyfms.utils.ctypes_utils import (
     set_array,
     set_c_bool,
@@ -12,7 +14,6 @@ from pyfms.utils.ctypes_utils import (
     set_c_int,
     set_c_str,
 )
-from pyfms.py_mpp.domain import Domain
 
 
 # enumerations used by horiz_interp_types.F90 (FMS)
@@ -313,7 +314,7 @@ def get_area_frac_dst(interp_id: int):
 def get_xgrid_area(interp_id: int):
 
     nxgrid = get_nxgrid(interp_id)
-   
+
     arglist = []
     set_c_int(interp_id, arglist)
     xgrid_area = set_array(np.zeros(nxgrid, dtype=np.float64), arglist)
@@ -386,20 +387,28 @@ def interp(
     return data_out
 
 
-def read_weights_conserve(weight_filename: str,
-                          weight_file_src: str,
-                          nlon_src: int,
-                          nlat_src: int,
-                          domain: Domain = None,
-                          nlon_tgt: int = None,
-                          nlat_tgt: int = None,
-                          src_tile: int = None,
-                          save_xgrid_area: bool = False) -> int:
+def read_weights_conserve(
+    weight_filename: str,
+    weight_file_src: str,
+    nlon_src: int,
+    nlat_src: int,
+    domain: Domain = None,
+    nlon_tgt: int = None,
+    nlat_tgt: int = None,
+    src_tile: int = None,
+    save_xgrid_area: bool = False,
+) -> int:
 
     if domain is None:
-        if nlon_tgt is None: cFMS_error(FATAL, "must provide nlon_tgt if Domain is not specified")
-        if nlat_tgt is None: cFMS_error(FATAL, "must provide nlon_tgt if Domain is not specified")
-        isc, iec, jsc, jec = 0, nlon_tgt-1, 0, nlat_tgt-1
+        if nlon_tgt is None:
+            pyfms.mpp.error(
+                pyfms.mpp.FATAL, "must provide nlon_tgt if Domain is not specified"
+            )
+        if nlat_tgt is None:
+            pyfms.mpp.error(
+                pyfms.mpp.FATAL, "must provide nlon_tgt if Domain is not specified"
+            )
+        isc, iec, jsc, jec = 0, nlon_tgt - 1, 0, nlat_tgt - 1
     else:
         nlon_tgt = domain.xsize_c
         nlat_tgt = domain.ysize_c
@@ -469,7 +478,9 @@ def _init_functions():
     _cFMS_horiz_interp_base_2d_cdouble = _lib.cFMS_horiz_interp_base_2d_cdouble
     _cFMS_horiz_interp_base_2d_cfloat = _lib.cFMS_horiz_interp_base_2d_cfloat
 
-    _cFMS_horiz_interp_read_weights_conserve = _lib.cFMS_horiz_interp_read_weights_conserve
+    _cFMS_horiz_interp_read_weights_conserve = (
+        _lib.cFMS_horiz_interp_read_weights_conserve
+    )
 
     _cFMS_get_wti_cfloat = _lib.cFMS_get_wti_cfloat
     _cFMS_get_wti_cdouble = _lib.cFMS_get_wti_cdouble

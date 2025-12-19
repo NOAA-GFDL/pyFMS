@@ -263,7 +263,7 @@ def set_current_pelist(pelist: list[int] = None, no_sync: bool = None):
 def sync():
 
     _cFMS_sync()
-    
+
 
 def _init_functions():
 

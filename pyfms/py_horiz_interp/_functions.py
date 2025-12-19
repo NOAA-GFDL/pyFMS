@@ -6,7 +6,7 @@ from pyfms.utils.ctypes_utils import NDPOINTER
 
 
 ndpointer = np.ctypeslib.ndpointer
-C = ("C_CONTIGUOUS")
+C = "C_CONTIGUOUS"
 
 
 def define(lib):
@@ -103,7 +103,7 @@ def define(lib):
         ]
 
     lib.cFMS_horiz_interp_read_weights_conserve.restype = c_int
-    lib.cFMS_horiz_interp_read_weights_conserve.argtypes = [        
+    lib.cFMS_horiz_interp_read_weights_conserve.argtypes = [
         POINTER(c_char),  # weight_filename
         POINTER(c_char),  # weight_file_src
         POINTER(c_int),  # nlon_src
@@ -115,9 +115,9 @@ def define(lib):
         POINTER(c_int),  # jsw
         POINTER(c_int),  # jew
         POINTER(c_int),  # src_tile
-        POINTER(c_bool)  # save_xgrid_area
+        POINTER(c_bool),  # save_xgrid_area
     ]
-        
+
     # getter routines for individual fields
     lib.cFMS_get_wti_cfloat.restype = None
     lib.cFMS_get_wti_cfloat.argtypes = [
@@ -173,7 +173,7 @@ def define(lib):
         POINTER(c_int),
         ndpointer(np.float64, ndim=1, flags=C),
     ]
-   
+
     # cFMS_get_nlon_src
     lib.cFMS_get_nlon_src.restype = None
     lib.cFMS_get_nlon_src.argtypes = [POINTER(c_int), POINTER(c_int)]
