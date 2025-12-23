@@ -36,6 +36,7 @@ _cFMS_npes = None
 _cFMS_pe = None
 _cFMS_root_pe = None
 _cFMS_set_current_pelist = None
+_cFMS_sync = None
 
 
 def gather(
@@ -259,6 +260,11 @@ def set_current_pelist(pelist: list[int] = None, no_sync: bool = None):
     _cFMS_set_current_pelist(*arglist)
 
 
+def sync():
+
+    _cFMS_sync()
+
+
 def _init_functions():
 
     global _cFMS_declare_pelist
@@ -278,6 +284,7 @@ def _init_functions():
     global _cFMS_pe
     global _cFMS_root_pe
     global _cFMS_set_current_pelist
+    global _cFMS_sync
 
     _mpp_functions.define(_lib)
 
@@ -297,6 +304,7 @@ def _init_functions():
     _cFMS_pe = _lib.cFMS_pe
     _cFMS_root_pe = _lib.cFMS_root_pe
     _cFMS_set_current_pelist = _lib.cFMS_set_current_pelist
+    _cFMS_sync = _lib.cFMS_sync
 
     _cFMS_gathers = {
         "v": {

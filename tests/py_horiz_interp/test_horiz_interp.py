@@ -72,20 +72,11 @@ def test_horiz_interp_conservative():
     for convert_cf_order in [True, False]:
 
         # set up domain decomposition
-        ni_src = 360
-        nj_src = 180
-        pes = pyfms.mpp.npes()
+        ni_src = 180
+        nj_src = 90
 
         global_indices = [0, ni_src - 1, 0, nj_src - 1]
-        layout = pyfms.mpp_domains.define_layout(global_indices, ndivs=pes)
-        domain = pyfms.mpp_domains.define_domains(
-            global_indices=global_indices,
-            layout=layout,
-            pelist=pyfms.mpp.get_current_pelist(npes=pes),
-            name="horiz_interp_conservative_test",
-            xflags=pyfms.mpp_domains.CYCLIC_GLOBAL_DOMAIN,
-            yflags=pyfms.mpp_domains.CYCLIC_GLOBAL_DOMAIN,
-        )
+        domain = pyfms.mpp_domains.define_domains(global_indices=global_indices)
         # get compute domain indices
         isc = domain.isc
         iec = domain.iec + 1  # grid has one more point
@@ -99,13 +90,10 @@ def test_horiz_interp_conservative():
             lat_src, lon_src = np.meshgrid(lat_in_1d, lon_in_1d)
             lon_dst = np.ascontiguousarray(lon_src[isc : iec + 1, jsc : jec + 1])
             lat_dst = np.ascontiguousarray(lat_src[isc : iec + 1, jsc : jec + 1])
-            nlon_in, nlat_in, nlon_out, nlat_out = None, None, None, None
         else:
             lon_src, lat_src = np.meshgrid(lon_in_1d, lat_in_1d)
             lon_dst = np.ascontiguousarray(lon_src[jsc : jec + 1, isc : iec + 1])
             lat_dst = np.ascontiguousarray(lat_src[jsc : jec + 1, isc : iec + 1])
-            nlat_in, nlon_in = lon_src.shape[0] - 1, lon_src.shape[1] - 1
-            nlat_out, nlon_out = lon_dst.shape[0] - 1, lon_dst.shape[1] - 1
 
         # get interpolation weights
         interp_id = pyfms.horiz_interp.get_weights(
@@ -115,31 +103,38 @@ def test_horiz_interp_conservative():
             lat_out=lat_dst,
             interp_method="conservative",
             verbose=1,
-            nlon_in=nlon_in,
-            nlat_in=nlat_in,
-            nlon_out=nlon_out,
-            nlat_out=nlat_out,
+            save_xgrid_area=True,
             convert_cf_order=convert_cf_order,
         )
 
         # check weights
         nxgrid = (jec - jsc) * (iec - isc)
-        interp = pyfms.Interp(interp_id)
+        interp = pyfms.ConserveInterp(interp_id, save_xgrid_area=True)
+
+        xgrid_area_answers = pyfms.grid_utils.get_grid_area(
+            lon_dst, lat_dst, convert_cf_order=convert_cf_order
+        )
 
         j_answers = np.array([j for j in range(jsc, jec) for ilon in range(iec - isc)])
-        if convert_cf_order:
-            nlon_in, nlat_in = lon_src.shape[0] - 1, lon_src.shape[1] - 1
-            nlon_out, nlat_out = lon_dst.shape[0] - 1, lon_dst.shape[1] - 1
 
         assert interp_id == interp_id_answer
         assert interp.nxgrid == nxgrid
         assert interp.interp_method == "conservative"
         assert np.all(interp.i_src == np.array(list(range(isc, iec)) * (jec - jsc)))
         assert np.all(interp.j_src == j_answers)
-        assert interp.nlon_src == nlon_in
-        assert interp.nlat_src == nlat_in
-        assert interp.nlon_dst == nlon_out
-        assert interp.nlat_dst == nlat_out
+        assert interp.nlon_src == ni_src
+        assert interp.nlat_src == nj_src
+        assert interp.nlon_dst == domain.xsize_c
+        assert interp.nlat_dst == domain.ysize_c
+
+        if convert_cf_order:
+            np.testing.assert_array_equal(
+                interp.xgrid_area, xgrid_area_answers.T.flatten()
+            )
+        else:
+            np.testing.assert_array_equal(
+                interp.xgrid_area, xgrid_area_answers.flatten()
+            )
 
         # interp
         if convert_cf_order:

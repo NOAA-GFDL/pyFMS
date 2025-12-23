@@ -77,6 +77,8 @@ def define(lib):
             POINTER(c_bool),  # src_modulo
             POINTER(c_bool),  # is_latlon_in
             POINTER(c_bool),  # is_latlon_out
+            POINTER(c_bool),  # save_xgrid_area
+            POINTER(c_bool),  # as_fregrid
             POINTER(c_bool),  # convert_cf_order
         ]
 
@@ -99,6 +101,22 @@ def define(lib):
             POINTER(c_bool),  # new_missing_handle
             POINTER(c_bool),  # convert_cf_order
         ]
+
+    lib.cFMS_horiz_interp_read_weights_conserve.restype = c_int
+    lib.cFMS_horiz_interp_read_weights_conserve.argtypes = [
+        POINTER(c_char),  # weight_filename
+        POINTER(c_char),  # weight_file_src
+        POINTER(c_int),  # nlon_src
+        POINTER(c_int),  # nlat_src
+        POINTER(c_int),  # nlon_dst
+        POINTER(c_int),  # nlat_dst
+        POINTER(c_int),  # isw
+        POINTER(c_int),  # iew
+        POINTER(c_int),  # jsw
+        POINTER(c_int),  # jew
+        POINTER(c_int),  # src_tile
+        POINTER(c_bool),  # save_xgrid_area
+    ]
 
     # getter routines for individual fields
     lib.cFMS_get_wti_cfloat.restype = None
@@ -145,6 +163,13 @@ def define(lib):
     # cFMS_get_area_frac_dst
     lib.cFMS_get_area_frac_dst_cdouble.restype = None
     lib.cFMS_get_area_frac_dst_cdouble.argtypes = [
+        POINTER(c_int),
+        ndpointer(np.float64, ndim=1, flags=C),
+    ]
+
+    # cFMS_get_area_frac_dst
+    lib.cFMS_get_xgrid_area_cdouble.restype = None
+    lib.cFMS_get_xgrid_area_cdouble.argtypes = [
         POINTER(c_int),
         ndpointer(np.float64, ndim=1, flags=C),
     ]

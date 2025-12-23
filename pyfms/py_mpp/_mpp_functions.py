@@ -117,3 +117,6 @@ def define(lib):
         NDPOINTER(dtype=np.int32, ndim=(1), flags=C),  # pelist
         POINTER(c_bool),  # no_sync
     ]
+
+    lib.cFMS_sync.restype = None
+    lib.cFMS_sync.argtypes = None
