@@ -40,8 +40,8 @@ _cFMS_set_current_pelist = None
 
 def gather(
     sbuf: npt.NDArray,
-    rbuf_size: int = None, #for 1d
-    rbuf_shape: list[int, int] = None, #for 2d
+    rbuf_size: int = None,  # for 1d
+    rbuf_shape: list[int, int] = None,  # for 2d
     domain: dict = None,  # mpp_gather_2d argument
     pelist: list = None,
     is_root_pe: bool = None,
@@ -51,7 +51,8 @@ def gather(
 ) -> npt.NDArray:
 
     datatype = sbuf.dtype
-    if is_root_pe is None: is_root_pe = pe() == root_pe()
+    if is_root_pe is None:
+        is_root_pe = pe() == root_pe()
     dim = sbuf.ndim
 
     try:
@@ -64,7 +65,8 @@ def gather(
     if dim == 1:
 
         if is_root_pe:
-            if rbuf_size is None: raise RuntimeError("Must specify size of receiving array")
+            if rbuf_size is None:
+                raise RuntimeError("Must specify size of receiving array")
             rbuf = np.zeros(rbuf_size, dtype=datatype)
         else:
             rbuf_size, rbuf = None, None
@@ -82,7 +84,8 @@ def gather(
     elif dim == 2:
 
         if is_root_pe:
-            if rbuf_shape is None: raise RuntimeError("Must specify shape of receiving array")
+            if rbuf_shape is None:
+                raise RuntimeError("Must specify shape of receiving array")
             rbuf = np.zeros(rbuf_shape, dtype=datatype)
         else:
             rbuf_shape, rbuf = None, None
@@ -110,24 +113,24 @@ def gather(
     return None
 
 
-def gatherv(sbuf: npt.NDArray,
-            ssize: int,
-            rsize: int = None,
-            pelist: list[int] = None) -> npt.NDArray:
+def gatherv(
+    sbuf: npt.NDArray, ssize: int, rsize: int = None, pelist: list[int] = None
+) -> npt.NDArray:
 
     datatype = sbuf.dtype
 
     try:
         cFMS_gather = _cFMS_gathers["v"][datatype.name]
     except Exception:
-        error(FATAL, f"mpp.gather {datatype.name} not supported for dim={dim}")
+        error(FATAL, f"mpp.gather {datatype.name} not supported for gatherv")
 
     is_root_pe = pe() == root_pe()
 
     sbuf_size = sbuf.shape[0]
 
     if is_root_pe:
-        if rsize is None: raise RuntimeError("must specify receiving sizes for root pe")
+        if rsize is None:
+            raise RuntimeError("must specify receiving sizes for root pe")
         rbuf = np.zeros(np.sum(rsize), dtype=datatype)
         npes = len(rsize)
     else:

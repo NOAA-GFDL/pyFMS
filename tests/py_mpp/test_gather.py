@@ -30,15 +30,18 @@ def test_gather_2d():
 
         rbuf_shape = None
         if is_root_pe:
-          if convert:
-            rbuf_shape = [nx, ny]
-          else:
-            rbuf_shape = [ny, nx]
-
+            if convert:
+                rbuf_shape = [nx, ny]
+            else:
+                rbuf_shape = [ny, nx]
 
         pelist = pyfms.mpp.get_current_pelist(pyfms.mpp.npes())
         gathered = pyfms.mpp.gather(
-            send, rbuf_shape=rbuf_shape, domain=domain, pelist=pelist, convert_cf_order=convert
+            send,
+            rbuf_shape=rbuf_shape,
+            domain=domain,
+            pelist=pelist,
+            convert_cf_order=convert,
         )
 
         if pyfms.mpp.pe() == pyfms.mpp.root_pe():
@@ -65,9 +68,9 @@ def test_gather_1d():
     send = np.array(buffer(pe), dtype=np.float64)
 
     if is_root_pe:
-      rbuf_size = sbuf_size * npes
+        rbuf_size = sbuf_size * npes
     else:
-      rbuf_size = None
+        rbuf_size = None
 
     receive = pyfms.mpp.gather(np.array(send), rbuf_size=rbuf_size)
 
@@ -83,7 +86,6 @@ def test_gather_1d():
 
 
 def test_gatherv_1d():
-
     def buffer(ipe):
         return [ipe * 10 + i for i in range(ipe + 2)]
 
@@ -94,9 +96,9 @@ def test_gatherv_1d():
     sbuf = np.array(buffer(pe), dtype=np.float64)
 
     if is_root_pe:
-      rsize = [ipe + 2 for ipe in range(pyfms.mpp.npes())]
+        rsize = [ipe + 2 for ipe in range(pyfms.mpp.npes())]
     else:
-      rsize = None
+        rsize = None
 
     receive = pyfms.mpp.gatherv(sbuf, ssize=pe + 2, rsize=rsize)
 
