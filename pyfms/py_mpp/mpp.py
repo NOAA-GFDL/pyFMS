@@ -40,18 +40,20 @@ _cFMS_set_current_pelist = None
 
 def gather(
     sbuf: npt.NDArray,
-    ssize: int = None,  # mpp_gatherv_1d argument
-    rsize: list[int] = None,  # mpp_gatherv_1d argument
+    rbuf_size: int = None,  # for 1d
+    rbuf_shape: list[int, int] = None,  # for 2d
     domain: dict = None,  # mpp_gather_2d argument
     pelist: list = None,
+    is_root_pe: bool = None,
     ishift: int = None,  # mpp_gather_pelist_2d argument
     jshift: int = None,  # mpp_gather_pelist_2d argument
     convert_cf_order: bool = True,
-):
+) -> npt.NDArray:
 
     datatype = sbuf.dtype
-    is_root_pe = pe() == root_pe()
-    (dim, do_vector) = (sbuf.ndim, False) if rsize is None else ("v", True)
+    if is_root_pe is None:
+        is_root_pe = pe() == root_pe()
+    dim = sbuf.ndim
 
     try:
         cFMS_gather = _cFMS_gathers[dim][datatype.name]
@@ -60,56 +62,33 @@ def gather(
 
     arglist = []
 
-    if do_vector:
-
-        rsize = rsize if is_root_pe else [1]
-        rbuf_size = sum(rsize)
-        npes_here = len(rsize)
-        rbuf = np.zeros((rbuf_size), dtype=datatype)
-
-        # The pelist does not matter for non-root pe's
-        # However, pelist is declared to be the size of rsize in cFMS
-        # for non root-pelist, len(rsize) = 1 so pelist has to be the len of [1]
-        if pelist is not None:
-            pelist = pelist[:npes_here]
-
-        set_c_int(npes_here, arglist)
-        set_c_int(sbuf.shape[0], arglist)
-        set_c_int(rbuf_size, arglist)
-        set_array(sbuf, arglist)
-        set_c_int(ssize, arglist)
-        set_array(rbuf, arglist)
-        set_list(rsize, np.int32, arglist)
-        set_list(pelist, np.int32, arglist)
-
-        cFMS_gather(*arglist)
-        if is_root_pe:
-            return rbuf
-        return None
-
     if dim == 1:
+
+        if is_root_pe:
+            if rbuf_size is None:
+                raise RuntimeError("Must specify size of receiving array")
+            rbuf = np.zeros(rbuf_size, dtype=datatype)
+        else:
+            rbuf_size, rbuf = None, None
 
         sbuf_size = sbuf.shape[0]
         n_pes = None if pelist is None else len(pelist)
-        rbuf_size = sbuf_size * npes()
-        rbuf = np.zeros(rbuf_size, dtype=datatype)
+
         set_c_int(sbuf_size, arglist)
-        set_c_int(rbuf_size, arglist)
         set_array(sbuf, arglist)
         set_array(rbuf, arglist)
         set_list(pelist, np.int32, arglist)
+        set_c_int(rbuf_size, arglist)
         set_c_int(n_pes, arglist)
 
     elif dim == 2:
 
-        nx = domain.xsize_g if is_root_pe else 1
-        ny = domain.ysize_g if is_root_pe else 1
         if is_root_pe:
-            rbuf_shape = (nx, ny) if convert_cf_order else (ny, nx)
+            if rbuf_shape is None:
+                raise RuntimeError("Must specify shape of receiving array")
             rbuf = np.zeros(rbuf_shape, dtype=datatype)
         else:
-            rbuf_shape = None
-            rbuf = None
+            rbuf_shape, rbuf = None, None
 
         pelist = get_current_pelist(npes()) if pelist is None else pelist
 
@@ -120,15 +99,54 @@ def gather(
         set_c_int(len(pelist), arglist)
         set_list(pelist, np.int32, arglist)
         set_array(sbuf, arglist)
-        set_list(rbuf_shape, np.int32, arglist)
         set_array(rbuf, arglist)
         set_c_bool(is_root_pe, arglist)
+        set_list(rbuf_shape, np.int32, arglist)
         set_c_int(ishift, arglist)
         set_c_int(jshift, arglist)
         set_c_bool(convert_cf_order, arglist)
 
     cFMS_gather(*arglist)
 
+    if is_root_pe:
+        return rbuf
+    return None
+
+
+def gatherv(
+    sbuf: npt.NDArray, ssize: int, rsize: int = None, pelist: list[int] = None
+) -> npt.NDArray:
+
+    datatype = sbuf.dtype
+
+    try:
+        cFMS_gather = _cFMS_gathers["v"][datatype.name]
+    except Exception:
+        error(FATAL, f"mpp.gather {datatype.name} not supported for gatherv")
+
+    is_root_pe = pe() == root_pe()
+
+    sbuf_size = sbuf.shape[0]
+
+    if is_root_pe:
+        if rsize is None:
+            raise RuntimeError("must specify receiving sizes for root pe")
+        rbuf = np.zeros(np.sum(rsize), dtype=datatype)
+        npes = len(rsize)
+    else:
+        rbuf, rsize = None, None
+        npes = None if pelist is None else len(pelist)
+
+    arglist = []
+    set_c_int(sbuf_size, arglist)
+    set_array(sbuf, arglist)
+    set_c_int(ssize, arglist)
+    set_array(rbuf, arglist)
+    set_list(rsize, np.int32, arglist)
+    set_list(pelist, np.int32, arglist)
+    set_c_int(npes, arglist)
+
+    cFMS_gather(*arglist)
     if is_root_pe:
         return rbuf
     return None
