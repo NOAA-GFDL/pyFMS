@@ -1,9 +1,7 @@
-import numpy as np
 from pyfms.py_horiz_interp import horiz_interp
 
 
 class Interp:
-
     def __init__(self, interp_id: int):
         # set only for conservative
         self.interp_id = interp_id
