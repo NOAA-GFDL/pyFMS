@@ -22,7 +22,7 @@ class ConserveInterp:
             self.nlon_dst = horiz_interp.get_nlon_dst(interp_id)
             self.nlat_dst = horiz_interp.get_nlat_dst(interp_id)
             self.interp_method = horiz_interp.get_interp_method(interp_id)
-            self.get_area_frac_dst = horiz_interp.get_area_frac_dst(interp_id)
+            self.area_frac_dst = horiz_interp.get_area_frac_dst(interp_id)
             if save_xgrid_area:
                 self.xgrid_area = horiz_interp.get_xgrid_area(interp_id)
         else:
@@ -36,20 +36,25 @@ class ConserveInterp:
             self.nlon_dst = None
             self.nlat_dst = None
             self.interp_method = None
-            self.get_area_frac_dst = None
+            self.area_frac_dst = None
 
+            
     def __repr__(self):
-        description = "\n\nConserveInterp object\n\n"
-        description += "src_nx = {:>5} src_ny={:>5}\n".format(
-            self.nlon_src, self.nlat_src
-        )
-        description += "tgt_nx = {:>5} tgt_ny={:>5}\n".format(
-            self.nlon_dst, self.nlat_dst
-        )
-        description += f"nxgrid = {self.nxgrid}\n"
-        description += f"i_src = {self.i_src}\n"
-        description += f"j_src = {self.j_src}\n"
-        description += f"i_dst = {self.i_dst}\n"
-        description += f"j_dst = {self.j_dst}\n"
-        description += f"xgrid_area = {self.xgrid_area}\n"
-        return description
+
+        repr_str = f"""
+            interp_id: {self.interp_id}
+            nxgrid: {self.nxgrid}
+            nlon_src: {self.nlon_src}
+            nlat_src: {self.nlat_src}
+            nlon_dst: {self.nlon_dst}
+            nlat_dst: {self.nlat_dst}
+            interp_method: {self.interp_method}
+            i_src_minmax: [{self.i_src.min()}, {self.i_src.max()}]
+            j_src_minmax [{self.j_src.min()}, {self.j_src.max()}]
+            i_dst_minmax: [{self.i_dst.min()}, {self.i_dst.max()}]
+            j_dst_minmax: [{self.j_dst.min()}, {self.j_dst.max()}]
+            area_frac_dst_minmax: [{self.area_frac_dst.min()}, {self.area_frac_dst.max()}]
+        """
+
+        return repr_str
+

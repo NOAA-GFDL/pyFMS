@@ -46,9 +46,9 @@ def define(lib):
             POINTER(c_int),  # npes
             ndpointer(dtype=np.int32, ndim=1, flags=C),  # pelist
             ndpointer(dtype=nptype, ndim=2, flags=C),  # array_seg
-            NDPOINTER(dtype=np.int32, shape=(2,), flags=C),  # gather_data_c_shape
             NDPOINTER(dtype=nptype, ndim=2, flags=C),  # gather_data
             POINTER(c_bool),  # is_root_pe
+            NDPOINTER(dtype=np.int32, shape=(2,), flags=C),  # gather_data_c_shape
             POINTER(c_int),  # ishift
             POINTER(c_int),  # jshift
             POINTER(c_bool),  # convert_cf_order
@@ -64,10 +64,10 @@ def define(lib):
         cFMS_gather.restype = None
         cFMS_gather.argtypes = [
             POINTER(c_int),  # sbufsize
-            POINTER(c_int),  # rbufsize
             ndpointer(dtype=nptype, ndim=1, flags=C),  # sbuf
-            ndpointer(dtype=nptype, ndim=1, flags=C),  # rbuf
+            NDPOINTER(dtype=nptype, ndim=1, flags=C),  # rbuf
             NDPOINTER(dtype=np.int32, ndim=1, flags=C),  # pelist
+            POINTER(c_int),  # rbufsize
             POINTER(c_int),  # npes
         ]
 
@@ -79,14 +79,13 @@ def define(lib):
     for nptype, cFMS_gather in gatherdict.items():
         cFMS_gather.restype = None
         cFMS_gather.argtypes = [
-            POINTER(c_int),  # npes
             POINTER(c_int),  # sbuf_size
-            POINTER(c_int),  # rbuf_size
             ndpointer(dtype=nptype, ndim=1, flags=C),  # sbuf
             POINTER(c_int),  # ssize
-            ndpointer(dtype=nptype, ndim=1, flags=C),  # rbuf
-            ndpointer(dtype=np.int32, ndim=1, flags=C),  # rsize
+            NDPOINTER(dtype=nptype, ndim=1, flags=C),  # rbuf
+            NDPOINTER(dtype=np.int32, ndim=1, flags=C),  # rsize
             NDPOINTER(dtype=np.int32, ndim=1, flags=C),  # pelist
+            POINTER(c_int),  # npes
         ]
 
     # cFMS_get_current_pelist
