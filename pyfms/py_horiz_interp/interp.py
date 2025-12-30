@@ -38,7 +38,6 @@ class ConserveInterp:
             self.interp_method = None
             self.area_frac_dst = None
 
-            
     def __repr__(self):
 
         repr_str = f"""
@@ -57,4 +56,3 @@ class ConserveInterp:
         """
 
         return repr_str
-
