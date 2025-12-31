@@ -92,8 +92,7 @@ class Domain:
             (isg, jsg) = ({self.isg}, {self.jsg})
             (ieg, jeg) = ({self.ieg}, {self.jeg})
             (xsize_g, ysize_g) = ({self.xsize_g}, {self.ysize_g})
-            (xmax_size_g, ymax_size_g): ({self.xmax_size_g}, {self.ymax_size_g})
-            (x_is_global_d, y_is_global_d): ({self.x_is_global_g}, {self.y_is_global_g})
+            (x_is_global_g, y_is_global_g): ({self.x_is_global_g}, {self.y_is_global_g})
         """
 
         return repr_str
