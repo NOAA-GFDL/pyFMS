@@ -4,6 +4,8 @@ import numpy as np
 
 import pyfms
 
+from datetime import datetime, timedelta
+
 
 def test_send_data():
 
@@ -24,8 +26,11 @@ def test_send_data():
 
     pyfms.fms.init(calendar_type=pyfms.fms.NOLEAP)
 
+    pe = pyfms.mpp.pe()
+    npes = pyfms.mpp.npes()
+
     global_indices = [0, (nx - 1), 0, (ny - 1)]
-    layout = [1, 1]
+    layout = [1, npes]
     io_layout = [1, 1]
 
     domain = pyfms.mpp_domains.define_domains(
@@ -42,8 +47,6 @@ def test_send_data():
     """
 
     pyfms.diag_manager.init(diag_model_subset=pyfms.diag_manager.DIAG_ALL)
-
-    assert pyfms.diag_manager.module_is_initialized()
 
     pyfms.mpp_domains.set_current_domain(domain_id=domain.domain_id)
 
@@ -92,19 +95,18 @@ def test_send_data():
         set_name="atm",
         not_xy=True,
     )
+    print("axes are registered")
+
+    """
+    set up our start/end times and timestep
+    """
+    start_time = datetime(2,1,1,1,1,1)
+    timestep = timedelta(seconds=3600)
+    end_time = datetime(2,1,2,1,1,1)
 
     """
     register diag field var3
     """
-
-    pyfms.diag_manager.set_field_init_time(
-        year=2,
-        month=1,
-        day=1,
-        hour=1,
-        minute=1,
-        second=1,
-    )
 
     id_var3 = pyfms.diag_manager.register_field_array(
         module_name="atm_mod",
@@ -115,25 +117,12 @@ def test_send_data():
         units="muntin",
         missing_value=-99.99,
         range_data=[-1000.0, 1000.0],
-    )
-
-    pyfms.diag_manager.set_field_timestep(
-        diag_field_id=id_var3, dseconds=60 * 60, ddays=0, dticks=0
+        init_time=start_time,
     )
 
     """
     register diag_field var 2
     """
-
-    pyfms.diag_manager.set_field_init_time(
-        year=2,
-        month=1,
-        day=1,
-        hour=1,
-        minute=1,
-        second=1,
-    )
-
     id_var2 = pyfms.diag_manager.register_field_array(
         module_name="atm_mod",
         field_name="var_2d",
@@ -143,61 +132,45 @@ def test_send_data():
         units="muntin",
         missing_value=-99.99,
         range_data=np.array([-1000.0, 1000.0], dtype=np.float32),
+        init_time=start_time,
     )
-
-    pyfms.diag_manager.set_field_timestep(
-        diag_field_id=id_var2,
-        dseconds=60 * 60,
-        ddays=0,
-        dticks=0,
-    )
+    print("fields are registered")
 
     """
     diag set time end
     """
-
-    pyfms.diag_manager.set_time_end(
-        year=2,
-        month=1,
-        day=2,
-        hour=1,
-        minute=1,
-        second=1,
-        tick=0,
-    )
+    pyfms.diag_manager.set_time_end(end_time)
 
     """
     send data
     """
 
     ntime = 24
+    curr_time = start_time
     for itime in range(ntime):
-
+        curr_time = curr_time + timestep
+        print(f"sending data for time: {curr_time}")
         var3 = -var3
-
-        pyfms.diag_manager.advance_field_time(diag_field_id=id_var3)
         success = pyfms.diag_manager.send_data(
             diag_field_id=id_var3,
             field=var3,
+            time=curr_time,
         )
         assert success
-        pyfms.diag_manager.send_complete(diag_field_id=id_var3)
 
         var2 = -var2
-
-        pyfms.diag_manager.advance_field_time(diag_field_id=id_var2)
         success = pyfms.diag_manager.send_data(
             diag_field_id=id_var2,
             field=var2,
+            time=curr_time,
         )
         assert success
-        pyfms.diag_manager.send_complete(diag_field_id=id_var2)
+        pyfms.diag_manager.send_complete(timestep)
 
-    pyfms.diag_manager.end()
+    pyfms.diag_manager.end(end_time)
     pyfms.fms.end()
 
     assert os.path.isfile("test_send_data.nc")
-    os.remove("test_send_data.nc")
 
 
 if __name__ == "__main__":
