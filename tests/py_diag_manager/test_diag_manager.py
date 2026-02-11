@@ -1,10 +1,9 @@
 import os
+from datetime import datetime, timedelta
 
 import numpy as np
 
 import pyfms
-
-from datetime import datetime, timedelta
 
 
 def test_send_data():
@@ -100,9 +99,9 @@ def test_send_data():
     """
     set up our start/end times and timestep
     """
-    start_time = datetime(2,1,1,1,1,1)
+    start_time = datetime(2, 1, 1, 1, 1, 1)
     timestep = timedelta(seconds=3600)
-    end_time = datetime(2,1,2,1,1,1)
+    end_time = datetime(2, 1, 2, 1, 1, 1)
 
     """
     register diag field var3

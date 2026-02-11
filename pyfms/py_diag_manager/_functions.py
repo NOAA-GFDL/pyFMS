@@ -91,7 +91,7 @@ def define(lib):
             c_char_p,  # field_name
             c_char_p,  # long_name
             c_char_p,  # units
-            POINTER(c_int), # time
+            POINTER(c_int),  # time
             c_char_p,  # standard_name
             POINTER(ictype),  # missing_value
             NDPOINTER(npptr(dtype, shape=(2), flags=C)),  # range
@@ -147,5 +147,5 @@ def define(lib):
                 npptr(dtype, ndim=ndim, flags=C),  # field
                 c_char_p,  # err_msg
                 POINTER(c_bool),  # convert_cf_order
-                npptr(np.int32, shape=(7), flags=C), # time
+                npptr(np.int32, shape=(7), flags=C),  # time
             ]

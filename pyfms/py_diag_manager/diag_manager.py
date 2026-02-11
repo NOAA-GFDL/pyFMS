@@ -1,9 +1,8 @@
+from datetime import datetime, timedelta
 from typing import Any
 
 import numpy as np
 from numpy.typing import NDArray
-
-from datetime import datetime, timedelta
 
 from pyfms.py_diag_manager import _functions
 from pyfms.utils.ctypes_utils import (
@@ -70,7 +69,7 @@ def end(end_time: datetime):
     int_time.append(end_time.hour)
     int_time.append(end_time.minute)
     int_time.append(end_time.second)
-    int_time.append(0) # ticks
+    int_time.append(0)  # ticks
     set_list(int_time, np.int32, arglist)
     _cFMS_diag_end(*arglist)
 
@@ -105,7 +104,7 @@ def init(
         int_time.append(time_init.hour)
         int_time.append(time_init.minute)
         int_time.append(time_init.second)
-        int_time.append(0) # ticks
+        int_time.append(0)  # ticks
     else:
         int_time = None
     set_list(int_time, np.int32, arglist)
@@ -159,7 +158,7 @@ def set_time_end(
     set_c_int(time_end.hour, arglist)
     set_c_int(time_end.minute, arglist)
     set_c_int(time_end.second, arglist)
-    set_c_int(0, arglist) # assumes no ticks
+    set_c_int(0, arglist)  # assumes no ticks
     err_msg = set_c_str(" ", arglist)
     _cFMS_diag_set_time_end(*arglist)
 
