@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta
 from typing import Any
 
 import numpy as np
@@ -23,8 +24,6 @@ DIAG_OTHER = None
 
 _libpath = None
 _lib = None
-
-_c_diag_manager_is_initialized = None
 
 _cFMS_diag_end = None
 _cFMS_diag_init = None
@@ -55,21 +54,29 @@ _cFMS_register_diag_field_arrays = {}
 _cFMS_register_diag_field_scalars = {}
 _cFMS_diag_send_datas = {}
 
-
-def end():
-
+# TODO: ideally, end_time would be optional here since it can be set prior to the end of a run via set_time_end.
+# FMS usage typically sets the end time with diag_manager_end instead, so leaving this as is for now
+def end(end_time: datetime):
     """
-    This function must be called in order to flush out
-    the diagnostic buffers and properly close
-    the diagnostic files
+    Called at end of a run to write and close any diagnostic files.
     """
+    arglist = []
 
-    _cFMS_diag_end()
+    int_time = []
+    int_time.append(end_time.year)
+    int_time.append(end_time.month)
+    int_time.append(end_time.day)
+    int_time.append(end_time.hour)
+    int_time.append(end_time.minute)
+    int_time.append(end_time.second)
+    int_time.append(0)  # ticks
+    set_list(int_time, np.int32, arglist)
+    _cFMS_diag_end(*arglist)
 
 
 def init(
     diag_model_subset: int = None,
-    time_init: list = None,
+    time_init: datetime = None,
 ) -> str:
 
     """
@@ -89,7 +96,18 @@ def init(
 
     arglist = []
     set_c_int(diag_model_subset, arglist)
-    set_list(time_init, np.int32, arglist)
+    if time_init is not None:
+        int_time = []
+        int_time.append(time_init.year)
+        int_time.append(time_init.month)
+        int_time.append(time_init.day)
+        int_time.append(time_init.hour)
+        int_time.append(time_init.minute)
+        int_time.append(time_init.second)
+        int_time.append(0)  # ticks
+    else:
+        int_time = None
+    set_list(int_time, np.int32, arglist)
     err_msg = set_c_str(" ", arglist)
 
     _cFMS_diag_init(*arglist)
@@ -97,25 +115,28 @@ def init(
     return err_msg.value.decode("utf-8")
 
 
-def module_is_initialized():
+def send_complete(timestep: timedelta, ticks: int = 0) -> str:
 
     """
-    returns module_is_initialized from c_diag_manager_mod
+    Finishes diag manager operations for this timestep; performing any reductions and writing to the file(s).
+    This function must be called after all data for a given timestep has been sent via send_data.
     """
-
-    return _c_diag_manager_is_initialized()
-
-
-def send_complete(diag_field_id: int) -> str:
-
-    """
-    Completes send_data
-    This function must be called after the final send data
-    call for the given time
-    """
-
     arglist = []
-    set_c_int(diag_field_id, arglist)
+
+    dtime = datetime.min + timestep
+    int_time = []
+    # this may need adjustments due to slight differences in datetime/timedelta and fms Time_type
+    int_time.append(dtime.year)
+    int_time.append(dtime.month)
+    int_time.append(dtime.day)
+    int_time.append(dtime.hour)
+    int_time.append(dtime.minute)
+    int_time.append(dtime.second)
+    int_time.append(ticks)
+
+    print(f"send complete timestep:{timestep}\ndtime:{dtime}")
+
+    set_list(int_time, np.int32, arglist)
     err_msg = set_c_str(" ", arglist)
 
     _cFMS_diag_send_complete(*arglist)
@@ -123,102 +144,22 @@ def send_complete(diag_field_id: int) -> str:
     return err_msg.value.decode("utf-8")
 
 
-def set_field_init_time(
-    year: int,
-    month: int,
-    day: int,
-    hour: int,
-    minute: int,
-    second: int = None,
-    tick: int = None,
-) -> str:
-
-    """
-    Sets the time type in cFMS that represents the
-    field initial time.  This time is used when registering
-    a diag field
-    """
-
-    arglist = []
-    set_c_int(year, arglist)
-    set_c_int(month, arglist)
-    set_c_int(day, arglist)
-    set_c_int(hour, arglist)
-    set_c_int(minute, arglist)
-    set_c_int(second, arglist)
-    set_c_int(tick, arglist)
-    err_msg = set_c_str(" ", arglist)
-
-    _cFMS_diag_set_field_init_time(*arglist)
-
-    return err_msg.value.decode("utf-8")
-
-
-def set_field_timestep(
-    diag_field_id: int,
-    dseconds: int,
-    ddays: int = None,
-    dticks: int = None,
-) -> str:
-
-    """
-    Sets the timestep between each send_data
-    The timestep is saved as a time type in cFMS and is
-    used to advance field time
-    """
-
-    arglist = []
-    set_c_int(diag_field_id, arglist)
-    set_c_int(dseconds, arglist)
-    set_c_int(ddays, arglist)
-    set_c_int(dticks, arglist)
-    err_msg = set_c_str(" ", arglist)
-
-    _cFMS_diag_set_field_timestep(*arglist)
-
-    return err_msg.value.decode("utf-8")
-
-
-def advance_field_time(diag_field_id: int):
-
-    """
-    Updates the current field time by advancing
-    the current field time with the field timestep
-    set with diag_manager.set_field_timestep
-    """
-
-    arglist = []
-    set_c_int(diag_field_id, arglist)
-
-    _cFMS_diag_advance_field_time(*arglist)
-
-
 def set_time_end(
-    year: int = None,
-    month: int = None,
-    day: int = None,
-    hour: int = None,
-    minute: int = None,
-    second: int = None,
-    tick: int = None,
+    time_end: datetime,
 ):
 
     """
-    Sets the time type representing the field end time
-    in cFMS.  This time must be set before calling
-    diag_manager.end()
+    Sets the end time for the diag manager.
     """
-
     arglist = []
-    set_c_int(year, arglist)
-    set_c_int(month, arglist)
-    set_c_int(day, arglist)
-    set_c_int(hour, arglist)
-    set_c_int(minute, arglist)
-    set_c_int(second, arglist)
-    set_c_int(tick, arglist)
+    set_c_int(time_end.year, arglist)
+    set_c_int(time_end.month, arglist)
+    set_c_int(time_end.day, arglist)
+    set_c_int(time_end.hour, arglist)
+    set_c_int(time_end.minute, arglist)
+    set_c_int(time_end.second, arglist)
+    set_c_int(0, arglist)  # assumes no ticks
     err_msg = set_c_str(" ", arglist)
-
     _cFMS_diag_set_time_end(*arglist)
 
 
@@ -294,6 +235,8 @@ def register_field_array(
     volume: int = None,
     realm: str = None,
     multiple_send_data: bool = None,
+    init_time: datetime = None,
+    ticks_per_second: int = 0,
 ) -> int:
 
     """
@@ -321,12 +264,23 @@ def register_field_array(
         while len(axes) < 5:
             axes.append(0)
 
+    int_time = []
+    if init_time is not None:
+        int_time.append(init_time.year)
+        int_time.append(init_time.month)
+        int_time.append(init_time.day)
+        int_time.append(init_time.hour)
+        int_time.append(init_time.minute)
+        int_time.append(init_time.second)
+        int_time.append(ticks_per_second)
+
     arglist = []
     set_c_str(module_name, arglist)
     set_c_str(field_name, arglist)
     set_list(axes, np.int32, arglist)
     set_c_str(long_name, arglist)
     set_c_str(units, arglist)
+    set_list(int_time, np.int32, arglist)
     if dtype == "float32":
         set_c_float(missing_value, arglist)
     else:
@@ -361,13 +315,12 @@ def register_field_scalar(
     volume: int = None,
     realm: str = None,
     multiple_send_data: bool = None,
+    init_time: datetime = None,
+    ticks_per_second: int = 0,
 ) -> int:
 
     """
     Registers scalar fields
-    The field initial time must be set with
-    diag_manager.set_field_init_time before calling
-    this method
     """
 
     try:
@@ -383,11 +336,22 @@ def register_field_scalar(
     check_str(standard_name, 64, whoami)
     check_str(realm, 64, whoami)
 
+    int_time = []
+    if init_time is not None:
+        int_time.append(init_time.year)
+        int_time.append(init_time.month)
+        int_time.append(init_time.day)
+        int_time.append(init_time.hour)
+        int_time.append(init_time.minute)
+        int_time.append(init_time.second)
+        int_time.append(ticks_per_second)
+
     arglist = []
     set_c_str(module_name, arglist)
     set_c_str(field_name, arglist)
     set_c_str(long_name, arglist)
     set_c_str(units, arglist)
+    set_list(int_time, np.int32, arglist)
     set_c_str(standard_name, arglist)
     if dtype == "float32":
         set_c_float(missing_value, arglist)
@@ -405,7 +369,11 @@ def register_field_scalar(
 
 
 def send_data(
-    diag_field_id: int, field: NDArray, convert_cf_order: bool = True
+    diag_field_id: int,
+    field: NDArray,
+    convert_cf_order: bool = True,
+    time: datetime = None,
+    ticks: int = 0,
 ) -> bool:
 
     """
@@ -425,6 +393,15 @@ def send_data(
                 f"ndim={field.ndim} and type {field.dtype} not supported"
             )
         )
+    int_time = []
+    if time is not None:
+        int_time.append(time.year)
+        int_time.append(time.month)
+        int_time.append(time.day)
+        int_time.append(time.hour)
+        int_time.append(time.minute)
+        int_time.append(time.second)
+        int_time.append(ticks)
 
     arglist = []
     set_c_int(diag_field_id, arglist)
@@ -432,6 +409,7 @@ def send_data(
     set_array(field, arglist)
     err_msg = set_c_str(" ", arglist)
     set_c_bool(convert_cf_order, arglist)
+    set_list(int_time, np.int32, arglist)
 
     return cfms_diag_send_data(*arglist)
 
@@ -452,13 +430,9 @@ def _init_constants():
 
 def _init_functions():
 
-    global _c_diag_manager_is_initialized
     global _cFMS_diag_end
     global _cFMS_diag_init
     global _cFMS_diag_send_complete
-    global _cFMS_diag_set_field_init_time
-    global _cFMS_diag_set_field_timestep
-    global _cFMS_diag_advance_field_time
     global _cFMS_diag_set_time_end
     global _cFMS_diag_axis_init_cfloat
     global _cFMS_diag_axis_init_cdouble
@@ -483,13 +457,9 @@ def _init_functions():
 
     _functions.define(_lib)
 
-    _c_diag_manager_is_initialized = _lib.c_diag_manager_is_initialized
     _cFMS_diag_end = _lib.cFMS_diag_end
     _cFMS_diag_init = _lib.cFMS_diag_init
     _cFMS_diag_send_complete = _lib.cFMS_diag_send_complete
-    _cFMS_diag_set_field_init_time = _lib.cFMS_diag_set_field_init_time
-    _cFMS_diag_set_field_timestep = _lib.cFMS_diag_set_field_timestep
-    _cFMS_diag_advance_field_time = _lib.cFMS_diag_advance_field_time
     _cFMS_diag_set_time_end = _lib.cFMS_diag_set_time_end
     _cFMS_diag_axis_init_cfloat = _lib.cFMS_diag_axis_init_cfloat
     _cFMS_diag_axis_init_cdouble = _lib.cFMS_diag_axis_init_cdouble

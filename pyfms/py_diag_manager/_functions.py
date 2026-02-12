@@ -20,7 +20,9 @@ def define(lib):
 
     # cFMS_diag_end
     lib.cFMS_diag_end.restype = None
-    lib.cFMS_diag_end.argtypes = None
+    lib.cFMS_diag_end.argtypes = [
+        NDPOINTERi32(npptr(np.int32, shape=(7), flags=C)),
+    ]
 
     # cFMS_diag_init
     lib.cFMS_diag_init.restype = None
@@ -30,42 +32,12 @@ def define(lib):
         c_char_p,  # err_msg
     ]
 
-    lib.c_diag_manager_is_initialized.restype = c_bool
-    lib.c_diag_manager_is_initialized.argtypes = None
-
     # cFMS_send_complete
     lib.cFMS_diag_send_complete.restype = None
     lib.cFMS_diag_send_complete.argtypes = [
-        POINTER(c_int),  # diag_field_id
+        NDPOINTERi32(npptr(np.int32, shape=(7), flags=C)),  # time_init
         c_char_p,  # err_msg
     ]
-
-    # cFMS_diag_set_field_init_time
-    lib.cFMS_diag_set_field_init_time.restype = None
-    lib.cFMS_diag_set_field_init_time.argtypes = [
-        POINTER(c_int),  # year
-        POINTER(c_int),  # month
-        POINTER(c_int),  # day
-        POINTER(c_int),  # hour
-        POINTER(c_int),  # minute
-        POINTER(c_int),  # second
-        POINTER(c_int),  # tick
-        c_char_p,  # err_msg
-    ]
-
-    # cFMS_set_field_timestep
-    lib.cFMS_diag_set_field_timestep.restype = None
-    lib.cFMS_diag_set_field_timestep.argtypes = [
-        POINTER(c_int),  # diag_field_id
-        POINTER(c_int),  # dseconds
-        POINTER(c_int),  # ddays
-        POINTER(c_int),  # dticks
-        c_char_p,  # err_msg
-    ]
-
-    # cFMS_diag_advance_field_time
-    lib.cFMS_diag_advance_field_time.restype = None
-    lib.cFMS_diag_advance_field_time.argtypes = [POINTER(c_int)]
 
     # cFMS_diag_set_time_end
     lib.cFMS_diag_set_time_end.restype = None
@@ -76,7 +48,7 @@ def define(lib):
         POINTER(c_int),  # hour
         POINTER(c_int),  # minute
         POINTER(c_int),  # second
-        POINTER(c_int),  # tick
+        POINTER(c_int),  # ticks
         c_char_p,  # err_msg
     ]
 
@@ -119,6 +91,7 @@ def define(lib):
             c_char_p,  # field_name
             c_char_p,  # long_name
             c_char_p,  # units
+            POINTER(c_int),  # time
             c_char_p,  # standard_name
             POINTER(ictype),  # missing_value
             NDPOINTER(npptr(dtype, shape=(2), flags=C)),  # range
@@ -145,6 +118,7 @@ def define(lib):
             npptr(np.int32, shape=(5), flags=C),  # axes
             c_char_p,  # long_name
             c_char_p,  # units
+            npptr(np.int32, shape=(7), flags=C),  # time
             POINTER(ictype),  # missing_value
             NDPOINTER(npptr(dtype, shape=(2), flags=C)),  # range
             POINTER(c_bool),  # mask_variant
@@ -173,4 +147,5 @@ def define(lib):
                 npptr(dtype, ndim=ndim, flags=C),  # field
                 c_char_p,  # err_msg
                 POINTER(c_bool),  # convert_cf_order
+                npptr(np.int32, shape=(7), flags=C),  # time
             ]

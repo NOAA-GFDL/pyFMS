@@ -9,6 +9,8 @@ concurrency:
 jobs:
   pyfms_unit_tests:
     runs-on: ubuntu-latest
+    env:
+      LD_LIBRARY_PATH:
     steps:
         - name: Checkout out hash that triggered CI
           uses: actions/checkout@v4
@@ -25,4 +27,6 @@ jobs:
           run: |
             pip install .[test]
         - name: run tests
-          run: cd tests && ./run_tests.sh -o
+          run: |
+            cd tests
+            ./run_tests.sh -o
