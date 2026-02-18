@@ -11,7 +11,7 @@ class CustomBuild(build):
         build.run(self)
 
 
-test_requirements = ["pytest", "pytest-subtests", "coverage"]
+test_requirements = ["pytest", "pytest-subtests", "coverage", "dask"]
 develop_requirements = test_requirements + ["pre-commit"]
 
 extras_requires = {
