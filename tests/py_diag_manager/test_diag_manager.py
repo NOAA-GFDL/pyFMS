@@ -2,33 +2,23 @@ import os
 from datetime import datetime, timedelta
 
 import numpy as np
+import xarray as xr
 
 import pyfms
 
 
 def test_send_data():
 
-    nx = 8
-    ny = 8
+    nx = 32
+    ny = 32
     nz = 2
-
-    var2 = np.empty(shape=(nx, ny), dtype=np.float32)
-    for i in range(nx):
-        for j in range(ny):
-            var2[i][j] = i * 10.0 + j * 1.0
-
-    var3 = np.empty(shape=(nx, ny, nz), dtype=np.float32)
-    for i in range(nx):
-        for j in range(ny):
-            for k in range(nz):
-                var3[i][j][k] = i * 100 + j * 10 + k * 1
 
     pyfms.fms.init(calendar_type=pyfms.fms.NOLEAP)
 
     pe = pyfms.mpp.pe()
     npes = pyfms.mpp.npes()
 
-    global_indices = [0, (nx - 1), 0, (ny - 1)]
+    global_indices = [0, nx-1, 0, ny-1]
     layout = [1, npes]
     io_layout = [1, 1]
 
@@ -41,12 +31,25 @@ def test_send_data():
         io_layout=io_layout,
     )
 
+    var2_global = np.empty(shape=(nx,ny), dtype=np.float32)
+    var3_global = np.empty(shape=(nx,ny,nz), dtype=np.float32)
+    for i in range(nx):
+        for j in range(ny):
+            var2_global[i][j] = i * 10.0 + j * 1.0
+    for i in range(nx):
+        for j in range(ny):
+            for k in range(nz):
+                var3_global[i][j][k] = i * 100 + j * 10 + k * 1
+
+    # fortran includes the last element in array slices (ie array[isc:iec] includes array[iec])
+    # python does not, so need to increment.
+    var2 = var2_global[domain.isc:domain.iec+1,domain.jsc:domain.jec+1]
+    var3 = var3_global[domain.isc:domain.iec+1,domain.jsc:domain.jec+1,:]
+
     """
     diag manager init
     """
-
     pyfms.diag_manager.init(diag_model_subset=pyfms.diag_manager.DIAG_ALL)
-
     pyfms.mpp_domains.set_current_domain(domain_id=domain.domain_id)
 
     """
@@ -101,7 +104,8 @@ def test_send_data():
     """
     start_time = datetime(2, 1, 1, 1, 1, 1)
     timestep = timedelta(seconds=3600)
-    end_time = datetime(2, 1, 2, 1, 1, 1)
+    ntime = 8
+    end_time = start_time + (timestep * ntime)
 
     """
     register diag field var3
@@ -143,33 +147,46 @@ def test_send_data():
     """
     send data
     """
-
-    ntime = 24
     curr_time = start_time
+    do_send_data = True 
     for itime in range(ntime):
         curr_time = curr_time + timestep
-        print(f"sending data for time: {curr_time}")
-        var3 = -var3
-        success = pyfms.diag_manager.send_data(
-            diag_field_id=id_var3,
-            field=var3,
-            time=curr_time,
-        )
-        assert success
+        print(f"(not) sending data for time: {curr_time}")
+        if do_send_data:
 
-        var2 = -var2
-        success = pyfms.diag_manager.send_data(
-            diag_field_id=id_var2,
-            field=var2,
-            time=curr_time,
-        )
-        assert success
+            success = pyfms.diag_manager.send_data(
+                diag_field_id=id_var3,
+                field=var3,
+                time=curr_time,
+            )
+            assert success
+            # skip this one for now
+            success = pyfms.diag_manager.send_data(
+                diag_field_id=id_var2,
+                field=var2,
+                time=curr_time,
+            )
+            assert success
         pyfms.diag_manager.send_complete(timestep)
 
     pyfms.diag_manager.end(end_time)
     pyfms.fms.end()
 
-    assert os.path.isfile("test_send_data.nc")
+    """
+    check our output is correct
+    """
+    if pyfms.mpp.pe() == pyfms.mpp.root_pe():
+        assert os.path.isfile("test_send_data.nc")
+        ds = xr.open_mfdataset("test_send_data.nc", decode_times=True)
+        assert "var2_avg" in ds
+        assert "var3_avg" in ds
+        assert ds["var2_avg"].dims == ("time", "y", "x")
+        assert ds["var3_avg"].dims == ("time", "z", "y", "x" )
+        assert ds["time"].dims == ("time",)
+        assert ds["time"].shape == (ntime,)
+        for i in range(ntime):
+            np.testing.assert_array_equal(ds["var2_avg"].values[i,:,:], np.transpose(var2_global))
+            np.testing.assert_array_equal(ds["var3_avg"].values[i,:,:,:], np.transpose(var3_global))
 
 
 if __name__ == "__main__":
