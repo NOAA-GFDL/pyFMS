@@ -89,7 +89,7 @@ remove_input $test
 run_test "pytest $flags py_diag_manager/test_generate_files.py"
 
 run_test "mpirun -n 1 pytest $flags py_diag_manager/test_diag_manager.py"
-run_test "mpirun -n 4 pytest $flags py_diag_manager/test_diag_manager.py"
+run_test "mpirun --oversubscribe -n 4 pytest $flags py_diag_manager/test_diag_manager.py"
 
 run_test "pytest $flags utils/test_constants.py"
 run_test "pytest $flags utils/test_get_grid_area.py"
