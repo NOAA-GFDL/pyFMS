@@ -134,8 +134,6 @@ def send_complete(timestep: timedelta, ticks: int = 0) -> str:
     int_time.append(dtime.second)
     int_time.append(ticks)
 
-    print(f"send complete timestep:{timestep}\ndtime:{dtime}")
-
     set_list(int_time, np.int32, arglist)
     err_msg = set_c_str(" ", arglist)
 

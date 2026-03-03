@@ -21,7 +21,7 @@ def define(lib):
     # cFMS_diag_end
     lib.cFMS_diag_end.restype = None
     lib.cFMS_diag_end.argtypes = [
-        NDPOINTERi32(npptr(np.int32, shape=(7), flags=C)),
+        npptr(np.int32, shape=(7), flags=C),
     ]
 
     # cFMS_diag_init
