@@ -7,7 +7,7 @@ import numpy.typing as npt
 
 ctypelist = Union[type(c_int), type(c_float), type(c_double), type(c_bool)]
 
-nptypelist = Union[np.int32, np.int64, np.float32, np.float64, np.bool]
+nptypelist = Union[np.int32, np.int64, np.float32, np.float64, bool]
 
 
 def setNone(arglist) -> None:
@@ -82,7 +82,7 @@ def set_array(arg: npt.ArrayLike | None, arglist: list) -> npt.ArrayLike | None:
     if arg is None:
         return setNone(arglist)
 
-    if not arg.flags["FORC"]:
+    if not arg.flags["C"]:
         arglist.append(np.ascontiguousarray(arg))
     else:
         arglist.append(arg)

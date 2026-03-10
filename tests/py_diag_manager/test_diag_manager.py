@@ -43,6 +43,8 @@ def test_send_data():
 
     pyfms.diag_manager.init(diag_model_subset=pyfms.diag_manager.DIAG_ALL)
 
+    assert pyfms.diag_manager.module_is_initialized()
+
     pyfms.mpp_domains.set_current_domain(domain_id=domain.domain_id)
 
     """

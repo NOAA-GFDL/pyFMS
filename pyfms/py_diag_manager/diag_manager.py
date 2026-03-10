@@ -24,6 +24,8 @@ DIAG_OTHER = None
 _libpath = None
 _lib = None
 
+_c_diag_manager_is_initialized = None
+
 _cFMS_diag_end = None
 _cFMS_diag_init = None
 _cFMS_diag_send_complete = None
@@ -93,6 +95,15 @@ def init(
     _cFMS_diag_init(*arglist)
 
     return err_msg.value.decode("utf-8")
+
+
+def module_is_initialized():
+
+    """
+    returns module_is_initialized from c_diag_manager_mod
+    """
+
+    return _c_diag_manager_is_initialized()
 
 
 def send_complete(diag_field_id: int) -> str:
@@ -440,6 +451,8 @@ def _init_constants():
 
 
 def _init_functions():
+
+    global _c_diag_manager_is_initialized
     global _cFMS_diag_end
     global _cFMS_diag_init
     global _cFMS_diag_send_complete
@@ -470,6 +483,7 @@ def _init_functions():
 
     _functions.define(_lib)
 
+    _c_diag_manager_is_initialized = _lib.c_diag_manager_is_initialized
     _cFMS_diag_end = _lib.cFMS_diag_end
     _cFMS_diag_init = _lib.cFMS_diag_init
     _cFMS_diag_send_complete = _lib.cFMS_diag_send_complete

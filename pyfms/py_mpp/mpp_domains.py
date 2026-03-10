@@ -191,7 +191,7 @@ def define_domains(
     yhalo: int = None,
     xextent: list[int] = None,
     yextent: list[int] = None,
-    maskmap: list[list[np.bool_]] = None,
+    maskmap: list[list[bool]] = None,
     name: str = None,
     symmetry: bool = None,
     memory_size: list[int] = None,
@@ -231,7 +231,7 @@ def define_domains(
     set_c_int(yhalo, arglist)
     set_list(xextent, np.int32, arglist)
     set_list(yextent, np.int32, arglist)
-    set_list(maskmap, np.bool, arglist)
+    set_list(maskmap, bool, arglist)
     set_c_str(name, arglist)
     set_c_bool(symmetry, arglist)
     set_list(memory_size, np.int32, arglist)

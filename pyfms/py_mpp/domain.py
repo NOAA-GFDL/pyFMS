@@ -71,3 +71,28 @@ class Domain:
         for key in domain_dict:
             setattr(self, key, domain_dict[key])
         return self
+
+    def __repr__(self):
+
+        repr_str = f"""
+            domain_id: {self.domain_id}\n
+            ** compute domain **
+            (isc, jsc): ({self.isc}, {self.jsc})
+            (iec, jec): ({self.iec}, {self.jec})
+            (xsize_c, ysize_c): ({self.xsize_c}, {self.ysize_c})
+            (xmax_size_c, ymax_size_c): ({self.xmax_size_c}, {self.ymax_size_c})
+            (x_is_global_c, y_is_global_c): ({self.x_is_global_c}, {self.y_is_global_c})\n
+            ** data domain **
+            (isd, jsd) = ({self.isd}, {self.jsd})
+            (ied, jed) = ({self.ied}, {self.jed})
+            (xsize_d, ysize_d): ({self.xsize_d}, {self.ysize_d})
+            (xmax_size_d, ymax_size_d): ({self.xmax_size_d}, {self.ymax_size_d})
+            (x_is_global_d, y_is_global_d): ({self.x_is_global_d}, {self.y_is_global_d})\n
+            ** global domain **
+            (isg, jsg) = ({self.isg}, {self.jsg})
+            (ieg, jeg) = ({self.ieg}, {self.jeg})
+            (xsize_g, ysize_g) = ({self.xsize_g}, {self.ysize_g})
+            (x_is_global_g, y_is_global_g): ({self.x_is_global_g}, {self.y_is_global_g})
+        """
+
+        return repr_str
