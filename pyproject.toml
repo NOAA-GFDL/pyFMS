@@ -17,7 +17,6 @@ dependencies = [
     "mpi4py",
     "xarray",
     "netcdf4",
-    "pyyaml",
 ]
 classifiers = [
     "Development Status :: 1 - Pre-Alpha",
@@ -84,6 +83,3 @@ source_pkgs = ["pyfms"]
 exclude = ["docs"]
 extend-ignore = ["E203","E501","W293","W503","E302","E203","F841"]
 max-line-length = "88"
-
-[tool.scikit-build-core]
-cmake.generator = "Unix Makefiles"
