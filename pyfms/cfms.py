@@ -1,5 +1,5 @@
 import ctypes
-from pathlib import Path
+import sysconfig
 import pyfms
 
 
@@ -25,7 +25,7 @@ def init(libpath: str = None):
     # todo reset all _function parameters to None
 
     if libpath is None:
-        _libpath = "/home/Frank.Malatino/.conda/envs/throw3/lib/python3.11/site-packages/pyfms/lib/libcFMS.so"
+        _libpath = sysconfig.get_paths()["purelib"] + "/libcFMS.so"
         try:
             _lib = ctypes.cdll.LoadLibrary(_libpath)
         except Exception as e:
