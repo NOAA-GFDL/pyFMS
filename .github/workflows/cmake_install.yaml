@@ -16,6 +16,9 @@ jobs:
         steps:
         - name: checkout code
           uses: actions/checkout@v4
+        - name: Install lsb-release
+          run: |
+            apt-get update && apt-get install -y lsb-release && apt-get clean all
         - name: Set up Python 3.11
           uses: actions/setup-python@v5
           with:
