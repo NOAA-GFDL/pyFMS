@@ -7,7 +7,7 @@ name = "pyfms"
 version = "2026.03.00"
 description = "A Python interface to the FMS Fortran software package."
 readme = "README.md"
-requires-python = ">=3.11,<3.13"
+requires-python = ">=3.12,<3.13"
 # when updating the tested Python versions, please also update README.md,
 dependencies = [
     "dacite",
@@ -30,16 +30,15 @@ classifiers = [
 test = [
     "pytest", 
     "pytest-subtests", 
-    "coverage", 
-    "dask",
+    "coverage",
 ]
-develop = [
+dev = [
     "pyfms[test]",
     "pre-commit"
 ]
 extras = [
     "pyfms[test]",
-    "pyfms[develop]",
+    "pyfms[dev]",
 ]
 
 [tool.aliases]
