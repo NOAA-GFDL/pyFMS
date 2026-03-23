@@ -28,13 +28,14 @@ classifiers = [
 
 [project.optional-dependencies]
 test = [
-    "pytest", 
-    "pytest-subtests", 
+    "pytest",
+    "pytest-subtests",
     "coverage",
 ]
 dev = [
     "pyfms[test]",
-    "pre-commit"
+    "pre-commit",
+    "flake8-pyproject",
 ]
 extras = [
     "pyfms[test]",
