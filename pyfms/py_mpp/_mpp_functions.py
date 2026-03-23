@@ -24,6 +24,7 @@ def define(lib):
         POINTER(c_int),  # npes
         ndpointer(dtype=np.int32, ndim=(1), flags=C),  # pelist
         c_char_p,  # name
+        POINTER(c_int),  # commID
     ]
 
     # cFMS_error
