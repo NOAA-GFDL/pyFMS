@@ -82,10 +82,14 @@ def set_array(arg: npt.ArrayLike | None, arglist: list) -> npt.ArrayLike | None:
     if arg is None:
         return setNone(arglist)
 
-    if not arg.flags["C"]:
-        arglist.append(np.ascontiguousarray(arg))
-    else:
+    try:
+        if not arg.flags["C"]:
+            arglist.append(np.ascontiguousarray(arg))
+        else:
+            arglist.append(arg)
+    except AttributeError:
         arglist.append(arg)
+
     return arg
 
 
