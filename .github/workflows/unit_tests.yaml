@@ -20,9 +20,9 @@ jobs:
           uses: actions/setup-python@v4.6.0
           with:
             python-version: '3.12.13'
-        - name: Install OpenMPI for gt4py
+        - name: Install Dependencies for Build
           run: |
-            sudo apt-get install libopenmpi-dev netcdf-bin libnetcdf-dev libnetcdff-dev nco libyaml-dev diffutils
+            sudo apt-get update && sudo apt-get install libopenmpi-dev netcdf-bin libnetcdf-dev libnetcdff-dev nco libyaml-dev diffutils
         - name: install packages
           run: |
             pip install .[test]
