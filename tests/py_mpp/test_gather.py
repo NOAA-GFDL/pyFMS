@@ -35,7 +35,7 @@ def test_gather_2d():
             else:
                 rbuf_shape = [ny, nx]
 
-        pelist = pyfms.mpp.get_current_pelist(npes=pyfms.mpp.npes(), get_commID=True)
+        pelist = pyfms.mpp.get_current_pelist(npes=pyfms.mpp.npes(), get_commID=True)[0]
         gathered = pyfms.mpp.gather(
             send,
             rbuf_shape=rbuf_shape,

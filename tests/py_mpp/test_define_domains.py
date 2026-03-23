@@ -33,11 +33,13 @@ def test_define_domains():
 
     """get global pelist"""
 
-    global_pelist = pyfms.mpp.get_current_pelist(npes=pyfms.mpp.npes(), get_commID=True)
+    global_pelist = pyfms.mpp.get_current_pelist(
+        npes=pyfms.mpp.npes(), get_commID=True
+    )[0]
 
     """set coarse domain as tile=0"""
 
-    coarse_pelist = global_pelist[0][:coarse_npes]
+    coarse_pelist = global_pelist[:coarse_npes]
     pyfms.mpp.declare_pelist(pelist=coarse_pelist, name="test coarse pelist")
 
     if pyfms.mpp.pe() in coarse_pelist:
@@ -71,7 +73,7 @@ def test_define_domains():
 
     """set fine domain as tile=1"""
 
-    fine_pelist = global_pelist[0][coarse_npes : coarse_npes + fine_npes]
+    fine_pelist = global_pelist[coarse_npes : coarse_npes + fine_npes]
     pyfms.mpp.declare_pelist(pelist=fine_pelist, name="test fine pelist")
 
     if pyfms.mpp.pe() in fine_pelist:
