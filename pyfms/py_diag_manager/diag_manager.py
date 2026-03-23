@@ -62,15 +62,15 @@ def end(end_time: datetime):
     """
     arglist = []
 
-    int_time = []
-    int_time.append(end_time.year)
-    int_time.append(end_time.month)
-    int_time.append(end_time.day)
-    int_time.append(end_time.hour)
-    int_time.append(end_time.minute)
-    int_time.append(end_time.second)
-    int_time.append(0)  # ticks
-    set_list(int_time, np.int32, arglist)
+    end_time_list = []
+    end_time_list.append(end_time.year)
+    end_time_list.append(end_time.month)
+    end_time_list.append(end_time.day)
+    end_time_list.append(end_time.hour)
+    end_time_list.append(end_time.minute)
+    end_time_list.append(end_time.second)
+    end_time_list.append(0)  # ticks
+    set_list(end_time_list, np.int32, arglist)
     _cFMS_diag_end(*arglist)
 
 
@@ -97,17 +97,17 @@ def init(
     arglist = []
     set_c_int(diag_model_subset, arglist)
     if time_init is not None:
-        int_time = []
-        int_time.append(time_init.year)
-        int_time.append(time_init.month)
-        int_time.append(time_init.day)
-        int_time.append(time_init.hour)
-        int_time.append(time_init.minute)
-        int_time.append(time_init.second)
-        int_time.append(0)  # ticks
+        time_init_list = []
+        time_init_list.append(time_init.year)
+        time_init_list.append(time_init.month)
+        time_init_list.append(time_init.day)
+        time_init_list.append(time_init.hour)
+        time_init_list.append(time_init.minute)
+        time_init_list.append(time_init.second)
+        time_init_list.append(0)  # ticks
     else:
-        int_time = None
-    set_list(int_time, np.int32, arglist)
+        time_init_list = None
+    set_list(time_init_list, np.int32, arglist)
     err_msg = set_c_str(" ", arglist)
 
     _cFMS_diag_init(*arglist)
@@ -118,23 +118,24 @@ def init(
 def send_complete(timestep: timedelta, ticks: int = 0) -> str:
 
     """
-    Finishes diag manager operations for this timestep; performing any reductions and writing to the file(s).
+    For the given timestep, finalizes diag_manager operations on data sent to the buffer by performing any
+    reduction/averaging operations.
     This function must be called after all data for a given timestep has been sent via send_data.
     """
     arglist = []
 
     dtime = datetime.min + timestep
-    int_time = []
+    timestep_list = []
     # this may need adjustments due to slight differences in datetime/timedelta and fms Time_type
-    int_time.append(dtime.year)
-    int_time.append(dtime.month)
-    int_time.append(dtime.day)
-    int_time.append(dtime.hour)
-    int_time.append(dtime.minute)
-    int_time.append(dtime.second)
-    int_time.append(ticks)
+    timestep_list.append(dtime.year)
+    timestep_list.append(dtime.month)
+    timestep_list.append(dtime.day)
+    timestep_list.append(dtime.hour)
+    timestep_list.append(dtime.minute)
+    timestep_list.append(dtime.second)
+    timestep_list.append(ticks)
 
-    set_list(int_time, np.int32, arglist)
+    set_list(timestep_list, np.int32, arglist)
     err_msg = set_c_str(" ", arglist)
 
     _cFMS_diag_send_complete(*arglist)
@@ -262,15 +263,15 @@ def register_field_array(
         while len(axes) < 5:
             axes.append(0)
 
-    int_time = []
+    init_time_list = []
     if init_time is not None:
-        int_time.append(init_time.year)
-        int_time.append(init_time.month)
-        int_time.append(init_time.day)
-        int_time.append(init_time.hour)
-        int_time.append(init_time.minute)
-        int_time.append(init_time.second)
-        int_time.append(ticks_per_second)
+        init_time_list.append(init_time.year)
+        init_time_list.append(init_time.month)
+        init_time_list.append(init_time.day)
+        init_time_list.append(init_time.hour)
+        init_time_list.append(init_time.minute)
+        init_time_list.append(init_time.second)
+        init_time_list.append(ticks_per_second)
 
     arglist = []
     set_c_str(module_name, arglist)
@@ -278,7 +279,7 @@ def register_field_array(
     set_list(axes, np.int32, arglist)
     set_c_str(long_name, arglist)
     set_c_str(units, arglist)
-    set_list(int_time, np.int32, arglist)
+    set_list(init_time_list, np.int32, arglist)
     if dtype == "float32":
         set_c_float(missing_value, arglist)
     else:
@@ -334,22 +335,22 @@ def register_field_scalar(
     check_str(standard_name, 64, whoami)
     check_str(realm, 64, whoami)
 
-    int_time = []
+    init_time_list = []
     if init_time is not None:
-        int_time.append(init_time.year)
-        int_time.append(init_time.month)
-        int_time.append(init_time.day)
-        int_time.append(init_time.hour)
-        int_time.append(init_time.minute)
-        int_time.append(init_time.second)
-        int_time.append(ticks_per_second)
+        init_time_list.append(init_time.year)
+        init_time_list.append(init_time.month)
+        init_time_list.append(init_time.day)
+        init_time_list.append(init_time.hour)
+        init_time_list.append(init_time.minute)
+        init_time_list.append(init_time.second)
+        init_time_list.append(ticks_per_second)
 
     arglist = []
     set_c_str(module_name, arglist)
     set_c_str(field_name, arglist)
     set_c_str(long_name, arglist)
     set_c_str(units, arglist)
-    set_list(int_time, np.int32, arglist)
+    set_list(init_time_list, np.int32, arglist)
     set_c_str(standard_name, arglist)
     if dtype == "float32":
         set_c_float(missing_value, arglist)
@@ -391,15 +392,15 @@ def send_data(
                 f"ndim={field.ndim} and type {field.dtype} not supported"
             )
         )
-    int_time = []
+    curr_time_list = []
     if time is not None:
-        int_time.append(time.year)
-        int_time.append(time.month)
-        int_time.append(time.day)
-        int_time.append(time.hour)
-        int_time.append(time.minute)
-        int_time.append(time.second)
-        int_time.append(ticks)
+        curr_time_list.append(time.year)
+        curr_time_list.append(time.month)
+        curr_time_list.append(time.day)
+        curr_time_list.append(time.hour)
+        curr_time_list.append(time.minute)
+        curr_time_list.append(time.second)
+        curr_time_list.append(ticks)
 
     arglist = []
     set_c_int(diag_field_id, arglist)
@@ -407,7 +408,7 @@ def send_data(
     set_array(field, arglist)
     err_msg = set_c_str(" ", arglist)
     set_c_bool(convert_cf_order, arglist)
-    set_list(int_time, np.int32, arglist)
+    set_list(curr_time_list, np.int32, arglist)
 
     return cfms_diag_send_data(*arglist)
 
