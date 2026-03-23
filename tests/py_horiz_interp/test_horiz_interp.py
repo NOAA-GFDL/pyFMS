@@ -81,7 +81,7 @@ def test_horiz_interp_conservative():
         domain = pyfms.mpp_domains.define_domains(
             global_indices=global_indices,
             layout=layout,
-            pelist=pyfms.mpp.get_current_pelist(npes=pes),
+            pelist=pyfms.mpp.get_current_pelist(npes=pes, get_commID=True),
             name="horiz_interp_conservative_test",
             xflags=pyfms.mpp_domains.CYCLIC_GLOBAL_DOMAIN,
             yflags=pyfms.mpp_domains.CYCLIC_GLOBAL_DOMAIN,
@@ -190,7 +190,7 @@ def test_horiz_interp_bilinear():
             global_indices=[0, ni_src - 1, 0, nj_src - 1],
             ndivs=pes,
         ),
-        pelist=pyfms.mpp.get_current_pelist(npes=pes),
+        pelist=pyfms.mpp.get_current_pelist(npes=pes, get_commID=True),
         name="horiz_interp_bilinear_test",
         whalo=halo,
         ehalo=halo,
