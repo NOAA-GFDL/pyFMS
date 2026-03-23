@@ -177,7 +177,7 @@ def test_send_data():
     """
     if pyfms.mpp.pe() == pyfms.mpp.root_pe():
         assert os.path.isfile("test_send_data.nc")
-        ds = xr.open_mfdataset("test_send_data.nc", decode_times=True)
+        ds = xr.open_dataset("test_send_data.nc", decode_times=True)
         assert "var2_avg" in ds
         assert "var3_avg" in ds
         assert ds["var2_avg"].dims == ("time", "y", "x")
