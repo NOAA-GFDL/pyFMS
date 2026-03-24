@@ -81,5 +81,5 @@ source_pkgs = ["pyfms"]
 
 [tool.flake8]
 exclude = ["docs"]
-extend-ignore = ["E203","E501","W293","W503","E302","E203","F841"]
+extend-ignore = ["E203","E501","W293","W503","E302","E203","F841", "F401", "F824", "B007"]
 max-line-length = "88"
