@@ -8,7 +8,7 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 FetchContent_Declare(
     cFMS
-    GIT_REPOSITORY https://github.com/fmalatino/cFMS.git
+    GIT_REPOSITORY https://github.com/NOAA-GFDL/cFMS.git
     GIT_TAG main
 )
 FetchContent_MakeAvailable(cFMS)
