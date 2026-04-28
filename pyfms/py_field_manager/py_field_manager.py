@@ -139,7 +139,7 @@ class FieldTable:
 
         var = self.get_var(module=module, varname=varname)
         for key in var:
-            if type(var[key]) == list:
+            if isinstance(var[key], list):
                 subparamlist.append(key)
 
         return subparamlist
@@ -155,7 +155,7 @@ class FieldTable:
 
         var = self.get_var(module=module, varname=varname)
         for key in var:
-            if type(var[key]) == list:
+            if isinstance(var[key], list):
                 subparamlist.append(key)
 
         return len(subparamlist)

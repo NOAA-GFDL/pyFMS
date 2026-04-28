@@ -12,21 +12,21 @@ jobs:
     env:
       LD_LIBRARY_PATH:
     steps:
-        - name: Checkout out hash that triggered CI
-          uses: actions/checkout@v4
-          with:
-            submodules: 'recursive'
-        - name: Step Python
-          uses: actions/setup-python@v4.6.0
-          with:
-            python-version: '3.11.7'
-        - name: Install OpenMPI for gt4py
-          run: |
-            sudo apt-get install libopenmpi-dev netcdf-bin libnetcdf-dev libnetcdff-dev nco libyaml-dev diffutils
-        - name: install packages
-          run: |
-            pip install .[test]
-        - name: run tests
-          run: |
-            cd tests
-            ./run_tests.sh -o
+      - name: Checkout out hash that triggered CI
+        uses: actions/checkout@v4
+        with:
+          submodules: 'recursive'
+      - name: Step Python
+        uses: actions/setup-python@v4.6.0
+        with:
+          python-version: '3.12.13'
+      - name: Install Dependencies for Build
+        run: |
+          sudo apt-get update && sudo apt-get install libopenmpi-dev netcdf-bin libnetcdf-dev libnetcdff-dev nco libyaml-dev diffutils
+      - name: install packages
+        run: |
+          pip install -v .[test]
+      - name: run tests
+        run: |
+          cd tests
+          ./run_tests.sh -o

@@ -33,7 +33,9 @@ def test_define_domains():
 
     """get global pelist"""
 
-    global_pelist = pyfms.mpp.get_current_pelist(npes=pyfms.mpp.npes())
+    global_pelist = pyfms.mpp.get_current_pelist(
+        npes=pyfms.mpp.npes(), get_commID=True
+    )[0]
 
     """set coarse domain as tile=0"""
 

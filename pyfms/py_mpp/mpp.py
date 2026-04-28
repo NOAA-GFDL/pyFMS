@@ -90,7 +90,9 @@ def gather(
         else:
             rbuf_shape, rbuf = None, None
 
-        pelist = get_current_pelist(npes()) if pelist is None else pelist
+        pelist = (
+            get_current_pelist(npes(), get_commID=True) if pelist is None else pelist
+        )
 
         set_c_int(domain.isc, arglist)
         set_c_int(domain.iec, arglist)
