@@ -6,7 +6,7 @@ The `pyFMS` package is a Python-C-Fortran interface (through the use of the `cty
 
 ### Build
 
-The build backend of `pyFMS` is `scikit-build-core`, which allows for the compilation of extension modules for Python packages through CMake. 
+The build backend of `pyFMS` is `scikit-build-core`, which allows for the compilation of extension modules for Python packages through CMake.
 
 `pyFMS` requires:
 
@@ -57,5 +57,5 @@ If you require a different version of `cFMS` and/or its dependency `FMS`, depend
 
 ## pyFMS as a dependency
 
-This package can be treated like any Python package when used needed as a dependency; ensure it is defined as a dependency for your project, and import as usual. 
-Subsequent installs of the dependent package will not trigger a recompilation of the extension modules of pyFMS, unless directly called to due so by a reinstall of pyFMS, as the dependency manager of the build backend for the dependent project will see the requirements of pyFMS are satisfied. If an editable version of pyFMS is needed for the dependent package, please use the method of editable install detailed above. 
+This package can be treated like any Python package when used needed as a dependency; ensure it is defined as a dependency for your project, and import as usual.
+Subsequent installs of the dependent package will not trigger a recompilation of the extension modules of pyFMS, unless directly called to due so by a reinstall of pyFMS, as the dependency manager of the build backend for the dependent project will see the requirements of pyFMS are satisfied. If an editable version of pyFMS is needed for the dependent package, please use the method of editable install detailed above.
