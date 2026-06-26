@@ -42,7 +42,6 @@ import numpy as np
 import yaml
 
 import pyfms
-
 from pyfms.tools.grid_spec import (
     stamp_cubed_sphere_history,
     stamp_tripolar_history,
@@ -145,8 +144,10 @@ def _setup_regular_domain(nx: int, ny: int) -> tuple[int, dict[str, int]]:
     )
     pyfms.mpp_domains.define_io_domain(domain_id=domain.domain_id, io_layout=[1, 1])
     return domain.domain_id, {
-        "isc": domain.isc, "iec": domain.iec,
-        "jsc": domain.jsc, "jec": domain.jec,
+        "isc": domain.isc,
+        "iec": domain.iec,
+        "jsc": domain.jsc,
+        "jec": domain.jec,
     }
 
 
@@ -181,8 +182,10 @@ def _setup_cubed_sphere_domain(ntile: int) -> tuple[int, dict[str, int]]:
     pyfms.mpp_domains.define_io_domain(domain_id=domain_id, io_layout=[1, 1])
     compute = pyfms.mpp_domains.get_compute_domain(domain_id=domain_id)
     return domain_id, {
-        "isc": compute["isc"], "iec": compute["iec"],
-        "jsc": compute["jsc"], "jec": compute["jec"],
+        "isc": compute["isc"],
+        "iec": compute["iec"],
+        "jsc": compute["jsc"],
+        "jec": compute["jec"],
     }
 
 
@@ -234,9 +237,7 @@ def _register_regular_axes(
     return {"x": id_x, "y": id_y, "z": id_z}
 
 
-def _register_cubed_sphere_axes(
-    ntile: int, nz: int, domain_id: int
-) -> dict[str, int]:
+def _register_cubed_sphere_axes(ntile: int, nz: int, domain_id: int) -> dict[str, int]:
     """Register x, y and optionally z diag axes for a cubed-sphere grid.
 
     Passes tile_count=6 so FMS writes separate tile output files.
@@ -482,9 +483,7 @@ def main() -> None:
     three_d = nz > 0
     timestep = timedelta(seconds=INTERNAL_TIMESTEP_SECONDS)
     rng = np.random.default_rng(args.seed)
-    q_var_names: set[str] = set(
-        v.strip() for v in args.q_vars.split(",") if v.strip()
-    )
+    q_var_names: set[str] = set(v.strip() for v in args.q_vars.split(",") if v.strip())
 
     # Validate dimension args
     if grid_type == "cubed-sphere":
@@ -534,7 +533,7 @@ def main() -> None:
         xy_axes = [axes_dict["x"], axes_dict["y"]]
     elif grid_type == "tripolar":
         axes_dict = _register_tripolar_axes(nx, ny, nz, domain_id)
-        xy_axes = [axes_dict["xh"], axes_dict["yh"]]      # default h-axes
+        xy_axes = [axes_dict["xh"], axes_dict["yh"]]  # default h-axes
         xy_q_axes = [axes_dict["xq"], axes_dict["yq"]]
     else:
         axes_dict = _register_regular_axes(nx, ny, nz, domain_id)
@@ -542,8 +541,7 @@ def main() -> None:
 
     if three_d and axes_dict["z"] is not None:
         h_axes = xy_axes + [axes_dict["z"]]
-        q_axes = (xy_q_axes + [axes_dict["z"]]
-                  if grid_type == "tripolar" else h_axes)
+        q_axes = xy_q_axes + [axes_dict["z"]] if grid_type == "tripolar" else h_axes
     else:
         h_axes = xy_axes
         q_axes = xy_q_axes if grid_type == "tripolar" else h_axes
@@ -555,9 +553,7 @@ def main() -> None:
     if not vars_list:
         raise ValueError("No variables found in diag_table.yaml")
 
-    field_ids = _register_fields(
-        vars_list, h_axes, q_axes, q_var_names, start_time
-    )
+    field_ids = _register_fields(vars_list, h_axes, q_axes, q_var_names, start_time)
 
     pyfms.diag_manager.set_time_end(end_time)
 
@@ -566,9 +562,7 @@ def main() -> None:
     # -----------------------------------------------------------------------
     isize = compute["iec"] - compute["isc"] + 1
     jsize = compute["jec"] - compute["jsc"] + 1
-    local_shape: tuple[int, ...] = (
-        (isize, jsize, nz) if three_d else (isize, jsize)
-    )
+    local_shape: tuple[int, ...] = (isize, jsize, nz) if three_d else (isize, jsize)
 
     # -----------------------------------------------------------------------
     # Time loop

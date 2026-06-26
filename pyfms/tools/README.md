@@ -132,19 +132,19 @@ ds = xr.open_dataset("output/C96_mosaic.nc")
 
 ## Troubleshooting
 
-**No output files produced**  
+**No output files produced**
 → The simulation must run long enough to cross at least one output boundary.
 Check that `--nsteps` × 1 hour exceeds the `freq` of every file in the diag_table.
 
-**`import pyfms` fails**  
+**`import pyfms` fails**
 → The pyfms venv is not active, or the required environment modules (gcc, mpich,
 netcdf-c, netcdf-fortran) were not loaded. Load modules and activate the venv
 before running.
 
-**cubed-sphere: `RuntimeError: requires exactly 6 MPI ranks`**  
+**cubed-sphere: `RuntimeError: requires exactly 6 MPI ranks`**
 → Run with `mpirun -n 6 generate-history ...`
 
-**cubed-sphere: no `.tileN.nc` files appear**  
+**cubed-sphere: no `.tileN.nc` files appear**
 → The cubic mosaic domain integration with diag_manager may need verification.
 Check that `define_cubic_mosaic` is set as the current domain before calling
 `diag_manager.init`.

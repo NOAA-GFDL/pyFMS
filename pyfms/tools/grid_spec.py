@@ -25,6 +25,7 @@ EARTH_RADIUS = 6.371e6
 # Cubed-sphere geometry
 # ---------------------------------------------------------------------------
 
+
 def _face_vectors(tile: int) -> tuple[NDArray, NDArray, NDArray]:
     """Return the face-normal (N), right-tangent (R), and up-tangent (U) unit
     vectors for one of the 6 FMS gnomonic equal-angle cube faces.
@@ -53,12 +54,12 @@ def _face_vectors(tile: int) -> tuple[NDArray, NDArray, NDArray]:
     if tile == 1:
         lon = np.radians(350.0)
         N = np.array([np.cos(lon), np.sin(lon), 0.0])
-        R = np.array([-np.sin(lon), np.cos(lon), 0.0])   # east at lon=350°
+        R = np.array([-np.sin(lon), np.cos(lon), 0.0])  # east at lon=350°
         U = np.array([0.0, 0.0, 1.0])
     elif tile == 2:
         lon = np.radians(80.0)
         N = np.array([np.cos(lon), np.sin(lon), 0.0])
-        R = np.array([-np.sin(lon), np.cos(lon), 0.0])   # east at lon=80°
+        R = np.array([-np.sin(lon), np.cos(lon), 0.0])  # east at lon=80°
         U = np.array([0.0, 0.0, 1.0])
     elif tile == 3:
         N = np.array([0.0, 0.0, 1.0])
@@ -67,13 +68,13 @@ def _face_vectors(tile: int) -> tuple[NDArray, NDArray, NDArray]:
     elif tile == 4:
         lon = np.radians(170.0)
         N = np.array([np.cos(lon), np.sin(lon), 0.0])
-        R = np.array([0.0, 0.0, -1.0])                   # south (−z)
-        U = np.array([-np.sin(lon), np.cos(lon), 0.0])   # east at lon=170° → toward 260°
+        R = np.array([0.0, 0.0, -1.0])  # south (−z)
+        U = np.array([-np.sin(lon), np.cos(lon), 0.0])  # east at lon=170° → toward 260°
     elif tile == 5:
         lon = np.radians(260.0)
         N = np.array([np.cos(lon), np.sin(lon), 0.0])
-        R = np.array([0.0, 0.0, -1.0])                   # south (−z)
-        U = np.array([-np.sin(lon), np.cos(lon), 0.0])   # east at lon=260° → toward 350°
+        R = np.array([0.0, 0.0, -1.0])  # south (−z)
+        U = np.array([-np.sin(lon), np.cos(lon), 0.0])  # east at lon=260° → toward 350°
     elif tile == 6:
         N = np.array([0.0, 0.0, -1.0])
         R = np.array([np.cos(np.radians(80.0)), np.sin(np.radians(80.0)), 0.0])
@@ -101,10 +102,10 @@ def _gnomonic_tile_latlon(ntile: int, tile: int) -> tuple[NDArray, NDArray]:
     sn = 2 * ntile
     ang = np.linspace(-np.pi / 4, np.pi / 4, sn + 1)
     N, R, U = _face_vectors(tile)
-    A, B = np.meshgrid(ang, ang)   # (sn+1, sn+1); A varies along i, B along j
+    A, B = np.meshgrid(ang, ang)  # (sn+1, sn+1); A varies along i, B along j
     ta = np.tan(A)[..., np.newaxis]
     tb = np.tan(B)[..., np.newaxis]
-    P = N + ta * R + tb * U        # (sn+1, sn+1, 3)
+    P = N + ta * R + tb * U  # (sn+1, sn+1, 3)
     r = np.linalg.norm(P, axis=-1, keepdims=True)
     P = P / r
     lat = np.degrees(np.arcsin(np.clip(P[..., 2], -1.0, 1.0)))
@@ -115,6 +116,7 @@ def _gnomonic_tile_latlon(ntile: int, tile: int) -> tuple[NDArray, NDArray]:
 # ---------------------------------------------------------------------------
 # Shared geometry helpers
 # ---------------------------------------------------------------------------
+
 
 def _haversine(lat1: NDArray, lon1: NDArray, lat2: NDArray, lon2: NDArray) -> NDArray:
     """Great circle distance in metres between arrays of (lat, lon) pairs.
@@ -130,7 +132,10 @@ def _haversine(lat1: NDArray, lon1: NDArray, lat2: NDArray, lon2: NDArray) -> ND
     d_lon = np.radians(lon2 - lon1)
     lat1_r = np.radians(lat1)
     lat2_r = np.radians(lat2)
-    a = np.sin(d_lat / 2) ** 2 + np.cos(lat1_r) * np.cos(lat2_r) * np.sin(d_lon / 2) ** 2
+    a = (
+        np.sin(d_lat / 2) ** 2
+        + np.cos(lat1_r) * np.cos(lat2_r) * np.sin(d_lon / 2) ** 2
+    )
     return 2.0 * EARTH_RADIUS * np.arcsin(np.sqrt(np.clip(a, 0.0, 1.0)))
 
 
@@ -146,9 +151,9 @@ def _to_cartesian(lat_deg: NDArray, lon_deg: NDArray) -> NDArray:
     """
     lat = np.radians(lat_deg)
     lon = np.radians(lon_deg)
-    return np.stack([np.cos(lat) * np.cos(lon),
-                     np.cos(lat) * np.sin(lon),
-                     np.sin(lat)], axis=-1)
+    return np.stack(
+        [np.cos(lat) * np.cos(lon), np.cos(lat) * np.sin(lon), np.sin(lat)], axis=-1
+    )
 
 
 def _triangle_solid_angle(a: NDArray, b: NDArray, c: NDArray) -> NDArray:
@@ -164,9 +169,11 @@ def _triangle_solid_angle(a: NDArray, b: NDArray, c: NDArray) -> NDArray:
     """
     bxc = np.cross(b, c)
     num = np.abs(np.einsum("...i,...i->...", a, bxc))
-    den = 1.0 + (np.einsum("...i,...i->...", a, b)
-                 + np.einsum("...i,...i->...", b, c)
-                 + np.einsum("...i,...i->...", a, c))
+    den = 1.0 + (
+        np.einsum("...i,...i->...", a, b)
+        + np.einsum("...i,...i->...", b, c)
+        + np.einsum("...i,...i->...", a, c)
+    )
     return 2.0 * np.arctan2(num, den)
 
 
@@ -184,12 +191,12 @@ def _cell_areas(lat: NDArray, lon: NDArray) -> NDArray:
     """
     v = _to_cartesian(lat, lon)
     v1 = v[:-1, :-1]  # bottom-left
-    v2 = v[:-1, 1:]   # bottom-right
-    v3 = v[1:, 1:]    # top-right
-    v4 = v[1:, :-1]   # top-left
+    v2 = v[:-1, 1:]  # bottom-right
+    v3 = v[1:, 1:]  # top-right
+    v4 = v[1:, :-1]  # top-left
     a1 = _triangle_solid_angle(v1, v2, v3)
     a2 = _triangle_solid_angle(v1, v3, v4)
-    return (a1 + a2) * EARTH_RADIUS ** 2
+    return (a1 + a2) * EARTH_RADIUS**2
 
 
 def _dx_dy(lat: NDArray, lon: NDArray) -> tuple[NDArray, NDArray]:
@@ -228,9 +235,11 @@ def _angle_dx(lat: NDArray, lon: NDArray) -> NDArray:
     dlon = np.diff(lon_r, axis=1)
     lat_mid = (lat_r[:, :-1] + lat_r[:, 1:]) / 2
     bearing = np.degrees(
-        np.arctan2(np.sin(dlon) * np.cos(lat_r[:, 1:]),
-                   np.cos(lat_mid) * np.sin(lat_r[:, 1:])
-                   - np.sin(lat_mid) * np.cos(lat_r[:, 1:]) * np.cos(dlon))
+        np.arctan2(
+            np.sin(dlon) * np.cos(lat_r[:, 1:]),
+            np.cos(lat_mid) * np.sin(lat_r[:, 1:])
+            - np.sin(lat_mid) * np.cos(lat_r[:, 1:]) * np.cos(dlon),
+        )
     )  # (nyp, nxp-1)
     # Pad right edge by repeating the last column
     angle = np.concatenate([bearing, bearing[:, -1:]], axis=1)
@@ -240,6 +249,7 @@ def _angle_dx(lat: NDArray, lon: NDArray) -> NDArray:
 # ---------------------------------------------------------------------------
 # Mosaic file writers
 # ---------------------------------------------------------------------------
+
 
 def _write_char_var(ncvar: nc.Variable, value: str) -> None:
     """Write a string into a (string,) char variable, null-padded."""
@@ -260,8 +270,9 @@ def _write_char_array(ncvar: nc.Variable, values: list[str]) -> None:
         ncvar[i, :] = arr
 
 
-def _write_grid_tile_nc(path: Path, lat: NDArray, lon: NDArray, *,
-                        projection: str = "cube_gnomonic") -> None:
+def _write_grid_tile_nc(
+    path: Path, lat: NDArray, lon: NDArray, *, projection: str = "cube_gnomonic"
+) -> None:
     """Write a single grid tile NetCDF file (FMS hgrid format).
 
     Args:
@@ -328,9 +339,15 @@ def _write_grid_tile_nc(path: Path, lat: NDArray, lon: NDArray, *,
         ds.close()
 
 
-def _write_mosaic_nc(path: Path, mosaic_name: str, gridlocation: str,
-                     gridfiles: list[str], gridtiles: list[str],
-                     contacts: list[str], contact_index: list[str]) -> None:
+def _write_mosaic_nc(
+    path: Path,
+    mosaic_name: str,
+    gridlocation: str,
+    gridfiles: list[str],
+    gridtiles: list[str],
+    contacts: list[str],
+    contact_index: list[str],
+) -> None:
     """Write a FMS mosaic descriptor NetCDF file.
 
     Args:
@@ -401,7 +418,7 @@ def _write_scrip_nc(path: Path, lat: NDArray, lon: NDArray) -> None:
     grid_size = ny * nx
 
     # Centers: supergrid even-indexed points (2i, 2j) for i in 0..ny-1, j in 0..nx-1
-    lat_ctr = lat[1::2, 1::2].ravel()   # (grid_size,)
+    lat_ctr = lat[1::2, 1::2].ravel()  # (grid_size,)
     lon_ctr = lon[1::2, 1::2].ravel()
 
     # Corners: 4 corners of each cell from supergrid
@@ -409,23 +426,29 @@ def _write_scrip_nc(path: Path, lat: NDArray, lon: NDArray) -> None:
     #                    (2*iy+2, 2*ix+2), (2*iy+2, 2*ix)
     iy = np.arange(ny)
     ix = np.arange(nx)
-    IY, IX = np.meshgrid(iy, ix, indexing="ij")   # (ny, nx)
-    si = 2 * IY   # supergrid j index of bottom-left corner
-    sj = 2 * IX   # supergrid i index of bottom-left corner
+    IY, IX = np.meshgrid(iy, ix, indexing="ij")  # (ny, nx)
+    si = 2 * IY  # supergrid j index of bottom-left corner
+    sj = 2 * IX  # supergrid i index of bottom-left corner
 
-    lat_corners = np.stack([
-        lat[si,   sj  ].ravel(),
-        lat[si,   sj+2].ravel(),
-        lat[si+2, sj+2].ravel(),
-        lat[si+2, sj  ].ravel(),
-    ], axis=-1)  # (grid_size, 4)
+    lat_corners = np.stack(
+        [
+            lat[si, sj].ravel(),
+            lat[si, sj + 2].ravel(),
+            lat[si + 2, sj + 2].ravel(),
+            lat[si + 2, sj].ravel(),
+        ],
+        axis=-1,
+    )  # (grid_size, 4)
 
-    lon_corners = np.stack([
-        lon[si,   sj  ].ravel(),
-        lon[si,   sj+2].ravel(),
-        lon[si+2, sj+2].ravel(),
-        lon[si+2, sj  ].ravel(),
-    ], axis=-1)
+    lon_corners = np.stack(
+        [
+            lon[si, sj].ravel(),
+            lon[si, sj + 2].ravel(),
+            lon[si + 2, sj + 2].ravel(),
+            lon[si + 2, sj].ravel(),
+        ],
+        axis=-1,
+    )
 
     ds = nc.Dataset(path, "w", format="NETCDF3_64BIT_OFFSET")
     try:
@@ -456,7 +479,7 @@ def _write_scrip_nc(path: Path, lat: NDArray, lon: NDArray) -> None:
         vmask.units = "unitless"
         vmask[:] = np.ones(grid_size, dtype=np.int32)
 
-        ds.title = f"SCRIP grid file"
+        ds.title = "SCRIP grid file"
         ds.conventions = "SCRIP"
     finally:
         ds.close()
@@ -465,6 +488,7 @@ def _write_scrip_nc(path: Path, lat: NDArray, lon: NDArray) -> None:
 # ---------------------------------------------------------------------------
 # Public interface: cubed-sphere
 # ---------------------------------------------------------------------------
+
 
 def write_cubed_sphere_gridspec(outdir: Path | str, ntile: int) -> None:
     """Write a complete cubed-sphere FMS grid spec to *outdir*.
@@ -484,7 +508,7 @@ def write_cubed_sphere_gridspec(outdir: Path | str, ntile: int) -> None:
     """
     outdir = Path(outdir)
     n = ntile
-    sn = 2 * n       # supergrid size per tile side
+    sn = 2 * n  # supergrid size per tile side
     mosaic_name = f"C{n}_mosaic"
 
     all_lat, all_lon = [], []
@@ -540,8 +564,9 @@ def write_cubed_sphere_gridspec(outdir: Path | str, ntile: int) -> None:
     _write_cubed_sphere_scrip(scrip_path, all_lat, all_lon, ntile)
 
 
-def _write_cubed_sphere_scrip(path: Path, all_lat: list[NDArray],
-                               all_lon: list[NDArray], ntile: int) -> None:
+def _write_cubed_sphere_scrip(
+    path: Path, all_lat: list[NDArray], all_lon: list[NDArray], ntile: int
+) -> None:
     """Write a combined SCRIP file for all 6 cube tiles.
 
     Args:
@@ -571,14 +596,14 @@ def _write_cubed_sphere_scrip(path: Path, all_lat: list[NDArray],
         si = 2 * IY
         sj = 2 * IX
 
-        lat_corners[start:end, 0] = lat[si,   sj  ].ravel()
-        lat_corners[start:end, 1] = lat[si,   sj+2].ravel()
-        lat_corners[start:end, 2] = lat[si+2, sj+2].ravel()
-        lat_corners[start:end, 3] = lat[si+2, sj  ].ravel()
-        lon_corners[start:end, 0] = lon[si,   sj  ].ravel()
-        lon_corners[start:end, 1] = lon[si,   sj+2].ravel()
-        lon_corners[start:end, 2] = lon[si+2, sj+2].ravel()
-        lon_corners[start:end, 3] = lon[si+2, sj  ].ravel()
+        lat_corners[start:end, 0] = lat[si, sj].ravel()
+        lat_corners[start:end, 1] = lat[si, sj + 2].ravel()
+        lat_corners[start:end, 2] = lat[si + 2, sj + 2].ravel()
+        lat_corners[start:end, 3] = lat[si + 2, sj].ravel()
+        lon_corners[start:end, 0] = lon[si, sj].ravel()
+        lon_corners[start:end, 1] = lon[si, sj + 2].ravel()
+        lon_corners[start:end, 2] = lon[si + 2, sj + 2].ravel()
+        lon_corners[start:end, 3] = lon[si + 2, sj].ravel()
 
     ds = nc.Dataset(path, "w", format="NETCDF3_64BIT_OFFSET")
     try:
@@ -619,9 +644,10 @@ def _write_cubed_sphere_scrip(path: Path, all_lat: list[NDArray],
 # Public interface: tripolar ocean
 # ---------------------------------------------------------------------------
 
-def _tripolar_supergrid(nx: int, ny: int,
-                         lat_south: float = -80.0,
-                         lat_bp: float = 65.0) -> tuple[NDArray, NDArray]:
+
+def _tripolar_supergrid(
+    nx: int, ny: int, lat_south: float = -80.0, lat_bp: float = 65.0
+) -> tuple[NDArray, NDArray]:
     """Generate a simplified tripolar ocean supergrid.
 
     The domain uses a Mercator-like regular spacing in the southern region
@@ -667,10 +693,10 @@ def _tripolar_supergrid(nx: int, ny: int,
 
     # Apply bipolar fold north of n_reg rows: fold x symmetrically
     for j in range(n_reg, sny + 1):
-        frac = (j - n_reg) / max(1, n_bp)   # 0 at join, 1 at pole
+        frac = (j - n_reg) / max(1, n_bp)  # 0 at join, 1 at pole
         # Fold: mirror the right half of the longitude axis
         fold_lon = lon_1d.copy()
-        fold_lon[snx // 2 + 1:] = lon_1d[snx // 2 - 1::-1][:snx // 2]
+        fold_lon[snx // 2 + 1 :] = lon_1d[snx // 2 - 1 :: -1][: snx // 2]
         LON[j, :] = fold_lon + frac * (0.0 - fold_lon)  # blend toward 0 at pole
         # Latitude still increases smoothly
         LAT[j, :] = lat_1d[j]
@@ -678,9 +704,9 @@ def _tripolar_supergrid(nx: int, ny: int,
     return LAT, LON
 
 
-def write_tripolar_gridspec(outdir: Path | str, nx: int, ny: int,
-                             lat_south: float = -80.0,
-                             lat_bp: float = 65.0) -> None:
+def write_tripolar_gridspec(
+    outdir: Path | str, nx: int, ny: int, lat_south: float = -80.0, lat_bp: float = 65.0
+) -> None:
     """Write a complete tripolar ocean FMS grid spec to *outdir*.
 
     Produces:
@@ -711,7 +737,7 @@ def write_tripolar_gridspec(outdir: Path | str, nx: int, ny: int,
         "ocean_mosaic:tile1::ocean_mosaic:tile1",
     ]
     contact_index = [
-        f"{snx}:{snx},1:{sny}::1:1,1:{sny}",              # periodic x
+        f"{snx}:{snx},1:{sny}::1:1,1:{sny}",  # periodic x
         f"1:{snx // 2},{sny}:{sny}::{snx}:{snx // 2 + 1},{sny}:{sny}",  # bipolar fold
     ]
     _write_mosaic_nc(
@@ -731,8 +757,10 @@ def write_tripolar_gridspec(outdir: Path | str, nx: int, ny: int,
 # Post-processing: add global attributes to history NetCDF files
 # ---------------------------------------------------------------------------
 
-def stamp_cubed_sphere_history(outdir: Path | str, ntile: int,
-                                file_stems: list[str]) -> None:
+
+def stamp_cubed_sphere_history(
+    outdir: Path | str, ntile: int, file_stems: list[str]
+) -> None:
     """Add cubed-sphere grid global attributes to FMS history tile files.
 
     For each file stem in *file_stems*, opens
@@ -757,8 +785,13 @@ def stamp_cubed_sphere_history(outdir: Path | str, ntile: int,
                 ds.grid_tile = str(t)
                 ds.associated_files = f"area: C{ntile}_mosaic.nc"
                 for vname, var in ds.variables.items():
-                    if vname not in ("time", "time_bnds", "average_T1",
-                                     "average_T2", "average_DT"):
+                    if vname not in (
+                        "time",
+                        "time_bnds",
+                        "average_T1",
+                        "average_T2",
+                        "average_DT",
+                    ):
                         var.interp_method = "conserve_order1"
 
 
@@ -778,6 +811,11 @@ def stamp_tripolar_history(outdir: Path | str, file_stems: list[str]) -> None:
             ds.grid_type = "tripolar"
             ds.associated_files = "area: ocean_mosaic.nc"
             for vname, var in ds.variables.items():
-                if vname not in ("time", "time_bnds", "average_T1",
-                                 "average_T2", "average_DT"):
+                if vname not in (
+                    "time",
+                    "time_bnds",
+                    "average_T1",
+                    "average_T2",
+                    "average_DT",
+                ):
                     var.interp_method = "conserve_order1"
