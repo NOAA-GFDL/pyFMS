@@ -42,6 +42,9 @@ extras = [
     "pyfms[dev]",
 ]
 
+[project.scripts]
+generate-history = "pyfms.tools.generate_history:main"
+
 [tool.aliases]
 
 [tool.scikit-build]
