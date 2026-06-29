@@ -17,6 +17,7 @@ import netCDF4 as nc
 import numpy as np
 from numpy.typing import NDArray
 
+
 EARTH_RADIUS = 6.371e6
 
 
@@ -195,7 +196,7 @@ def _cell_areas(lat: NDArray, lon: NDArray) -> NDArray:
     v4 = v[1:, :-1]  # top-left
     a1 = _triangle_solid_angle(v1, v2, v3)
     a2 = _triangle_solid_angle(v1, v3, v4)
-    return (a1 + a2) * EARTH_RADIUS**2
+    return (a1 + a2) * EARTH_RADIUS ** 2
 
 
 def _dx_dy(lat: NDArray, lon: NDArray) -> tuple[NDArray, NDArray]:
