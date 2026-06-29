@@ -41,7 +41,7 @@ The available `install_options` are:
 For developers we suggest installing with the editable flag `-e` and the verbose flag `-v`:
 
 ```shell
-pip install -e -v .[dev]
+pip install -v -e .[dev]
 ```
 
 use of the editable installation method will allow updates to the Python source code to be reflected in the installation without re-installing. Subsequent installs of `pyFMS` will recompile all extension modules, due to the methods of compilation used by `scikit-build-core`.
