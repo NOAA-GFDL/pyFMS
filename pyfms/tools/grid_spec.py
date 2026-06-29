@@ -17,7 +17,6 @@ import netCDF4 as nc
 import numpy as np
 from numpy.typing import NDArray
 
-
 EARTH_RADIUS = 6.371e6
 
 
