@@ -44,7 +44,6 @@ def init(
     land_domainUG_id: int = None,
     mode: int = None,
 ):
-
     """
     Users can specify the domains associated with each component with
     domain_ids generated from mpp_domains.define.  This id's correspond
@@ -82,7 +81,6 @@ def set_time(
     second: int = None,
     tick: int = None,
 ):
-
     """
     Sets the time type in cFMS.  The set time will be used to specify
     targeted time for temporal interpolation in FMS data_override
@@ -107,7 +105,6 @@ def override_scalar(
     dtype: str,
     data_index: int = None,
 ) -> np.float32 | np.float64:
-
     """
     pyfms.data_override.override_scalar
     Interpolates scalar variables
@@ -142,7 +139,6 @@ def override(
     je_in: int = None,
     convert_cf_order: bool = True,
 ) -> bool:
-
     """
     pyfms.data_override.override
     Interpolates data of c_float and c_double kind
@@ -179,7 +175,6 @@ def override(
 
 
 def _init_constants():
-
     """
     Initializes parameters used in data_override_init
     mode=CFLOAT_MODE initializes data_override in 32-bit mode for real variables
@@ -235,7 +230,6 @@ def _init_functions():
 
 
 def _init(libpath: str, lib: Any):
-
     """
     Sets the library path and library object
     Initializes constants

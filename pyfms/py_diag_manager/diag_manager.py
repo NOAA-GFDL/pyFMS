@@ -54,6 +54,7 @@ _cFMS_register_diag_field_arrays = {}
 _cFMS_register_diag_field_scalars = {}
 _cFMS_diag_send_datas = {}
 
+
 # TODO: ideally, end_time would be optional here since it can be set prior to the end of a run via set_time_end.
 # FMS usage typically sets the end time with diag_manager_end instead, so leaving this as is for now
 def end(end_time: datetime):
@@ -78,7 +79,6 @@ def init(
     diag_model_subset: int = None,
     time_init: datetime = None,
 ) -> str:
-
     """
     Initializes diag_manager
 
@@ -116,7 +116,6 @@ def init(
 
 
 def send_complete(timestep: timedelta, ticks: int = 0) -> str:
-
     """
     Finishes diag manager operations for this timestep; performing any reductions and writing to the file(s).
     This function must be called after all data for a given timestep has been sent via send_data.
@@ -145,7 +144,6 @@ def send_complete(timestep: timedelta, ticks: int = 0) -> str:
 def set_time_end(
     time_end: datetime,
 ):
-
     """
     Sets the end time for the diag manager.
     """
@@ -177,7 +175,6 @@ def axis_init(
     domain_position: int = None,
     not_xy: bool = None,
 ) -> int:
-
     """
     Initializes the diag_axis
     not_xy = True must be specified when initializing an axis
@@ -236,7 +233,6 @@ def register_field_array(
     init_time: datetime = None,
     ticks_per_second: int = 0,
 ) -> int:
-
     """
     Registers multi-dimensional fields
     The field initial time must be set with
@@ -316,7 +312,6 @@ def register_field_scalar(
     init_time: datetime = None,
     ticks_per_second: int = 0,
 ) -> int:
-
     """
     Registers scalar fields
     """
@@ -373,7 +368,6 @@ def send_data(
     time: datetime = None,
     ticks: int = 0,
 ) -> bool:
-
     """
     Send field data to diag_manager that will be outputted to a diagnostic file
     The users should set the field time by advancing current time with
@@ -413,7 +407,6 @@ def send_data(
 
 
 def _init_constants():
-
     """
     Retrieves and assigns diag_manager related parameters
     from FMS
@@ -518,7 +511,6 @@ def _init_functions():
 
 
 def _init(libpath: str, lib: Any):
-
     """
     Sets _libpath and _lib module variables associated
     with the loaded cFMS library.  This function is

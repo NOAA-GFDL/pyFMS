@@ -9,7 +9,6 @@ _lib = None
 
 
 def init(libpath: str = None):
-
     """
     Initializes the pyfms package by
     setting the cFMS library in all modules
@@ -47,7 +46,6 @@ def init(libpath: str = None):
 
 
 def lib() -> type[ctypes.CDLL]:
-
     """
     Returns the currently used ctypes.CDLL
     cFMS object
@@ -57,7 +55,6 @@ def lib() -> type[ctypes.CDLL]:
 
 
 def libpath() -> str:
-
     """
     Returns the library path of the currently
     used cFMS object

@@ -4,7 +4,6 @@ import pyfms
 
 
 def test_library_loaded():
-
     """
     Test to ensure library loaded automatically
     """
@@ -13,7 +12,6 @@ def test_library_loaded():
 
 
 def test_share_same_library():
-
     """
     Test to ensure pyfms modules use the same
     ctypes CDLL library object
@@ -24,7 +22,6 @@ def test_share_same_library():
 
 @pytest.mark.xfail
 def test_library_load_fail():
-
     """
     Partial test to ensure the changelib function
     works

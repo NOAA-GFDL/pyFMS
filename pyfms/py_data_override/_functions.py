@@ -4,7 +4,6 @@ import numpy as np
 
 
 def define(lib):
-
     """
     Sets the restype and argtypes of all
     public functions in cFMS

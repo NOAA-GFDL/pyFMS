@@ -158,7 +158,6 @@ def declare_pelist(
     pelist: list[int],
     name: str = None,
 ) -> int:
-
     """
     This method is written specifically to accommodate a MPI restriction
     that requires a parent communicator to create a child communicator.
@@ -189,7 +188,6 @@ def declare_pelist(
 
 
 def error(errortype: int, errormsg: str = None):
-
     """
     Calls mpp_error.  An errortype of FATAL will
     call for MPI synchronization and termination
@@ -210,7 +208,6 @@ def get_current_pelist(
     get_name: bool = False,
     get_commID: bool = False,
 ) -> Any:
-
     """
     Returns the current pelist.
     npes specifies the length of the pelist and must be
@@ -237,7 +234,6 @@ def get_current_pelist(
 
 
 def npes() -> int:
-
     """
     Returns: number of pes in use
     """
@@ -246,7 +242,6 @@ def npes() -> int:
 
 
 def pe() -> int:
-
     """
     Returns: pe number of calling pe
     """
@@ -255,7 +250,6 @@ def pe() -> int:
 
 
 def root_pe() -> int:
-
     """
     Returns the root pe in the current pelist
     """
@@ -263,7 +257,6 @@ def root_pe() -> int:
 
 
 def set_current_pelist(pelist: list[int] = None, no_sync: bool = None):
-
     """
     Sets the current pelist
     """
@@ -338,7 +331,6 @@ def _init_functions():
 
 
 def _init(libpath: str, lib: Any):
-
     """
     Sets _libpath and _lib module variables associated
     with the loaded cFMS library.  This function is

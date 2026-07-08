@@ -111,7 +111,6 @@ def check_str(arg: str, length: int, whoami: str):
 
 
 class NDPOINTERi32:
-
     """
     wrapper to np.ctypeslib.ndpointer for ints
     to accept None as function argument
@@ -128,7 +127,6 @@ class NDPOINTERi32:
 
 
 class NDPOINTERf:
-
     """
     wrapper to np.ctypeslib.ndpointer for floats
     to accept None as function argument
@@ -145,7 +143,6 @@ class NDPOINTERf:
 
 
 class NDPOINTERd:
-
     """
     wrapper to np.ctypeslib.ndpointer for doubles
     to accept None as function argument
@@ -165,7 +162,6 @@ ctypes_dict = {np.int32: c_int, np.float32: c_float, np.float64: c_double}
 
 
 class NDPOINTER:
-
     """
     Wrapper to np.ctypeslib.ndpointer for doubles
     to accept None as function argument

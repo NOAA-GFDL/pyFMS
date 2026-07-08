@@ -57,7 +57,6 @@ RADCON_MKS = None
 
 
 def _init_constants():
-
     """
     Initializes all FMS constants
     All constants are initialized as np.float64 kind
@@ -122,7 +121,6 @@ def _init_constants():
 
 
 def _init(libpath: str, lib: Any):
-
     """
     Sets _libpath and _lib module variables associated
     with the loaded cFMS library.  This function is
