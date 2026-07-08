@@ -10,7 +10,6 @@ C = "C_CONTIGUOUS"
 
 
 def define(lib):
-
     """
     Sets the restype and argtypes of all
     public functions in cFMS

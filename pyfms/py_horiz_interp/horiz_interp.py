@@ -46,7 +46,6 @@ _cFMS_horiz_interp_base_dict = {}
 
 
 def get_maxxgrid() -> np.int32:
-
     """
     Defines the maximum number of exchange cells
     that can be created by create_xgrid_*
@@ -62,7 +61,6 @@ def create_xgrid_2dx2d_order1(
     lat_tgt: npt.NDArray[np.float64],
     mask_src: npt.NDArray[np.float64],
 ) -> dict:
-
     """
     Creates the exchange grid that can be used
     for first order conservative interpolation
@@ -100,7 +98,6 @@ def create_xgrid_2dx2d_order1(
 
 
 def init(ninterp: int = None):
-
     """
     Initializes horiz_interp in FMS
     """
@@ -112,7 +109,6 @@ def init(ninterp: int = None):
 
 
 def end():
-
     """
     Calls cFMS_horiz_interp_end to deallocate interp
     """
@@ -121,7 +117,6 @@ def end():
 
 
 def module_is_initialized():
-
     """
     Returns module_is_initialized in c_horiz_interp_mod
     """
@@ -441,7 +436,6 @@ def _init_functions():
 
 
 def _init(libpath: str, lib: Any):
-
     """
     Sets _libpath and _lib module variables associated
     with the loaded cFMS library.  This function is

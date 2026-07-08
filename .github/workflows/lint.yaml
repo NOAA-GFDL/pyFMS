@@ -24,4 +24,4 @@ jobs:
       - name: Install Python packages
         run: pip install .[dev]
       - name: Run lint via pre-commit
-        run: pre-commit run --all-files
+        run: pre-commit run --all-files --show-diff-on-failure

@@ -27,7 +27,6 @@ def init(
     nnest_domain: int = None,
     calendar_type: int = None,
 ):
-
     """
     Calls cfms_init which calls fms_init, calls time_manager_init,
     sets the calendar type in time_manager, and sets the total
@@ -50,7 +49,6 @@ def init(
 
 
 def end():
-
     """
     Calls mpp_error
     Termination routine for the fms module. It also calls destructor routines
@@ -61,7 +59,6 @@ def end():
 
 
 def module_is_initialized():
-
     """
     returns module_is_initialized variable from c_fms_mod
     """
@@ -70,7 +67,6 @@ def module_is_initialized():
 
 
 def _init_constants():
-
     """
     Initializes parameters for mpp.error (mpp_error)
     and parameters to set the calendar type (these values
@@ -106,7 +102,6 @@ def _init_functions():
 
 
 def _init(libpath: str, lib: Any):
-
     """
     Sets _libpath and _lib module variables associated
     with the loaded cFMS library.  This function is

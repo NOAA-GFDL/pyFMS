@@ -2,7 +2,6 @@ from ctypes import POINTER, c_bool, c_char_p, c_int
 
 
 def define(lib):
-
     """
     Sets the restype and argtypes of all
     public functions in cFMS

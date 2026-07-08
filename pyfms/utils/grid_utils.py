@@ -18,7 +18,6 @@ def get_grid_area(
     lat: npt.NDArray[np.float64],
     convert_cf_order: bool = True,
 ) -> npt.NDArray[np.float64]:
-
     """
     Returns the cell areas of grids defined
     on lon and lat
@@ -59,7 +58,6 @@ def _init_functions():
 
 
 def _init(libpath: str, lib: Any):
-
     """
     Sets _libpath and _lib module variables associated
     with the loaded cFMS library.  This function is

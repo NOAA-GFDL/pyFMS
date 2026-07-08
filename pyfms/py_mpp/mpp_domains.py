@@ -90,7 +90,6 @@ def get_compute_domain(
     whalo: int = None,
     shalo: int = None,
 ) -> dict:
-
     """
     Queries and returns a dictionary of compute domain indices and
     compute domain size associated with domain_id.  The returned
@@ -139,7 +138,6 @@ def get_data_domain(
     whalo: int = None,
     shalo: int = None,
 ) -> dict:
-
     """
     Queries and returns a dictionary of data domain indices and
     data domain size associated with domain_id.  The returned
@@ -206,7 +204,6 @@ def define_domains(
     x_cyclic_offset: int = None,
     y_cyclic_offset: int = None,
 ) -> type(Domain):
-
     """
     Creates a domain.  Automatically queries the newly formed
     compute and data domains and returns a pyDomain object with
@@ -272,7 +269,6 @@ def define_domains(
 
 
 def define_io_domain(io_layout: list[int], domain_id: int):
-
     """
     Defines the io domain for domain with domain_id
     """
@@ -285,7 +281,6 @@ def define_io_domain(io_layout: list[int], domain_id: int):
 
 
 def define_layout(global_indices: list[int], ndivs: int) -> list:
-
     """
     Defines the layout associated with a domain decomposition
     """
@@ -317,7 +312,6 @@ def define_nest_domains(
     extra_halo: int = None,
     name: str = None,
 ) -> int:
-
     """
     Defines the nest domain where the the parent domain has domain_id
     Returns a nest_domain_id corresponding to the FmsMppDomainsNestDomain
@@ -353,7 +347,6 @@ def define_cubic_mosaic(
     halo: int = None,
     use_memsize: bool = None,
 ) -> int:
-
     """
     Defines a cubic mosaic domain based on the
     given global indices and layout.
@@ -374,7 +367,6 @@ def define_cubic_mosaic(
 
 
 def domain_is_initialized(domain_id: int) -> bool:
-
     """
     Returns True if domain with domain_id has been initialized;
     else, returns False
@@ -387,7 +379,6 @@ def domain_is_initialized(domain_id: int) -> bool:
 
 
 def get_domain_name(domain_id: int) -> str:
-
     """
     Returns the domain name associated with domain_id
     """
@@ -402,7 +393,6 @@ def get_domain_name(domain_id: int) -> str:
 
 
 def get_layout(domain_id: int) -> list[int]:
-
     """
     Returns the layout associated with domain_id
     """
@@ -417,7 +407,6 @@ def get_layout(domain_id: int) -> list[int]:
 
 
 def get_domain_pelist(domain_id: int) -> list[int]:
-
     """
     Returns the pelist associated with domain_id
     """
@@ -447,7 +436,6 @@ def set_compute_domain(
     whalo: int = None,
     shalo: int = None,
 ):
-
     """
     Overrides the default compute domain set with define_domains
     for domain_id.
@@ -475,7 +463,6 @@ def set_compute_domain(
 
 
 def set_current_domain(domain_id: int):
-
     """
     Sets current_domain in cFMS to be the domain with domain_id
     This function is to be used internally in pyFMS
@@ -501,7 +488,6 @@ def set_data_domain(
     whalo: int = None,
     shalo: int = None,
 ):
-
     """
     Overrides the default data domain set with define_domains
     for domain_id
@@ -540,7 +526,6 @@ def set_global_domain(
     whalo: int = None,
     shalo: int = None,
 ):
-
     """
     Overrides the default global domain set with define_domains
     for domain_id
@@ -575,7 +560,6 @@ def update_domains(
     tile_count: int = None,
     convert_cf_order: bool = True,
 ):
-
     """
     Updates the field values for the halo regions
     in the data domain associated with domain_id
@@ -657,7 +641,6 @@ def vector_update_domains(
 
 
 def _init_constants():
-
     """
     Retrieves and assigns mpp_domain related parameters
     from FMS
@@ -818,7 +801,6 @@ def _init_functions():
 
 
 def _init(libpath: str, lib: Any):
-
     """
     Sets _libpath and _lib module variables associated
     with the loaded cFMS library.  This function is
