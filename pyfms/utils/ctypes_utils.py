@@ -167,7 +167,7 @@ ctypes_dict = {np.int32: c_int, np.float32: c_float, np.float64: c_double}
 class NDPOINTER:
 
     """
-    wrapper to np.ctypeslib.ndpointer for doubles
+    Wrapper to np.ctypeslib.ndpointer for doubles
     to accept None as function argument
     """
 
