@@ -2,12 +2,12 @@
 #
 # This software is licensed under the terms of the Apache Licence Version 2.0
 # which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
-# In applying this licence, ECMWF does not waive the privileges and immunities
-# granted to it by virtue of its status as an intergovernmental organisation nor
+# In applying this license, ECMWF does not waive the privileges and immunities
+# granted to it by virtue of its status as an intergovernmental organization nor
 # does it submit to any jurisdiction.
 
 # Try to find NetCDF includes and library.
-# Supports static and shared libaries and allows each component to be found in sepearte prefixes.
+# Supports static and shared libraries and allows each component to be found in separate prefixes.
 #
 # This module defines
 #

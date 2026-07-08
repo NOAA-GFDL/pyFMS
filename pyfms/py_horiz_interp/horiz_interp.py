@@ -102,7 +102,7 @@ def create_xgrid_2dx2d_order1(
 def init(ninterp: int = None):
 
     """
-    initializes horiz_interp in FMS
+    Initializes horiz_interp in FMS
     """
 
     arglist = []
@@ -123,7 +123,7 @@ def end():
 def module_is_initialized():
 
     """
-    returns module_is_initialized in c_horiz_interp_mod
+    Returns module_is_initialized in c_horiz_interp_mod
     """
 
     return _c_horiz_interp_is_initialized()

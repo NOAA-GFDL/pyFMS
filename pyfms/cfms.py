@@ -49,7 +49,7 @@ def init(libpath: str = None):
 def lib() -> type[ctypes.CDLL]:
 
     """
-    returns the currently used ctypes.CDLL
+    Returns the currently used ctypes.CDLL
     cFMS object
     """
 
@@ -59,7 +59,7 @@ def lib() -> type[ctypes.CDLL]:
 def libpath() -> str:
 
     """
-    returns the library path of the currently
+    Returns the library path of the currently
     used cFMS object
     """
 

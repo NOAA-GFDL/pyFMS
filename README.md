@@ -1,6 +1,6 @@
 # pyFMS
 
-The `pyFMS` package is a Python-C-Fortran interface (through the use of the `ctypes` package), for access to select methods from the Flexible Modeling System (`FMS`) developed by NOAA/GFDL (https://github.com/NOAA-GFDL/FMS.git).
+The `pyFMS` package is a Python-C-Fortran interface (through the use of the `ctypes` package), for access to select methods from the [Flexible Modeling System](https://github.com/NOAA-GFDL/FMS.git) (`FMS`) developed by NOAA/GFDL.
 
 ## Quickstart - bare metal
 
@@ -10,9 +10,10 @@ The build backend of `pyFMS` is `scikit-build-core`, which allows for the compil
 
 `pyFMS` requires:
 
-- GCC > 9.2
+- GCC > 9.2 (C and Fortran compiler)
 - MPI
 - Python 3.12
+- CMake >= 3.18
 
 To clone `pyFMS` from its GitHub repository:
 
@@ -34,8 +35,9 @@ pip install .[install_options]
 ```
 
 The available `install_options` are:
+
 - `test`
-- `dev` (which installs the `test` dependecies as well)
+- `dev` (which installs the `test` dependencies as well)
 - `extras` (which installs the `dev` dependencies as well)
 
 For developers we suggest installing with the editable flag `-e` and the verbose flag `-v`:

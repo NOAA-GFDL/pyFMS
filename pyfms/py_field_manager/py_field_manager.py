@@ -45,7 +45,7 @@ class FieldTable:
     def get_var(self, module: str, varname: str) -> Dict:
         """
         When called will return dictionary related to variable matching `varname`
-        within module 'module', containg all current key:value pairs of the variable
+        within module 'module', containing all current key:value pairs of the variable
 
         Returns: Dictionary
         """
