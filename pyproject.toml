@@ -83,3 +83,11 @@ source_pkgs = ["pyfms"]
 exclude = ["docs"]
 extend-ignore = ["E203","E501","W293","W503","E302","E203","F841", "F401", "F824", "B007"]
 max-line-length = "88"
+
+[tool.pytest]
+markers = [
+    "create",  # mark a test as create.
+    "remove",  # mark test as remove.
+    "parallel",  #  mark test as parallel.
+    "convert_cf_order",  # mark test to transpose data from C to F ordered
+]
