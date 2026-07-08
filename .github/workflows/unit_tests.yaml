@@ -12,20 +12,18 @@ jobs:
     env:
       LD_LIBRARY_PATH:
     steps:
-      - name: Checkout out hash that triggered CI
-        uses: actions/checkout@v4
+      - name: Checkout out repository
+        uses: actions/checkout@v7
+      - name: Setup Python
+        uses: actions/setup-python@v6
         with:
-          submodules: 'recursive'
-      - name: Step Python
-        uses: actions/setup-python@v4.6.0
-        with:
-          python-version: '3.12.13'
+          python-version: '3.12'
       - name: Install Dependencies for Build
         run: |
-          sudo apt-get update && sudo apt-get install libopenmpi-dev netcdf-bin libnetcdf-dev libnetcdff-dev nco libyaml-dev diffutils
-      - name: install packages
-        run: |
-          pip install -v .[test]
+          sudo apt-get update
+          sudo apt-get install libopenmpi-dev netcdf-bin libnetcdf-dev libnetcdff-dev nco libyaml-dev diffutils
+      - name: Install Python packages
+        run: pip install -v .[test]
       - name: run tests
         run: |
           cd tests
